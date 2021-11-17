@@ -49,9 +49,13 @@ class SimulationRunner:
         self.input_generators = self._setup_input()
 
         self._setup_state_recording()
-        self.spike_recorder = state_utils.create_spike_recorder(self.network.populations.values())
+        self.spike_recorder_duration = spike_recorder_duration
+        self.raster_plot_duration = raster_plot_duration
+        self.spike_recorder = state_utils.create_spike_recorder(self.network.populations.values(), stop=self.spike_recorder_duration)
 
-        self.results_folder = os.path.join(general_utils.get_data_dir(), 'simulation_runs', self.group_name, self.run_title)
+        if data_dir is None:
+            data_dir = general_utils.get_default_data_dir()
+        self.results_folder = os.path.join(data_dir, 'simulation_runs', self.group_name, self.run_title)
         os.makedirs(self.results_folder, exist_ok=True)
 
     def _create_network(self):
@@ -125,25 +129,12 @@ class SimulationRunner:
             pickle.dump(spike_events, spikes_file)
 
     def _create_plots(self):
-        spikelist = general_utils.spikelist_from_recorder(self.spike_recorder)
-        hist_data = {
-            'CV': spikelist.cv_isi(),
-            'CC': spikelist.pairwise_pearson_corrcoeff(1000, time_bin=2., all_coef=True),
-            'rates': spikelist.mean_rates(),
-        }
-
-        fig, axes = plt.subplots(ncols=len(hist_data.keys()), figsize=(15, 5))
-        for i, (name, data) in enumerate(hist_data.items()):
-            axes[i].hist(data)
-            axes[i].set_title(name)
-
-        statistics_plot_path = os.path.join(self.results_folder, 'statistics_plot.pdf')
-        plt.savefig(statistics_plot_path)
+        rasterplot_spikelist = general_utils.spikelist_from_recorder(self.spike_recorder, stop=self.raster_plot_duration)
 
         ax1 = plt.subplot2grid((30, 1), (0, 0), rowspan=23, colspan=1)
         ax2 = plt.subplot2grid((30, 1), (24, 0), rowspan=5, colspan=1, sharex=ax1)
 
-        spikelist.raster_plot(with_rate=True, ax=[ax1, ax2], display=False, markersize=3)
+        rasterplot_spikelist.raster_plot(with_rate=True, ax=[ax1, ax2], display=False, markersize=3)
         ax1.tick_params(axis='x', which='both', labelbottom=False)
         ax2.set(xlabel='Time [ms]', ylabel='Rate')
         ax1.set(ylabel='Neuron')
@@ -166,6 +157,21 @@ class SimulationRunner:
         plt.title('filtered spikes')
         filtered_states_plot_path = os.path.join(self.results_folder, 'filtered_states_plot.pdf')
         plt.savefig(filtered_states_plot_path)
+
+        statistic_spikelist = general_utils.spikelist_from_recorder(self.spike_recorder)
+        hist_data = {
+            'CV': statistic_spikelist.cv_isi(),
+            'CC': statistic_spikelist.pairwise_pearson_corrcoeff(1000, time_bin=2., all_coef=True),
+            'rates': statistic_spikelist.mean_rates(),
+        }
+
+        fig, axes = plt.subplots(ncols=len(hist_data.keys()), figsize=(15, 5))
+        for i, (name, data) in enumerate(hist_data.items()):
+            axes[i].hist(data)
+            axes[i].set_title(name)
+
+        statistics_plot_path = os.path.join(self.results_folder, 'statistics_plot.pdf')
+        plt.savefig(statistics_plot_path)
 
     def run(self):
         nest.Simulate(self.num_steps*self.step_duration + 0.1)
