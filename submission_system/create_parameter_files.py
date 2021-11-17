@@ -1,8 +1,9 @@
 import os
 import itertools
+import copy
 import numpy as np
 import yaml
-from parameters import params, derive_parameters
+from submission_system.parameters import params, derive_parameters
 from utils import general_utils
 
 
@@ -55,11 +56,10 @@ def create_dict_list_recursively(dict_to_search):
 
 
 if __name__ == '__main__':
-    parameter_list = create_dict_list_recursively(params)
-    parameter_list = [derive_parameters(param_dict) for param_dict in parameter_list]
 
     params_dir = general_utils.get_paramfiles_dir()
-    for param_dict in parameter_list:
+    for param_dict in create_dict_list_recursively(copy.deepcopy(params)):
+        param_dict = derive_parameters(copy.deepcopy(param_dict))
         group_params_dir = os.path.join(params_dir, param_dict['group_name'])
         os.makedirs(group_params_dir, exist_ok=True)
         param_file_path = os.path.join(group_params_dir, f"{param_dict['run_title']}.yaml")
