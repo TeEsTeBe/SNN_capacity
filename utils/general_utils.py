@@ -6,7 +6,7 @@ from pathlib import Path
 from fna.tools.signals import SpikeList
 
 
-def get_data_dir():
+def get_default_data_dir():
     return os.path.join(Path(__file__).parent.parent.resolve(), 'data')
 
 
@@ -14,10 +14,18 @@ def get_paramfiles_dir():
     return os.path.join(Path(__file__).parent.parent.resolve(), 'parameter_files')
 
 
-def spikelist_from_recorder(spikedetector):
+def spikelist_from_recorder(spikedetector, stop=None, start=None):
     detector_status = nest.GetStatus(spikedetector)[0]['events']
     senders = detector_status['senders']
     times = detector_status['times']
+    if stop is not None:
+        mask = times <= stop
+        times = times[mask]
+        senders = senders[mask]
+    if start is not None:
+        mask = times >= start
+        times = times[mask]
+        senders = senders[mask]
     spikes = [(neuron_id, spike_time) for neuron_id, spike_time in zip(senders, times)]
     spikelist = SpikeList(spikes, np.unique(senders))
 

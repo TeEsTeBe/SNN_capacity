@@ -6,6 +6,7 @@ from simulation.simulation_runner import SimulationRunner
 def parse_cmd():
     parser = argparse.ArgumentParser()
     parser.add_argument('parameter_file', help="Path to the parameter yaml file.")
+    parser.add_argument('--num_threads', type=int, default=1, help="Number of threads used for the simulation.")
 
     return parser.parse_args()
 
@@ -15,5 +16,6 @@ if __name__ == '__main__':
     with open(args.parameter_file, 'r') as param_file:
         params = yaml.safe_load(param_file)
     params['paramfile'] = args.parameter_file
-    simulationrunner = SimulationRunner(**params)
+    del params['trial']
+    simulationrunner = SimulationRunner(num_threads=args.num_threads, **params)
     simulationrunner.run()

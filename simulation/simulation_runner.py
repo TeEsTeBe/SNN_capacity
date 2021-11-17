@@ -16,10 +16,16 @@ class SimulationRunner:
 
     def __init__(self, group_name, run_title, network_type, input_type, step_duration, num_steps, input_min_value,
                  input_max_value, n_spatial_encoder, spatial_std_factor, input_connection_probability, network_params,
-                 paramfile):
+                 paramfile, data_dir, dt, spike_recorder_duration, raster_plot_duration, num_threads=1):
 
         assert input_type in self.implemented_input_types,  f'Unknown input type "{input_type}"'
         assert network_type in self.implemented_network_types, f'Unknown network type"{network_type}"'
+
+        self.num_threads = num_threads
+        self.dt = dt
+        # nest.local_num_threads = self.num_threads
+        nest.SetKernelStatus({"local_num_threads": self.num_threads, "resolution": self.dt, 'print_time': True})
+        # nest.resolution = self.dt
 
         self.paramfile = paramfile
 
