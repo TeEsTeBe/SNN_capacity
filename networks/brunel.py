@@ -42,10 +42,10 @@ class BrunelNetwork(BaseNetwork):
         self.connect_net()
 
     def _create_populations(self):
-        pop_dict = {}
-
-        pop_dict['E'] = nest.Create(self.neuron_model, n=self.NE, params=self.neuron_params)
-        pop_dict['I'] = nest.Create(self.neuron_model, n=self.NI, params=self.neuron_params)
+        pop_dict = {
+            'E': nest.Create(self.neuron_model, n=self.NE, params=self.neuron_params),
+            'I': nest.Create(self.neuron_model, n=self.NI, params=self.neuron_params)
+        }
 
         return pop_dict
 

@@ -10,6 +10,10 @@ def get_data_dir():
     return os.path.join(Path(__file__).parent.parent.resolve(), 'data')
 
 
+def get_paramfiles_dir():
+    return os.path.join(Path(__file__).parent.parent.resolve(), 'parameter_files')
+
+
 def spikelist_from_recorder(spikedetector):
     detector_status = nest.GetStatus(spikedetector)[0]['events']
     senders = detector_status['senders']

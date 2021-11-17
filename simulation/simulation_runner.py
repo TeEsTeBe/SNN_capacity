@@ -5,12 +5,9 @@ from shutil import copyfile
 import nest
 import nest.raster_plot
 import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from networks import brunel, alzheimers
 from utils import state_utils, input_utils, general_utils
-
-from fna.tools.visualization import plotting
 
 
 class SimulationRunner:
