@@ -1,0 +1,11 @@
+network_type: 'brunel'
+step_duration: 20.
+num_steps: 100
+N: 1250
+input_type: 'spatial_DC'
+input_min_value: 0.
+input_max_value: 1.5
+n_spatial_encoder: 100
+spatial_std_factor: 20
+input_connection_probability: None
+

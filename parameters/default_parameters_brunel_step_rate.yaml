@@ -1,0 +1,11 @@
+network_type: 'brunel'
+step_duration: 20.
+num_steps: 100
+N: 1250
+input_type: 'step_rate'
+input_min_value: 0.
+input_max_value: 500.
+n_spatial_encoder: None
+spatial_std_factor: None
+input_connection_probability: 0.25
+
