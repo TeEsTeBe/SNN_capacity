@@ -144,7 +144,7 @@ class SimulationRunner:
 
         im = plt.matshow(self.network.get_statematrix(), aspect='auto')
         plt.ylabel('neuron id')
-        plt.xlabel('time [ms]')
+        plt.xlabel('steps')
         plt.colorbar(im, label='neuron V_m')
         plt.title('Vm states')
         state_plot_path = os.path.join(self.results_folder, 'state_plot.pdf')
@@ -152,7 +152,7 @@ class SimulationRunner:
 
         im = plt.matshow(self.network.get_filter_statematrix(), aspect='auto')
         plt.ylabel('neuron id')
-        plt.xlabel('time [ms]')
+        plt.xlabel('steps')
         plt.colorbar(im, label='filter neuron V_m')
         plt.title('filtered spikes')
         filtered_states_plot_path = os.path.join(self.results_folder, 'filtered_states_plot.pdf')
