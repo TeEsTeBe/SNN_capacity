@@ -1,3 +1,4 @@
+import numpy as np
 import nest
 
 from networks.base_network import BaseNetwork
@@ -46,6 +47,11 @@ class BrunelNetwork(BaseNetwork):
             'E': nest.Create(self.neuron_model, n=self.NE, params=self.neuron_params),
             'I': nest.Create(self.neuron_model, n=self.NI, params=self.neuron_params)
         }
+
+        vreset = self.neuron_params['V_reset']
+        vth = self.neuron_params['V_th']
+        for pop in pop_dict.values():
+            nest.SetStatus(pop, 'V_m', np.random.uniform(vreset, vth, size=len(pop)))
 
         return pop_dict
 
