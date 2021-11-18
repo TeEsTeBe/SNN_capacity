@@ -23,9 +23,7 @@ class SimulationRunner:
 
         self.num_threads = num_threads
         self.dt = dt
-        # nest.local_num_threads = self.num_threads
         nest.SetKernelStatus({"local_num_threads": self.num_threads, "resolution": self.dt, 'print_time': True})
-        # nest.resolution = self.dt
 
         self.paramfile = paramfile
 
@@ -121,8 +119,9 @@ class SimulationRunner:
 
     def _save_states(self):
         copyfile(self.paramfile, os.path.join(self.results_folder, 'parameters.yaml'))
-        np.save(os.path.join(self.results_folder, 'statemat.npy'), self.network.get_statematrix())
-        np.save(os.path.join(self.results_folder, 'filtered_statemat.npy'), self.network.get_filter_statematrix())
+        np.save(os.path.join(self.results_folder, 'input_signal.npy'), self.input_signal)
+        np.save(os.path.join(self.results_folder, 'vm_statemat.npy'), self.network.get_statematrix())
+        np.save(os.path.join(self.results_folder, 'filter_statemat.npy'), self.network.get_filter_statematrix())
 
         spike_events = self.spike_recorder.get('events')
         with open(os.path.join(self.results_folder, 'spike_events.pkl'), 'wb') as spikes_file:
@@ -174,6 +173,6 @@ class SimulationRunner:
         plt.savefig(statistics_plot_path)
 
     def run(self):
-        nest.Simulate(self.num_steps*self.step_duration + 0.1)
+        nest.Simulate(self.num_steps*self.step_duration + self.dt)
         self._save_states()
         self._create_plots()
