@@ -1,8 +1,9 @@
 import sys
+import gc
 import numpy as np
 import nest
 
-from utils import general_utils
+# from utils import general_utils
 
 
 def create_multimeter(population_list, interval):
@@ -44,10 +45,21 @@ def create_spike_recorder(population_list, start=None, stop=None):
 
 def get_statematrix(multimeter):
     multimeter_status = nest.GetStatus(multimeter)[0]['events']
+
     senders = multimeter_status['senders']
-    n_senders = np.unique(senders).size
+    unique_senders = np.unique(senders)
+    n_senders = unique_senders.size
+    n_steps = int(senders.size / n_senders)
+
     vms = multimeter_status['V_m']
 
-    statemat = general_utils.order_array_by_ids(array_to_order=vms, n_possible_ids=n_senders, ids=senders)
+    statemat = np.empty((n_senders, n_steps))
+    for column_id, sender_id in enumerate(unique_senders):
+        statemat[column_id, :] = vms[senders == sender_id]
+
+    del senders
+    del vms
+    gc.collect()
+    # statematx = general_utils.order_array_by_ids(array_to_order=vms, n_possible_ids=n_senders, ids=senders)
 
     return statemat

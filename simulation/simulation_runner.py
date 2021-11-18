@@ -1,4 +1,5 @@
 import os
+import gc
 import numpy as np
 import pickle
 from shutil import copyfile
@@ -121,11 +122,15 @@ class SimulationRunner:
         copyfile(self.paramfile, os.path.join(self.results_folder, 'parameters.yaml'))
         np.save(os.path.join(self.results_folder, 'input_signal.npy'), self.input_signal)
         np.save(os.path.join(self.results_folder, 'vm_statemat.npy'), self.network.get_statematrix())
+        gc.collect()
         np.save(os.path.join(self.results_folder, 'filter_statemat.npy'), self.network.get_filter_statematrix())
+        gc.collect()
 
         spike_events = self.spike_recorder.get('events')
         with open(os.path.join(self.results_folder, 'spike_events.pkl'), 'wb') as spikes_file:
             pickle.dump(spike_events, spikes_file)
+        del spike_events
+        gc.collect()
 
     def _create_plots(self):
         rasterplot_spikelist = general_utils.spikelist_from_recorder(self.spike_recorder, stop=self.raster_plot_duration)
@@ -174,5 +179,6 @@ class SimulationRunner:
 
     def run(self):
         nest.Simulate(self.num_steps*self.step_duration + self.dt)
+        gc.collect()
         self._save_states()
         self._create_plots()
