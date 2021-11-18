@@ -23,7 +23,7 @@ class SimulationRunner:
 
         self.num_threads = num_threads
         self.dt = dt
-        nest.SetKernelStatus({"local_num_threads": self.num_threads, "resolution": self.dt, 'print_time': True})
+        nest.SetKernelStatus({"local_num_threads": self.num_threads, "resolution": self.dt, 'print_time': False})
 
         self.paramfile = paramfile
 
