@@ -119,17 +119,22 @@ class SimulationRunner:
         return input_generators
 
     def _save_states(self):
+        print('copying parameters file ...')
         copyfile(self.paramfile, os.path.join(self.results_folder, 'parameters.yaml'))
+        print('saving input signal file ...')
         np.save(os.path.join(self.results_folder, 'input_signal.npy'), self.input_signal)
+        print('saving Vm state matrix ...')
         statemat_vm = self.network.get_statematrix()
         np.save(os.path.join(self.results_folder, 'vm_statemat.npy'), statemat_vm)
         del statemat_vm
         gc.collect()
+        print('saving filtered spikes state matrix ....')
         statemat_filter = self.network.get_filter_statematrix()
         np.save(os.path.join(self.results_folder, 'filter_statemat.npy'), statemat_filter)
         del statemat_filter
         gc.collect()
 
+        print('saving spikes ...')
         spike_events = self.spike_recorder.get('events')
         with open(os.path.join(self.results_folder, 'spike_events.pkl'), 'wb') as spikes_file:
             pickle.dump(spike_events, spikes_file)
@@ -137,6 +142,7 @@ class SimulationRunner:
         gc.collect()
 
     def _create_plots(self):
+        print('creating raster plot ...')
         rasterplot_spikelist = general_utils.spikelist_from_recorder(self.spike_recorder, stop=self.raster_plot_duration)
 
         ax1 = plt.subplot2grid((30, 1), (0, 0), rowspan=23, colspan=1)
@@ -152,9 +158,11 @@ class SimulationRunner:
         del rasterplot_spikelist
         gc.collect()
 
+        print('creating Vm state matrix plot ...')
         plt.clf()
         fig = plt.figure(figsize=(12, 9))
-        im = plt.matshow(self.network.get_statematrix()[:, :100], fignum=fig.number, aspect='auto')
+        statemat_vm = self.network.get_statematrix()
+        im = plt.matshow(statemat_vm[:, :100], fignum=fig.number, aspect='auto')
         plt.ylabel('neuron id')
         plt.xlabel('steps')
         plt.colorbar(im, label='neuron V_m')
@@ -164,6 +172,7 @@ class SimulationRunner:
         del statemat_vm
         gc.collect()
 
+        print('creating filtered spikes state matrix plot ...')
         plt.clf()
         fig = plt.figure(figsize=(12, 9))
         statemat_filter = self.network.get_filter_statematrix()
@@ -177,6 +186,7 @@ class SimulationRunner:
         del statemat_filter
         gc.collect()
 
+        print('creating spike statistics plot ...')
         statistic_spikelist = general_utils.spikelist_from_recorder(self.spike_recorder)
         hist_data = {
             'CV': statistic_spikelist.cv_isi(),
