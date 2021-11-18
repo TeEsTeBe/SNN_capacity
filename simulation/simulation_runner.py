@@ -146,7 +146,9 @@ class SimulationRunner:
         raster_plot_path = os.path.join(self.results_folder, 'raster_plot.pdf')
         plt.savefig(raster_plot_path)
 
-        im = plt.matshow(self.network.get_statematrix(), aspect='auto')
+        plt.clf()
+        fig = plt.figure(figsize=(12, 9))
+        im = plt.matshow(self.network.get_statematrix()[:, :100], fignum=fig.number, aspect='auto')
         plt.ylabel('neuron id')
         plt.xlabel('steps')
         plt.colorbar(im, label='neuron V_m')
@@ -154,7 +156,9 @@ class SimulationRunner:
         state_plot_path = os.path.join(self.results_folder, 'state_plot.pdf')
         plt.savefig(state_plot_path)
 
-        im = plt.matshow(self.network.get_filter_statematrix(), aspect='auto')
+        plt.clf()
+        fig = plt.figure(figsize=(12, 9))
+        im = plt.matshow(self.network.get_filter_statematrix()[:, :100], fignum=fig.number, aspect='auto')
         plt.ylabel('neuron id')
         plt.xlabel('steps')
         plt.colorbar(im, label='filter neuron V_m')
