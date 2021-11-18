@@ -121,9 +121,13 @@ class SimulationRunner:
     def _save_states(self):
         copyfile(self.paramfile, os.path.join(self.results_folder, 'parameters.yaml'))
         np.save(os.path.join(self.results_folder, 'input_signal.npy'), self.input_signal)
-        np.save(os.path.join(self.results_folder, 'vm_statemat.npy'), self.network.get_statematrix())
+        statemat_vm = self.network.get_statematrix()
+        np.save(os.path.join(self.results_folder, 'vm_statemat.npy'), statemat_vm)
+        del statemat_vm
         gc.collect()
-        np.save(os.path.join(self.results_folder, 'filter_statemat.npy'), self.network.get_filter_statematrix())
+        statemat_filter = self.network.get_filter_statematrix()
+        np.save(os.path.join(self.results_folder, 'filter_statemat.npy'), statemat_filter)
+        del statemat_filter
         gc.collect()
 
         spike_events = self.spike_recorder.get('events')
@@ -145,6 +149,8 @@ class SimulationRunner:
         plt.title('')
         raster_plot_path = os.path.join(self.results_folder, 'raster_plot.pdf')
         plt.savefig(raster_plot_path)
+        del rasterplot_spikelist
+        gc.collect()
 
         plt.clf()
         fig = plt.figure(figsize=(12, 9))
@@ -155,16 +161,21 @@ class SimulationRunner:
         plt.title('Vm states')
         state_plot_path = os.path.join(self.results_folder, 'state_plot.pdf')
         plt.savefig(state_plot_path)
+        del statemat_vm
+        gc.collect()
 
         plt.clf()
         fig = plt.figure(figsize=(12, 9))
-        im = plt.matshow(self.network.get_filter_statematrix()[:, :100], fignum=fig.number, aspect='auto')
+        statemat_filter = self.network.get_filter_statematrix()
+        im = plt.matshow(statemat_filter[:, :100], fignum=fig.number, aspect='auto')
         plt.ylabel('neuron id')
         plt.xlabel('steps')
         plt.colorbar(im, label='filter neuron V_m')
         plt.title('filtered spikes')
         filtered_states_plot_path = os.path.join(self.results_folder, 'filtered_states_plot.pdf')
         plt.savefig(filtered_states_plot_path)
+        del statemat_filter
+        gc.collect()
 
         statistic_spikelist = general_utils.spikelist_from_recorder(self.spike_recorder)
         hist_data = {
@@ -172,6 +183,8 @@ class SimulationRunner:
             'CC': statistic_spikelist.pairwise_pearson_corrcoeff(1000, time_bin=2., all_coef=True),
             'rates': statistic_spikelist.mean_rates(),
         }
+        del statistic_spikelist
+        gc.collect()
 
         fig, axes = plt.subplots(ncols=len(hist_data.keys()), figsize=(15, 5))
         for i, (name, data) in enumerate(hist_data.items()):
