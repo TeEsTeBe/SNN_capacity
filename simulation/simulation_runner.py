@@ -187,8 +187,8 @@ class SimulationRunner:
         general_utils.print_memory_consumption('\tMemory usage - before vm state matrix plot')
         plt.clf()
         fig = plt.figure(figsize=(12, 9))
-        statemat_vm = self.network.get_statematrix()
-        im = plt.matshow(statemat_vm[:, :100], fignum=fig.number, aspect='auto')
+        statemat_vm_slice = self.network.get_statematrix()[:, :100].copy()
+        im = plt.matshow(statemat_vm_slice, fignum=fig.number, aspect='auto')
         plt.ylabel('neuron id')
         plt.xlabel('steps')
         plt.colorbar(im, label='neuron V_m')
@@ -232,6 +232,7 @@ class SimulationRunner:
         for i, (name, data) in enumerate(hist_data.items()):
             axes[i].hist(data)
             axes[i].set_title(name)
+            np.save(os.path.join(self.results_folder, f'{name}.npy'), data)
 
         statistics_plot_path = os.path.join(self.results_folder, 'statistics_plot.pdf')
         plt.savefig(statistics_plot_path)

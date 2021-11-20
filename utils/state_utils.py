@@ -57,6 +57,7 @@ def get_statematrix(multimeter):
     for column_id, sender_id in enumerate(unique_senders):
         statemat[column_id, :] = vms[senders == sender_id]
 
+    del multimeter_status
     del senders
     del vms
     gc.collect()
