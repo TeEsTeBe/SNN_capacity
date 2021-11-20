@@ -17,7 +17,10 @@ class SimulationRunner:
 
     def __init__(self, group_name, run_title, network_type, input_type, step_duration, num_steps, input_min_value,
                  input_max_value, n_spatial_encoder, spatial_std_factor, input_connection_probability, network_params,
-                 paramfile, data_dir, dt, spike_recorder_duration, raster_plot_duration, num_threads=1):
+                 background_rate, background_weight, noise_loop_duration, paramfile, data_dir, dt, spike_recorder_duration,
+                 raster_plot_duration, num_threads=1):
+
+        general_utils.print_memory_consumption('Memory usage - beginning init SimulationRunner')
 
         assert input_type in self.implemented_input_types,  f'Unknown input type "{input_type}"'
         assert network_type in self.implemented_network_types, f'Unknown network type"{network_type}"'
@@ -34,7 +37,10 @@ class SimulationRunner:
         self.network_type = network_type
         self.network_params = network_params
         self.network = self._create_network()
-        self.network.add_default_noise()
+        self.background_rate = background_rate
+        self.background_weight = background_weight
+        self.noise_loop_duration = noise_loop_duration
+        self.network.add_spiking_noise(rate=self.background_rate, weight=self.background_weight, loop_duration=self.noise_loop_duration)
 
         self.input_type = input_type
         self.step_duration = step_duration

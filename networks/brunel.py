@@ -70,16 +70,20 @@ class BrunelNetwork(BaseNetwork):
         nest.Connect(self.populations['I'], self.populations['I'], syn_spec=syn_dict_inh, conn_spec=conn_dict_inh)
         nest.Connect(self.populations['I'], self.populations['E'], syn_spec=syn_dict_inh, conn_spec=conn_dict_inh)
 
-    def add_default_noise(self, rate=None, weight=None):
+    def add_spiking_noise(self, rate=None, weight=None, loop_duration=None):
         if rate is None:
             rate = 40. * self.CE
 
         if weight is None:
             weight = self.J
 
-        noise_generator = input_utils.add_poisson_noise(self.populations.values(), rate=rate, weight=weight)
+        if loop_duration is None:
+            noise_generator = input_utils.add_poisson_noise(self.populations.values(), rate=rate, weight=weight)
+            parrots = None
+        else:
+            noise_generator, parrots = input_utils.add_repeating_noise(self.populations.values(), rate, weight, loop_duration)
 
-        return noise_generator
+        return noise_generator, parrots
 
     def get_state_populations(self):
         return {'E': self.populations['E']}

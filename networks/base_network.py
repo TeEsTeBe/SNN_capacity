@@ -14,7 +14,7 @@ class BaseNetwork(ABC):
         pass
 
     @abstractmethod
-    def add_default_noise(self):
+    def add_spiking_noise(self):
         pass
 
     @abstractmethod

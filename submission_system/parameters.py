@@ -22,34 +22,35 @@ default_brunel_neuron_params = {
 }
 
 params = {
-    'group_name': 'test',
+    'group_name': 'test-loop-noise',
     'run_title': None,
-    'trial': list(range(1, 11)),
-    'network_type': ['brunel', 'alzheimers'],
-    'step_duration': 20.,
+    # 'trial': list(range(1, 11)),
+    'trial': 1,
+    'network_type': ['brunel'],
+    'step_duration': 20.,  # [10., 20.],
     'num_steps': 500,
-    'input_type': ['step_DC', 'spatial_DC'],
+    'input_type': ['spatial_DC'],
     'input_min_value': 0.,
-    'input_max_value': 1.,
+    'input_max_value': [0., 1.],
     'n_spatial_encoder': 1000,
-    'spatial_std_factor': 20,
+    'spatial_std_factor': 20,  # [20, 30, 40, 50],
     'input_connection_probability': 0.25,
     'data_dir': None,
     'dt': 0.1,
     'spike_recorder_duration': 10000.,
     'raster_plot_duration': 1000.,
+    'background_rate': None,
+    'background_weight': None,
+    'noise_loop_duration': 20.,
     'network_params': {
         'N': 1250,
-        'neuron_params': {
-            'C_m': 11.
-        }
         # 'g': [5.],
         # 'J': [0.2]
-    }
+    },
 }
 
-add_to_group_name = ['network_type', 'input_type', ['network_params', 'N']]
-add_to_runtitle = []  # [['network_params', 'g'], ['network_params', 'J']]
+add_to_group_name = ['network_type', 'input_type']
+add_to_runtitle = ['input_max_value']  # [['network_params', 'g'], ['network_params', 'J']]
 
 shortened_params_dict = {
     'network_type': 'net',
@@ -73,7 +74,7 @@ def append_param_string(current_str, params_dict, params_to_add):
                 param_name = shortened_params_dict[param]
             else:
                 param_name = param
-            current_str += f"_{param_name}={params_dict[param]}"
+            current_str += f"__{param_name}={params_dict[param]}"
 
     return current_str
 
@@ -86,7 +87,7 @@ def derive_parameters(params_dict):
         params_dict['run_title'] = params_dict['group_name']
     if add_to_runtitle is not None:
         params_dict['run_title'] = append_param_string(params_dict['run_title'], params_dict, add_to_runtitle)
-    params_dict['run_title'] += f"_{params_dict['trial']}"
+    params_dict['run_title'] += f"__{params_dict['trial']}"
 
     if params_dict['network_type'] == 'brunel':
         if 'neuron_params' not in params_dict['network_params'].keys():
