@@ -106,4 +106,7 @@ def derive_parameters(params_dict):
                     params_dict['network_params']['neuron_params'][key] = value
         params_dict['network_params']['neuron_model'] = 'iaf_psc_exp_ps'
 
+    if params_dict['noise_loop_duration'] == 'step_duration':
+        params_dict['noise_loop_duration'] = params_dict['step_duration']
+
     return params_dict

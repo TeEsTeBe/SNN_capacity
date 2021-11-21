@@ -1,3 +1,4 @@
+from copy import deepcopy
 import numpy as np
 import nest
 
@@ -43,6 +44,13 @@ class BrunelNetwork(BaseNetwork):
         self.connect_net()
 
     def _create_populations(self):
+        params_with_distribution = {}
+        neuron_params_copy = deepcopy(self.neuron_params)
+        for parname, parvalue in self.neuron_params.items():
+            if isinstance(parvalue, dict):
+                params_with_distribution[parname] = parvalue
+                del neuron_params_copy[parname]
+
         pop_dict = {
             'E': nest.Create(self.neuron_model, n=self.NE, params=self.neuron_params),
             'I': nest.Create(self.neuron_model, n=self.NI, params=self.neuron_params)
