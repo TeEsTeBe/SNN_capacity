@@ -52,9 +52,15 @@ class BrunelNetwork(BaseNetwork):
                 del neuron_params_copy[parname]
 
         pop_dict = {
-            'E': nest.Create(self.neuron_model, n=self.NE, params=self.neuron_params),
-            'I': nest.Create(self.neuron_model, n=self.NI, params=self.neuron_params)
+            'E': nest.Create(self.neuron_model, n=self.NE, params=neuron_params_copy),
+            'I': nest.Create(self.neuron_model, n=self.NI, params=neuron_params_copy)
         }
+
+        for parname, parvalue in params_with_distribution.items():
+            fct = parvalue['function']
+            fct_pars = parvalue['parameters']
+            nest.SetStatus(pop_dict['E'], parname, eval(f"{fct}(size=self.NE, **fct_pars)"))
+            nest.SetStatus(pop_dict['I'], parname, eval(f"{fct}(size=self.NI, **fct_pars)"))
 
         vreset = self.neuron_params['V_reset']
         vth = self.neuron_params['V_th']
