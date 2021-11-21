@@ -41,7 +41,8 @@ params = {
     'raster_plot_duration': 1000.,
     'background_rate': None,
     'background_weight': None,
-    'noise_loop_duration': 20.,
+    'noise_loop_duration': None,  # 'step_duration',
+    'batch_steps': 50,
     'network_params': {
         'N': 1250,
         # 'g': [5.],

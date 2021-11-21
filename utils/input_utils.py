@@ -33,42 +33,47 @@ def get_rate_encoding_generator(input_values, step_duration, min_rate, max_rate)
     return generator
 
 
-def get_step_encoding_device(device_type, input_signal, step_duration, min_value, max_value):
-
+def set_input_to_step_encoder(input_signal, encoding_generator, step_duration, min_value, max_value, start=0.):
     values = np.interp(input_signal, (-1, 1), (min_value, max_value))
-    times = np.arange(0.1, step_duration * len(input_signal) + 0.1, step_duration)
+    times = start + np.arange(0.1, step_duration * len(input_signal) + 0.1, step_duration)
 
-    generator = nest.Create(device_type)
-
-    if device_type == 'inhomogeneous_poisson_generator':
-        nest.SetStatus(generator, {'rate_times': times, 'rate_values': values})
-    elif device_type == 'step_current_generator':
-        nest.SetStatus(generator, {'amplitude_times': times, 'amplitude_values': values})
+    if encoding_generator.model == 'inhomogeneous_poisson_generator':
+        nest.SetStatus(encoding_generator, {'rate_times': times, 'rate_values': values})
+    elif encoding_generator.model == 'step_current_generator':
+        nest.SetStatus(encoding_generator, {'amplitude_times': times, 'amplitude_values': values})
     else:
-        raise ValueError(f'device_type "{device_type}" is not supported.')
+        raise ValueError(f'device_type "{encoding_generator.model}" is not supported.')
+
+
+def get_step_encoding_device(device_type, input_signal, step_duration, min_value, max_value):
+    generator = nest.Create(device_type)
+    set_input_to_step_encoder(input_signal, generator, step_duration, min_value, max_value)
 
     return generator
 
 
-def get_gaussian_spatial_encoding_device(device_type, input_values, num_devices, step_duration, min_value, max_value, std):
-    interpolated_input_values = np.interp(input_values, (-1, 1), (0, num_devices))
-    xvals = np.arange(0, num_devices).reshape(num_devices, 1)
+def set_input_to_gaussian_spatial_encoder(input_values, encoding_generator, step_duration, min_value, max_value, std, start=0.):
+    interpolated_input_values = np.interp(input_values, (-1, 1), (0, len(encoding_generator)))
+    xvals = np.arange(0, len(encoding_generator)).reshape(len(encoding_generator), 1)
 
-    values = np.zeros([num_devices, len(input_values)])
+    values = np.zeros([len(encoding_generator), len(input_values)])
     values[:] = scipy.stats.norm.pdf(xvals, interpolated_input_values[:], std)
     values /= values.max()
     values *= (max_value - min_value)
     values += min_value
 
-    times = np.arange(0.1, step_duration * len(input_values) + 0.1, step_duration)
+    times = start + np.arange(0.1, step_duration * len(input_values) + 0.1, step_duration)
 
-    generators = nest.Create(device_type, n=num_devices)
-
-    if device_type == 'inhomogeneous_poisson_generator':
-        nest.SetStatus(generators, [{'rate_times': times, 'rate_values': vals} for vals in values])
-    elif device_type == 'step_current_generator':
-        nest.SetStatus(generators, [{'amplitude_times': times, 'amplitude_values':vals} for vals in values])
+    if encoding_generator.model[0] == 'inhomogeneous_poisson_generator':
+        nest.SetStatus(encoding_generator, [{'rate_times': times, 'rate_values': vals} for vals in values])
+    elif encoding_generator.model[0] == 'step_current_generator':
+        nest.SetStatus(encoding_generator, [{'amplitude_times': times, 'amplitude_values':vals} for vals in values])
     else:
-        raise ValueError(f'device_type "{device_type}" is not supported.')
+        raise ValueError(f'device_type "{encoding_generator}" is not supported.')
+
+
+def get_gaussian_spatial_encoding_device(device_type, input_values, num_devices, step_duration, min_value, max_value, std):
+    generators = nest.Create(device_type, n=num_devices)
+    set_input_to_gaussian_spatial_encoder(input_values, generators, step_duration, min_value, max_value, std, start=0.)
 
     return generators

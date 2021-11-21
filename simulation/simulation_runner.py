@@ -18,7 +18,7 @@ class SimulationRunner:
     def __init__(self, group_name, run_title, network_type, input_type, step_duration, num_steps, input_min_value,
                  input_max_value, n_spatial_encoder, spatial_std_factor, input_connection_probability, network_params,
                  background_rate, background_weight, noise_loop_duration, paramfile, data_dir, dt, spike_recorder_duration,
-                 raster_plot_duration, num_threads=1):
+                 raster_plot_duration, batch_steps, num_threads=1):
 
         general_utils.print_memory_consumption('Memory usage - beginning init SimulationRunner')
 
@@ -51,6 +51,7 @@ class SimulationRunner:
         self.n_spatial_encoder = n_spatial_encoder
         self.spatial_std_factor = spatial_std_factor
         self.input_connection_probability = input_connection_probability
+        self.batch_steps = self.num_steps if batch_steps is None else batch_steps
         self.input_generators = self._setup_input()
 
         self._setup_state_recording()
@@ -82,28 +83,45 @@ class SimulationRunner:
         self.network.set_up_spike_filtering(interval=self.step_duration, filter_tau=20.)
         general_utils.print_memory_consumption('Memory usage - end _setup_state_recording')
 
+    def _set_input_to_generators(self, start_step, stop_step):
+        if 'step_' in self.input_type:
+            input_utils.set_input_to_step_encoder(
+                input_signal=self.input_signal[start_step:stop_step],
+                encoding_generator=self.input_generators,
+                step_duration=self.step_duration,
+                min_value=self.input_min_value,
+                max_value=self.input_max_value
+            )
+        elif 'spatial_' in self.input_type:
+            input_neuronlist = general_utils.combine_nodelists(list(self.network.get_input_populations().values()))
+            neurons_per_device = int(len(input_neuronlist) / self.n_spatial_encoder)
+            input_utils.set_input_to_gaussian_spatial_encoder(
+                input_values=self.input_signal[start_step:stop_step],
+                encoding_generator=self.input_generators,
+                step_duration=self.step_duration,
+                min_value=self.input_min_value,
+                max_value=self.input_max_value,
+                std=self.spatial_std_factor / neurons_per_device
+            )
+        else:
+            raise ValueError(f'Unknown input_type: {self.input_type}')
+
     def _setup_input(self):
         general_utils.print_memory_consumption('Memory usage - beginning _setup_input')
         input_generators = None
         if 'step_' in self.input_type:
             if self.input_type == 'step_rate':
-                step_enc_generator = input_utils.get_step_encoding_device('inhomogeneous_poisson_generator',
-                                                                          input_signal=self.input_signal,
-                                                                          step_duration=self.step_duration,
-                                                                          min_value=self.input_min_value,
-                                                                          max_value=self.input_max_value)
+                step_enc_generator = nest.Create('inhomogeneous_poisson_generator')
             elif self.input_type == 'step_DC':
-                step_enc_generator = input_utils.get_step_encoding_device('step_current_generator',
-                                                                          input_signal=self.input_signal,
-                                                                          step_duration=self.step_duration,
-                                                                          min_value=self.input_min_value,
-                                                                          max_value=self.input_max_value)
+                step_enc_generator = nest.Create('step_current_generator')
+
             nest.Connect(step_enc_generator, self.network.populations['E'],
                          conn_spec={'rule': 'pairwise_bernoulli', 'p': self.input_connection_probability},
                          syn_spec={'weight': self.network.J})
             nest.Connect(step_enc_generator, self.network.populations['I'],
                          conn_spec={'rule': 'pairwise_bernoulli', 'p': self.input_connection_probability},
                          syn_spec={'weight': self.network.J})
+
             input_generators = step_enc_generator
 
         elif 'spatial_' in self.input_type:
@@ -111,15 +129,9 @@ class SimulationRunner:
             neurons_per_device = int(len(input_neuronlist) / self.n_spatial_encoder)
 
             if self.input_type == 'spatial_rate':
-                spatial_enc_devices = input_utils.get_gaussian_spatial_encoding_device(
-                    'inhomogeneous_poisson_generator', input_values=self.input_signal, num_devices=self.n_spatial_encoder,
-                    step_duration=self.step_duration, min_value=self.input_min_value, max_value=self.input_max_value,
-                    std=self.spatial_std_factor / neurons_per_device)
+                spatial_enc_devices = nest.Create('inhomogeneous_poisson_generator', n=self.n_spatial_encoder)
             elif self.input_type == 'spatial_DC':
-                spatial_enc_devices = input_utils.get_gaussian_spatial_encoding_device(
-                    'step_current_generator', input_values=self.input_signal, num_devices=self.n_spatial_encoder,
-                    step_duration=self.step_duration, min_value=self.input_min_value, max_value=self.input_max_value,
-                    std=self.spatial_std_factor / neurons_per_device)
+                spatial_enc_devices = nest.Create('step_current_generator', n=self.n_spatial_encoder)
 
             for i, generator in enumerate(spatial_enc_devices):
                 start = i * neurons_per_device
@@ -127,6 +139,7 @@ class SimulationRunner:
                 nest.Connect(generator, input_neuronlist[start:end], 'all_to_all', {'weight': self.network.J})
 
             input_generators = spatial_enc_devices
+
         general_utils.print_memory_consumption('Memory usage - end _setup_input')
 
         return input_generators
@@ -239,10 +252,18 @@ class SimulationRunner:
         general_utils.print_memory_consumption('Memory usage - end _create_plots')
 
     def run(self):
-        general_utils.print_memory_consumption('Memory usage - before simulation')
-        nest.Simulate(self.num_steps*self.step_duration + self.dt)
-        general_utils.print_memory_consumption('Memory usage - after simulation')
-        gc.collect()
+        time_to_simulate = self.num_steps * self.step_duration
+        start_step = 0
+        while start_step < self.num_steps:
+            simulated_time = start_step*self.step_duration
+            print(f'Simulated {simulated_time} of {time_to_simulate} ms ({round(simulated_time/time_to_simulate, 4)}%)')
+            self._set_input_to_generators(start_step=start_step, stop_step=start_step+self.batch_steps)
+            general_utils.print_memory_consumption('Memory usage - before simulation')
+            nest.Simulate(self.batch_steps*self.step_duration)
+            general_utils.print_memory_consumption('Memory usage - after simulation')
+            gc.collect()
+            start_step += self.batch_steps
+        nest.Simulate(self.dt)
         general_utils.print_memory_consumption('Memory usage - after simulation and garbage collection.')
         self._save_states()
         self._create_plots()
