@@ -45,13 +45,6 @@ def set_input_to_step_encoder(input_signal, encoding_generator, step_duration, m
         raise ValueError(f'device_type "{encoding_generator.model}" is not supported.')
 
 
-def get_step_encoding_device(device_type, input_signal, step_duration, min_value, max_value):
-    generator = nest.Create(device_type)
-    set_input_to_step_encoder(input_signal, generator, step_duration, min_value, max_value)
-
-    return generator
-
-
 def set_input_to_gaussian_spatial_encoder(input_values, encoding_generator, step_duration, min_value, max_value, std, start=0.):
     interpolated_input_values = np.interp(input_values, (-1, 1), (0, len(encoding_generator)))
     xvals = np.arange(0, len(encoding_generator)).reshape(len(encoding_generator), 1)
@@ -70,10 +63,3 @@ def set_input_to_gaussian_spatial_encoder(input_values, encoding_generator, step
         nest.SetStatus(encoding_generator, [{'amplitude_times': times, 'amplitude_values':vals} for vals in values])
     else:
         raise ValueError(f'device_type "{encoding_generator}" is not supported.')
-
-
-def get_gaussian_spatial_encoding_device(device_type, input_values, num_devices, step_duration, min_value, max_value, std):
-    generators = nest.Create(device_type, n=num_devices)
-    set_input_to_gaussian_spatial_encoder(input_values, generators, step_duration, min_value, max_value, std, start=0.)
-
-    return generators
