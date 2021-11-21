@@ -2,6 +2,7 @@ import os
 import gc
 import numpy as np
 import pickle
+from time import time
 from shutil import copyfile
 import nest
 import nest.raster_plot
@@ -253,17 +254,30 @@ class SimulationRunner:
 
     def run(self):
         time_to_simulate = self.num_steps * self.step_duration
+        start_real_time = time()
         start_step = 0
         while start_step < self.num_steps:
-            simulated_time = start_step*self.step_duration
-            print(f'Simulated {simulated_time} of {time_to_simulate} ms ({round(simulated_time/time_to_simulate, 4)}%)')
+            batch_start_real_time = time()
+
             self._set_input_to_generators(start_step=start_step, stop_step=start_step+self.batch_steps)
             general_utils.print_memory_consumption('Memory usage - before simulation')
             nest.Simulate(self.batch_steps*self.step_duration)
-            general_utils.print_memory_consumption('Memory usage - after simulation')
+            general_utils.print_memory_consumption('Memory usage - after simulation batch')
             gc.collect()
             start_step += self.batch_steps
+
+            batch_end_real_time = time()
+            simulated_bio_time = start_step*self.step_duration
+            percentage_done = 100.*simulated_bio_time/time_to_simulate
+            print(f'\nSimulated {simulated_bio_time} of {time_to_simulate} ms ({round(percentage_done, 4)}%)')
+            simulated_real_time = batch_end_real_time - start_real_time
+            print(f'Simulated real time: {simulated_real_time} sec ({round(simulated_real_time/60, 2)} min, {round(simulated_real_time/3600,4)} h)')
+            time_still_needed = simulated_real_time / (percentage_done/100.) - simulated_real_time
+            print(f'\tApproximate simulation time until finished: {time_still_needed} sec ({round(time_still_needed/60, 2)} min, {round(time_still_needed/3600,4)} h)')
+
+            batch_duration = batch_end_real_time - batch_start_real_time
+            print(f'\tBatch took {batch_duration} ms ({round(batch_duration/60, 2)} min, {round(batch_duration/3600,4)}h)\n\n')
         nest.Simulate(self.dt)
-        general_utils.print_memory_consumption('Memory usage - after simulation and garbage collection.')
+
         self._save_states()
         self._create_plots()
