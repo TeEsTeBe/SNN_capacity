@@ -85,13 +85,15 @@ class SimulationRunner:
         general_utils.print_memory_consumption('Memory usage - end _setup_state_recording')
 
     def _set_input_to_generators(self, start_step, stop_step):
+        start_time = start_step * self.step_duration
         if 'step_' in self.input_type:
             input_utils.set_input_to_step_encoder(
                 input_signal=self.input_signal[start_step:stop_step],
                 encoding_generator=self.input_generators,
                 step_duration=self.step_duration,
                 min_value=self.input_min_value,
-                max_value=self.input_max_value
+                max_value=self.input_max_value,
+                start=start_time
             )
         elif 'spatial_' in self.input_type:
             input_neuronlist = general_utils.combine_nodelists(list(self.network.get_input_populations().values()))
@@ -102,7 +104,8 @@ class SimulationRunner:
                 step_duration=self.step_duration,
                 min_value=self.input_min_value,
                 max_value=self.input_max_value,
-                std=self.spatial_std_factor / neurons_per_device
+                std=self.spatial_std_factor / neurons_per_device,
+                start=start_time
             )
         else:
             raise ValueError(f'Unknown input_type: {self.input_type}')
@@ -258,10 +261,11 @@ class SimulationRunner:
         start_step = 0
         while start_step < self.num_steps:
             batch_start_real_time = time()
+            batch_steps = min(self.batch_steps, self.num_steps - start_step)
 
-            self._set_input_to_generators(start_step=start_step, stop_step=start_step+self.batch_steps)
+            self._set_input_to_generators(start_step=start_step, stop_step=start_step+batch_steps)
             general_utils.print_memory_consumption('Memory usage - before simulation')
-            nest.Simulate(self.batch_steps*self.step_duration)
+            nest.Simulate(batch_steps*self.step_duration)
             general_utils.print_memory_consumption('Memory usage - after simulation batch')
             gc.collect()
             start_step += self.batch_steps
