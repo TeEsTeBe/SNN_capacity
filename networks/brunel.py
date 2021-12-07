@@ -99,6 +99,30 @@ class BrunelNetwork(BaseNetwork):
 
         return noise_generator, parrots
 
+    def add_ac_current_noise(self, loop_duration, n_sources=1000, indegree=100, mean_input=0.54):
+
+        p = indegree / n_sources
+        mean_offset = mean_input / indegree
+        # offset_radius = mean_offset * 0.05
+        # offsets = np.random.uniform(mean_offset-offset_radius, mean_offset+offset_radius, n_sources)
+        offsets = np.ones(n_sources) * mean_offset
+        frequencies = np.random.randint(1, 20, n_sources)*(1000. / loop_duration)
+        amp_mean = mean_input * 0.75
+        amp_radius = amp_mean * (1/3)
+        amplitudes = np.random.uniform(amp_mean-amp_radius, amp_mean+amp_radius, n_sources)
+
+        noise_generators = nest.Create('ac_generator', n=n_sources)
+        noise_generators.set({
+            'phase': np.random.uniform(0., 360., n_sources),
+            'offset':offsets,
+            'amplitude': amplitudes,
+            'frequency': frequencies
+        })
+        for pop in self.populations.values():
+            nest.Connect(noise_generators, pop, {'rule': 'pairwise_bernoulli', 'p': p})
+
+        return noise_generators
+
     def get_state_populations(self):
         return {'E': self.populations['E']}
 

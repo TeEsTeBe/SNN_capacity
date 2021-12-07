@@ -2,6 +2,7 @@ import os
 import gc
 import numpy as np
 import pickle
+import logging 
 from time import time
 from shutil import copyfile
 import nest
@@ -19,9 +20,24 @@ class SimulationRunner:
     def __init__(self, group_name, run_title, network_type, input_type, step_duration, num_steps, input_min_value,
                  input_max_value, n_spatial_encoder, spatial_std_factor, input_connection_probability, network_params,
                  background_rate, background_weight, noise_loop_duration, paramfile, data_dir, dt, spike_recorder_duration,
-                 raster_plot_duration, batch_steps, num_threads=1):
+                 raster_plot_duration, batch_steps, add_ac_current, num_threads=1):
+        logging.basicConfig(filename=f'{run_title}.log', level=logging.DEBUG, format=f'{run_title} %(asctime)s %(levelname)s: %(message)s')
+        self.logger = logging.getLogger(run_title)
+        self.logger.setLevel(logging.DEBUG)
 
-        general_utils.print_memory_consumption('Memory usage - beginning init SimulationRunner')
+        # create console handler and set level to debug
+        ch = logging.StreamHandler()
+        ch.setLevel(logging.DEBUG)
+
+        # create formatter
+        formatter = logging.Formatter('%(asctime)s - %(name)s \n\t\t %(levelname)s - %(message)s')
+
+        # add formatter to ch
+        ch.setFormatter(formatter)
+
+        # add ch to logger
+        self.logger.addHandler(ch)
+        general_utils.print_memory_consumption('Memory usage - beginning init SimulationRunner', logger=self.logger)
 
         assert input_type in self.implemented_input_types,  f'Unknown input type "{input_type}"'
         assert network_type in self.implemented_network_types, f'Unknown network type"{network_type}"'
@@ -42,6 +58,9 @@ class SimulationRunner:
         self.background_weight = background_weight
         self.noise_loop_duration = noise_loop_duration
         self.network.add_spiking_noise(rate=self.background_rate, weight=self.background_weight, loop_duration=self.noise_loop_duration)
+        self.add_ac_current = add_ac_current
+        if self.add_ac_current:
+            self.network.add_ac_current_noise(loop_duration=self.noise_loop_duration)
 
         self.input_type = input_type
         self.step_duration = step_duration
@@ -64,25 +83,25 @@ class SimulationRunner:
             data_dir = general_utils.get_default_data_dir()
         self.results_folder = os.path.join(data_dir, 'simulation_runs', self.group_name, self.run_title)
         os.makedirs(self.results_folder, exist_ok=True)
-        general_utils.print_memory_consumption('Memory usage - end init SimulationRunner')
+        general_utils.print_memory_consumption('Memory usage - end init SimulationRunner', logger=self.logger)
 
     def _create_network(self):
-        general_utils.print_memory_consumption('Memory usage - beginning _create_network')
+        general_utils.print_memory_consumption('Memory usage - beginning _create_network', logger=self.logger)
         if self.network_type == 'brunel':
             network = brunel.BrunelNetwork(**self.network_params)
         elif self.network_type == 'alzheimers':
             network = alzheimers.AlzheimersNetwork(**self.network_params)
         else:
             raise ValueError(f'Network type unknown: "{self.network_type}"')
-        general_utils.print_memory_consumption('Memory usage - end _create_network')
+        general_utils.print_memory_consumption('Memory usage - end _create_network', logger=self.logger)
 
         return network
 
     def _setup_state_recording(self):
-        general_utils.print_memory_consumption('Memory usage - beginning _setup_state_recording')
+        general_utils.print_memory_consumption('Memory usage - beginning _setup_state_recording', logger=self.logger)
         self.network.set_up_state_multimeter(interval=self.step_duration)
         self.network.set_up_spike_filtering(interval=self.step_duration, filter_tau=20.)
-        general_utils.print_memory_consumption('Memory usage - end _setup_state_recording')
+        general_utils.print_memory_consumption('Memory usage - end _setup_state_recording', logger=self.logger)
 
     def _set_input_to_generators(self, start_step, stop_step):
         start_time = start_step * self.step_duration
@@ -111,7 +130,7 @@ class SimulationRunner:
             raise ValueError(f'Unknown input_type: {self.input_type}')
 
     def _setup_input(self):
-        general_utils.print_memory_consumption('Memory usage - beginning _setup_input')
+        general_utils.print_memory_consumption('Memory usage - beginning _setup_input', logger=self.logger)
         input_generators = None
         if 'step_' in self.input_type:
             if self.input_type == 'step_rate':
@@ -144,47 +163,47 @@ class SimulationRunner:
 
             input_generators = spatial_enc_devices
 
-        general_utils.print_memory_consumption('Memory usage - end _setup_input')
+        general_utils.print_memory_consumption('Memory usage - end _setup_input', logger=self.logger)
 
         return input_generators
 
     def _save_states(self):
-        general_utils.print_memory_consumption('\n\nMemory usage - beginning _save_states')
+        general_utils.print_memory_consumption('\n\nMemory usage - beginning _save_states', logger=self.logger)
 
-        print('copying parameters file ...')
+        self.logger.info('copying parameters file ...')
         copyfile(self.paramfile, os.path.join(self.results_folder, 'parameters.yaml'))
 
-        print('saving input signal file ...')
-        general_utils.print_memory_consumption('\tMemory usage - before saving input_signal')
+        self.logger.info('saving input signal file ...')
+        general_utils.print_memory_consumption('\tMemory usage - before saving input_signal', logger=self.logger)
         np.save(os.path.join(self.results_folder, 'input_signal.npy'), self.input_signal)
 
-        print('saving Vm state matrix ...')
-        general_utils.print_memory_consumption('\tMemory usage - before saving vm_statemat')
+        self.logger.info('saving Vm state matrix ...')
+        general_utils.print_memory_consumption('\tMemory usage - before saving vm_statemat', logger=self.logger)
         statemat_vm = self.network.get_statematrix()
         np.save(os.path.join(self.results_folder, 'vm_statemat.npy'), statemat_vm)
         del statemat_vm
         gc.collect()
 
-        print('saving filtered spikes state matrix ....')
-        general_utils.print_memory_consumption('\tMemory usage - before saving filter_statemat')
+        self.logger.info('saving filtered spikes state matrix ....')
+        general_utils.print_memory_consumption('\tMemory usage - before saving filter_statemat', logger=self.logger)
         statemat_filter = self.network.get_filter_statematrix()
         np.save(os.path.join(self.results_folder, 'filter_statemat.npy'), statemat_filter)
         del statemat_filter
         gc.collect()
 
-        print('saving spikes ...')
-        general_utils.print_memory_consumption('\tMemory usage - before saving spike_events')
+        self.logger.info('saving spikes ...')
+        general_utils.print_memory_consumption('\tMemory usage - before saving spike_events', logger=self.logger)
         spike_events = self.spike_recorder.get('events')
         with open(os.path.join(self.results_folder, 'spike_events.pkl'), 'wb') as spikes_file:
             pickle.dump(spike_events, spikes_file)
         del spike_events
         gc.collect()
 
-        general_utils.print_memory_consumption('Memory usage - end _save_states')
+        general_utils.print_memory_consumption('Memory usage - end _save_states', logger=self.logger)
 
     def _create_plots(self):
-        general_utils.print_memory_consumption('\n\nMemory usage - beginning _create_plots')
-        print('creating raster plot ...')
+        general_utils.print_memory_consumption('\n\nMemory usage - beginning _create_plots', logger=self.logger)
+        self.logger.info('creating raster plot ...')
         rasterplot_spikelist = general_utils.spikelist_from_recorder(self.spike_recorder, stop=self.raster_plot_duration)
 
         ax1 = plt.subplot2grid((30, 1), (0, 0), rowspan=23, colspan=1)
@@ -200,8 +219,8 @@ class SimulationRunner:
         del rasterplot_spikelist
         gc.collect()
 
-        print('creating Vm state matrix plot ...')
-        general_utils.print_memory_consumption('\tMemory usage - before vm state matrix plot')
+        self.logger.info('creating Vm state matrix plot ...')
+        general_utils.print_memory_consumption('\tMemory usage - before vm state matrix plot', logger=self.logger)
         plt.clf()
         fig = plt.figure(figsize=(12, 9))
         statemat_vm_slice = self.network.get_statematrix()[:, :100].copy()
@@ -217,8 +236,8 @@ class SimulationRunner:
         del statemat_vm_slice
         gc.collect()
 
-        print('creating filtered spikes state matrix plot ...')
-        general_utils.print_memory_consumption('\tMemory usage - before filter state matrix plot')
+        self.logger.info('creating filtered spikes state matrix plot ...')
+        general_utils.print_memory_consumption('\tMemory usage - before filter state matrix plot', logger=self.logger)
         plt.clf()
         fig = plt.figure(figsize=(12, 9))
         statemat_filter_slice = self.network.get_filter_statematrix()[:, :100].copy()
@@ -234,8 +253,8 @@ class SimulationRunner:
         plt.clf()
         gc.collect()
 
-        print('creating spike statistics plot ...')
-        general_utils.print_memory_consumption('\tMemory usage - before statistics plot')
+        self.logger.info('creating spike statistics plot ...')
+        general_utils.print_memory_consumption('\tMemory usage - before statistics plot', logger=self.logger)
         statistic_spikelist = general_utils.spikelist_from_recorder(self.spike_recorder)
         hist_data = {
             'CV': statistic_spikelist.cv_isi(),
@@ -253,7 +272,7 @@ class SimulationRunner:
 
         statistics_plot_path = os.path.join(self.results_folder, 'statistics_plot.pdf')
         plt.savefig(statistics_plot_path)
-        general_utils.print_memory_consumption('Memory usage - end _create_plots')
+        general_utils.print_memory_consumption('Memory usage - end _create_plots', logger=self.logger)
 
     def run(self):
         time_to_simulate = self.num_steps * self.step_duration
@@ -264,23 +283,23 @@ class SimulationRunner:
             batch_steps = min(self.batch_steps, self.num_steps - start_step)
 
             self._set_input_to_generators(start_step=start_step, stop_step=start_step+batch_steps)
-            general_utils.print_memory_consumption('Memory usage - before simulation')
+            general_utils.print_memory_consumption('Memory usage - before simulation', logger=self.logger)
             nest.Simulate(batch_steps*self.step_duration)
-            general_utils.print_memory_consumption('Memory usage - after simulation batch')
+            general_utils.print_memory_consumption('Memory usage - after simulation batch', logger=self.logger)
             gc.collect()
             start_step += self.batch_steps
 
             batch_end_real_time = time()
             simulated_bio_time = start_step*self.step_duration
             percentage_done = 100.*simulated_bio_time/time_to_simulate
-            print(f'\nSimulated {simulated_bio_time} of {time_to_simulate} ms ({round(percentage_done, 4)}%)')
+            self.logger.info(f'\nSimulated {simulated_bio_time} of {time_to_simulate} ms ({round(percentage_done, 4)}%)')
             simulated_real_time = batch_end_real_time - start_real_time
-            print(f'Simulated real time: {simulated_real_time} sec ({round(simulated_real_time/60, 2)} min, {round(simulated_real_time/3600,4)} h)')
+            self.logger.info(f'Simulated real time: {simulated_real_time} sec ({round(simulated_real_time/60, 2)} min, {round(simulated_real_time/3600,4)} h)')
             time_still_needed = simulated_real_time / (percentage_done/100.) - simulated_real_time
-            print(f'\tApproximate simulation time until finished: {time_still_needed} sec ({round(time_still_needed/60, 2)} min, {round(time_still_needed/3600,4)} h)')
+            self.logger.info(f'\tApproximate simulation time until finished: {time_still_needed} sec ({round(time_still_needed/60, 2)} min, {round(time_still_needed/3600,4)} h)')
 
             batch_duration = batch_end_real_time - batch_start_real_time
-            print(f'\tBatch took {batch_duration} ms ({round(batch_duration/60, 2)} min, {round(batch_duration/3600,4)}h)\n\n')
+            self.logger.info(f'\tBatch took {batch_duration} sec ({round(batch_duration/60, 2)} min, {round(batch_duration/3600,4)}h)\n\n')
         nest.Simulate(self.dt)
 
         self._save_states()

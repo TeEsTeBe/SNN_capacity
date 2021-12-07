@@ -18,6 +18,10 @@ class BaseNetwork(ABC):
         pass
 
     @abstractmethod
+    def add_ac_current_noise(self, loop_duration):
+        pass
+
+    @abstractmethod
     def get_state_populations(self):
         pass
 
