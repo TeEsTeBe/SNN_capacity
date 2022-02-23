@@ -30,6 +30,7 @@ class BrunelNetwork(BaseNetwork):
         self.NI = N - self.NE
         self.g = g
         self.J = J
+        self.input_weight = J
         self.density = density
         self.CE = int(self.NE * self.density)
         self.CI = int(self.NI * self.density)

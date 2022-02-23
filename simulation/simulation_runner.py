@@ -9,13 +9,13 @@ import nest
 import nest.raster_plot
 import matplotlib.pyplot as plt
 
-from networks import brunel, alzheimers
+from networks import brunel, alzheimers, microcircuit
 from utils import state_utils, input_utils, general_utils
 
 
 class SimulationRunner:
     implemented_input_types = ['step_rate', 'step_DC', 'spatial_rate', 'spatial_DC', 'None']
-    implemented_network_types = ['alzheimers', 'brunel']
+    implemented_network_types = ['alzheimers', 'brunel', 'microcircuit']
 
     def __init__(self, group_name, run_title, network_type, input_type, step_duration, num_steps, input_min_value,
                  input_max_value, n_spatial_encoder, spatial_std_factor, input_connection_probability, network_params,
@@ -91,6 +91,8 @@ class SimulationRunner:
             network = brunel.BrunelNetwork(**self.network_params)
         elif self.network_type == 'alzheimers':
             network = alzheimers.AlzheimersNetwork(**self.network_params)
+        elif self.network_type == 'microcircuit':
+            network = microcircuit.Microcircuit(**self.network_params)
         else:
             raise ValueError(f'Network type unknown: "{self.network_type}"')
         general_utils.print_memory_consumption('Memory usage - end _create_network', logger=self.logger)
@@ -132,23 +134,26 @@ class SimulationRunner:
     def _setup_input(self):
         general_utils.print_memory_consumption('Memory usage - beginning _setup_input', logger=self.logger)
         input_generators = None
+        input_neuronlist = general_utils.combine_nodelists(list(self.network.get_input_populations().values()))
         if 'step_' in self.input_type:
             if self.input_type == 'step_rate':
                 step_enc_generator = nest.Create('inhomogeneous_poisson_generator')
             elif self.input_type == 'step_DC':
                 step_enc_generator = nest.Create('step_current_generator')
 
-            nest.Connect(step_enc_generator, self.network.populations['E'],
+            # nest.Connect(step_enc_generator, self.network.populations['E'],
+            #              conn_spec={'rule': 'pairwise_bernoulli', 'p': self.input_connection_probability},
+            #              syn_spec={'weight': self.network.input_weight})
+            # nest.Connect(step_enc_generator, self.network.populations['I'],
+            #              conn_spec={'rule': 'pairwise_bernoulli', 'p': self.input_connection_probability},
+            #              syn_spec={'weight': self.network.input_weight})
+            nest.Connect(step_enc_generator, input_neuronlist,
                          conn_spec={'rule': 'pairwise_bernoulli', 'p': self.input_connection_probability},
-                         syn_spec={'weight': self.network.J})
-            nest.Connect(step_enc_generator, self.network.populations['I'],
-                         conn_spec={'rule': 'pairwise_bernoulli', 'p': self.input_connection_probability},
-                         syn_spec={'weight': self.network.J})
+                         syn_spec={'weight': self.network.input_weight})
 
             input_generators = step_enc_generator
 
         elif 'spatial_' in self.input_type:
-            input_neuronlist = general_utils.combine_nodelists(list(self.network.get_input_populations().values()))
             neurons_per_device = int(len(input_neuronlist) / self.n_spatial_encoder)
 
             if self.input_type == 'spatial_rate':
@@ -159,7 +164,7 @@ class SimulationRunner:
             for i, generator in enumerate(spatial_enc_devices):
                 start = i * neurons_per_device
                 end = start + neurons_per_device
-                nest.Connect(generator, input_neuronlist[start:end], 'all_to_all', {'weight': self.network.J})
+                nest.Connect(generator, input_neuronlist[start:end], 'all_to_all', {'weight': self.network.input_weight})
 
             input_generators = spatial_enc_devices
 

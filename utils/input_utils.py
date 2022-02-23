@@ -11,14 +11,15 @@ def add_poisson_noise(population_list, rate, weight):
     return poisson_generator
 
 
-def add_repeating_noise(population_list, rate, weight, loop_duration):
+def add_repeating_noise(population_list, rate, weight, loop_duration, connect_to_populations=True):
     poisson_generator = nest.Create('poisson_generator', {'rate': rate, 'stop': loop_duration})
     all_parrots = nest.NodeCollection()
     for pop in population_list:
         parrots = nest.Create('parrot_neuron', n=len(pop))
         nest.Connect(poisson_generator, parrots, 'all_to_all')
         nest.Connect(parrots, parrots, 'one_to_one', {'delay': loop_duration})
-        nest.Connect(parrots, pop, 'one_to_one', {'weight': weight})
+        if connect_to_populations:
+            nest.Connect(parrots, pop, 'one_to_one', {'weight': weight})
         all_parrots += parrots
 
     return poisson_generator, all_parrots

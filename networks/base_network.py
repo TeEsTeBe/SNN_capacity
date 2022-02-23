@@ -7,6 +7,7 @@ class BaseNetwork(ABC):
     populations = None
     state_multimeter = None
     filter_state_multimeter = None
+    input_weight = None
 
 
     @abstractmethod
