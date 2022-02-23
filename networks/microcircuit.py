@@ -165,16 +165,7 @@ class Microcircuit(BaseNetwork):
 
     def install_neuron_model_if_necessary(self):
         if self.neuron_model not in nest.Models():
-            # nest.Install('destexhemodule')
-            nest.Install('destexheascppvthreshmodule')
-            # nest.Install('destexheascppscaling2module')
-            # nest.Install('destexheascppscalingunitsmodule')
-            # nest.Install('scalingsimplifiedimnoscaledmodule')
-            # nest.Install('scaleonlyvmodule')
-            # nest.Install('variablescalingmodule')
-            # nest.Install('variablescalingVmIdiffmodule')
-            # nest.Install('variablescalingecorrectedmodule')
-            # nest.Install('variablescalingvmdiffiecorrectedmodule')
+            nest.Install('destexhemodule')
             print('Destexhe NEST module installed')
         else:
             print('Destexhe NEST module has been installed before')
