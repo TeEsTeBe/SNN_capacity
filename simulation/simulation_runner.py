@@ -68,7 +68,10 @@ class SimulationRunner:
         self.input_signal = np.random.uniform(-1, 1, size=num_steps)
         self.input_min_value = input_min_value
         self.input_max_value = input_max_value
-        self.n_spatial_encoder = n_spatial_encoder
+        if n_spatial_encoder == 'n_input_neurons':
+            self.n_spatial_encoder = len(general_utils.combine_nodelists(list(self.network.get_input_populations().values())))
+        else:
+            self.n_spatial_encoder = n_spatial_encoder
         self.spatial_std_factor = spatial_std_factor
         self.input_connection_probability = input_connection_probability
         self.batch_steps = self.num_steps if batch_steps is None else batch_steps
