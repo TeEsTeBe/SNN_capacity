@@ -135,6 +135,9 @@ class SimulationRunner:
         general_utils.print_memory_consumption('Memory usage - beginning _setup_input', logger=self.logger)
         input_generators = None
         input_neuronlist = general_utils.combine_nodelists(list(self.network.get_input_populations().values()))
+
+        input_weight = 1. if '_DC' in self.input_type else self.network.input_weight
+
         if 'step_' in self.input_type:
             if self.input_type == 'step_rate':
                 step_enc_generator = nest.Create('inhomogeneous_poisson_generator')
@@ -149,7 +152,7 @@ class SimulationRunner:
             #              syn_spec={'weight': self.network.input_weight})
             nest.Connect(step_enc_generator, input_neuronlist,
                          conn_spec={'rule': 'pairwise_bernoulli', 'p': self.input_connection_probability},
-                         syn_spec={'weight': self.network.input_weight})
+                         syn_spec = {'weight': input_weight})
 
             input_generators = step_enc_generator
 
@@ -164,7 +167,8 @@ class SimulationRunner:
             for i, generator in enumerate(spatial_enc_devices):
                 start = i * neurons_per_device
                 end = start + neurons_per_device
-                nest.Connect(generator, input_neuronlist[start:end], 'all_to_all', {'weight': self.network.input_weight})
+                # nest.Connect(generator, input_neuronlist[start:end], 'all_to_all', {'weight': 1.})
+                nest.Connect(generator, input_neuronlist[start:end], 'all_to_all', {'weight': input_weight})
 
             input_generators = spatial_enc_devices
 
