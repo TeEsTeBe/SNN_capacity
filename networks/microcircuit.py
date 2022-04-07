@@ -486,6 +486,8 @@ class Microcircuit(BaseNetwork):
         return state_populations
 
     def get_input_populations(self):
+        # self._input_populations = self.get_state_populations()
+
         if self._input_populations is None:
             self._input_populations = {}
 
@@ -493,9 +495,10 @@ class Microcircuit(BaseNetwork):
             for pop_name, pop_neurons in self.populations.items():
                 connection_probability = self.probabilities_from_input1[pop_name]
                 if connection_probability > 0:
-                    n_neurons = int(connection_probability*len(pop_neurons))
-                    chosen_ids = np.random.choice(pop_neurons.global_id, n_neurons, replace=False)
-                    self._input_populations[f'{pop_name}_S1'] = nest.NodeCollection(sorted(chosen_ids))
+                    # n_neurons = int(connection_probability*len(pop_neurons))
+                    # chosen_ids = np.random.choice(pop_neurons.global_id, n_neurons, replace=False)
+                    # self._input_populations[f'{pop_name}_S1'] = nest.NodeCollection(sorted(chosen_ids))
+                    self._input_populations[f'{pop_name}_S1'] = pop_neurons
 
             # for now we only use the first input stream
             # # input stream 2
