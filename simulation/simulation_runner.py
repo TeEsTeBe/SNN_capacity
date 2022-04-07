@@ -213,18 +213,22 @@ class SimulationRunner:
     def _create_plots(self):
         general_utils.print_memory_consumption('\n\nMemory usage - beginning _create_plots', logger=self.logger)
         self.logger.info('creating raster plot ...')
+
         rasterplot_spikelist = general_utils.spikelist_from_recorder(self.spike_recorder, stop=self.raster_plot_duration)
 
-        ax1 = plt.subplot2grid((30, 1), (0, 0), rowspan=23, colspan=1)
-        ax2 = plt.subplot2grid((30, 1), (24, 0), rowspan=5, colspan=1, sharex=ax1)
+        if len(rasterplot_spikelist.id_list) > 0:
+            ax1 = plt.subplot2grid((30, 1), (0, 0), rowspan=23, colspan=1)
+            ax2 = plt.subplot2grid((30, 1), (24, 0), rowspan=5, colspan=1, sharex=ax1)
 
-        rasterplot_spikelist.raster_plot(with_rate=True, ax=[ax1, ax2], display=False, markersize=3)
-        ax1.tick_params(axis='x', which='both', labelbottom=False)
-        ax2.set(xlabel='Time [ms]', ylabel='Rate')
-        ax1.set(ylabel='Neuron')
-        plt.title('')
-        raster_plot_path = os.path.join(self.results_folder, 'raster_plot.pdf')
-        plt.savefig(raster_plot_path)
+            rasterplot_spikelist.raster_plot(with_rate=True, ax=[ax1, ax2], display=False, markersize=3)
+            ax1.tick_params(axis='x', which='both', labelbottom=False)
+            ax2.set(xlabel='Time [ms]', ylabel='Rate')
+            ax1.set(ylabel='Neuron')
+            plt.title('')
+            raster_plot_path = os.path.join(self.results_folder, 'raster_plot.pdf')
+            plt.savefig(raster_plot_path)
+        else:
+            logging.info("No spikes recorded and therefore no raster plot created")
         del rasterplot_spikelist
         gc.collect()
 
@@ -265,23 +269,24 @@ class SimulationRunner:
         self.logger.info('creating spike statistics plot ...')
         general_utils.print_memory_consumption('\tMemory usage - before statistics plot', logger=self.logger)
         statistic_spikelist = general_utils.spikelist_from_recorder(self.spike_recorder)
-        hist_data = {
-            'CV': statistic_spikelist.cv_isi(),
-            'CC': statistic_spikelist.pairwise_pearson_corrcoeff(1000, time_bin=2., all_coef=True),
-            'rates': statistic_spikelist.mean_rates(),
-        }
+        if len(statistic_spikelist.id_list) > 0:
+            hist_data = {
+                'CV': statistic_spikelist.cv_isi(),
+                'CC': statistic_spikelist.pairwise_pearson_corrcoeff(1000, time_bin=2., all_coef=True),
+                'rates': statistic_spikelist.mean_rates(),
+            }
+
+            fig, axes = plt.subplots(ncols=len(hist_data.keys()), figsize=(15, 5))
+            for i, (name, data) in enumerate(hist_data.items()):
+                axes[i].hist(data)
+                axes[i].set_title(name)
+                np.save(os.path.join(self.results_folder, f'{name}.npy'), data)
+
+            statistics_plot_path = os.path.join(self.results_folder, 'statistics_plot.pdf')
+            plt.savefig(statistics_plot_path)
+            general_utils.print_memory_consumption('Memory usage - end _create_plots', logger=self.logger)
         del statistic_spikelist
         gc.collect()
-
-        fig, axes = plt.subplots(ncols=len(hist_data.keys()), figsize=(15, 5))
-        for i, (name, data) in enumerate(hist_data.items()):
-            axes[i].hist(data)
-            axes[i].set_title(name)
-            np.save(os.path.join(self.results_folder, f'{name}.npy'), data)
-
-        statistics_plot_path = os.path.join(self.results_folder, 'statistics_plot.pdf')
-        plt.savefig(statistics_plot_path)
-        general_utils.print_memory_consumption('Memory usage - end _create_plots', logger=self.logger)
 
     def run(self):
         time_to_simulate = self.num_steps * self.step_duration
