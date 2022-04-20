@@ -422,8 +422,8 @@ class Microcircuit(BaseNetwork):
         s2 = 36.498
 
         if loop_duration is None:
-            noise_generators_s1 = nest.Create('poisson_generator', {'rate': rate}, n=n_generators_s1)
-            noise_generators_s2 = nest.Create('poisson_generator', {'rate': rate}, n=n_generators_s2)
+            noise_generators_s1 = nest.Create('poisson_generator', params={'rate': rate}, n=n_generators_s1)
+            noise_generators_s2 = nest.Create('poisson_generator', params={'rate': rate}, n=n_generators_s2)
             self.connect_input_stream1(noise_generators_s1, scaling_factor=s1, weight=weight)
             self.connect_input_stream2(noise_generators_s2, scaling_factor=s2, weight=weight)
 
