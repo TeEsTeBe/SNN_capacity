@@ -384,11 +384,11 @@ class Microcircuit(BaseNetwork):
 
         return connection_ids_from_to
 
-    def connect_input_stream1(self, spike_geneators, scaling_factor, weight=None):
-        self.connect_input_stream(spike_geneators, self.probabilities_from_input1, scaling_factor, weight=weight)
+    def connect_input_stream1(self, spike_generators, scaling_factor, weight=None):
+        self.connect_input_stream(spike_generators, self.probabilities_from_input1, scaling_factor, weight=weight)
 
-    def connect_input_stream2(self, spike_geneators, scaling_factor, weight=None):
-        self.connect_input_stream(spike_geneators, self.probabilities_from_input2, scaling_factor, weight=weight)
+    def connect_input_stream2(self, spike_generators, scaling_factor, weight=None):
+        self.connect_input_stream(spike_generators, self.probabilities_from_input2, scaling_factor, weight=weight)
 
     def connect_input_stream(self, spike_generators, connection_probabilities, scaling_factor, weight=None):
         # TODO: docstring
