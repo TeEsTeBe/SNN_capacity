@@ -10,7 +10,7 @@ import nest.raster_plot
 import matplotlib.pyplot as plt
 
 from networks import brunel, alzheimers, microcircuit
-from utils import state_utils, input_utils, general_utils
+from utils import state_utils, input_utils, general_utils, connection_utils
 
 
 class SimulationRunner:
@@ -140,6 +140,9 @@ class SimulationRunner:
         input_neuronlist = general_utils.combine_nodelists(list(self.network.get_input_populations().values()))
 
         input_weight = 1. if '_DC' in self.input_type else self.network.input_weight
+        if '_rate' in self.input_type and self.network_type == 'microcircuit':
+            scaling_factor_s1 = 14.85
+            input_weight = connection_utils.calc_synaptic_weight(input_weight, scaling_factor_s1,'exc', self.network.neuron_params_exc['g_L'])
 
         if 'step_' in self.input_type:
             if self.input_type == 'step_rate':
