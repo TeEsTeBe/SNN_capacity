@@ -14,7 +14,7 @@ from utils import state_utils, input_utils, general_utils, connection_utils
 
 
 class SimulationRunner:
-    implemented_input_types = ['step_rate', 'step_DC', 'spatial_rate', 'spatial_DC', 'None', 'spatial_DC_classification', 'spatial_rate_classification']
+    implemented_input_types = ['step_rate', 'step_DC', 'spatial_rate', 'spatial_DC', 'None', 'spatial_DC_classification', 'spatial_rate_classification', 'spatial_DC_XORXOR']
     implemented_network_types = ['alzheimers', 'brunel', 'microcircuit']
 
     def __init__(self, group_name, run_title, network_type, input_type, step_duration, num_steps, input_min_value,
@@ -68,7 +68,9 @@ class SimulationRunner:
         if 'classification' in self.input_type:
             n_classes = 10
             class_values = np.arange(-1, 1., 2./n_classes).round(1)  # if you want to use more classes then 10 you might want to remove the round() call
-            self.input_signal = np.random.choice(class_values, size=n_classes, replace=True)
+            self.input_signal = np.random.choice(class_values, size=self.num_steps, replace=True)
+        elif 'XORXOR' in self.input_type:
+            self.input_signal = np.random.choice(np.arange(0, 16), size=self.num_steps, replace=True)  # values from 0 to 15 can be transformed into 4 zero or one values by using the binary representation
         else:
             self.input_signal = np.random.uniform(-1, 1, size=num_steps)
         self.input_min_value = input_min_value
@@ -127,15 +129,26 @@ class SimulationRunner:
         elif 'spatial_' in self.input_type:
             input_neuronlist = general_utils.combine_nodelists(list(self.network.get_input_populations().values()))
             neurons_per_device = int(len(input_neuronlist) / self.n_spatial_encoder)
-            input_utils.set_input_to_gaussian_spatial_encoder(
-                input_values=self.input_signal[start_step:stop_step],
-                encoding_generator=self.input_generators,
-                step_duration=self.step_duration,
-                min_value=self.input_min_value,
-                max_value=self.input_max_value,
-                std=self.spatial_std_factor / neurons_per_device,
-                start=start_time
-            )
+            if 'XORXOR' in self.input_type:
+                input_utils.set_XORXOR_input_to_gaussian_spatial_encoder(
+                    input_values=self.input_signal[start_step:stop_step],
+                    encoding_generator=self.input_generators,
+                    step_duration=self.step_duration,
+                    min_value=self.input_min_value,
+                    max_value=self.input_max_value,
+                    std=self.spatial_std_factor / neurons_per_device,
+                    start=start_time
+                )
+            else:
+                input_utils.set_input_to_gaussian_spatial_encoder(
+                    input_values=self.input_signal[start_step:stop_step],
+                    encoding_generator=self.input_generators,
+                    step_duration=self.step_duration,
+                    min_value=self.input_min_value,
+                    max_value=self.input_max_value,
+                    std=self.spatial_std_factor / neurons_per_device,
+                    start=start_time
+                )
         else:
             raise ValueError(f'Unknown input_type: {self.input_type}')
 
@@ -170,9 +183,9 @@ class SimulationRunner:
         elif 'spatial_' in self.input_type:
             neurons_per_device = int(len(input_neuronlist) / self.n_spatial_encoder)
 
-            if self.input_type in ['spatial_rate', 'spatial_rate_classification']:
+            if 'spatial_rate' in self.input_type:
                 spatial_enc_devices = nest.Create('inhomogeneous_poisson_generator', n=self.n_spatial_encoder)
-            elif self.input_type in ['spatial_DC', 'spatial_DC_classification']:
+            elif 'spatial_DC' in self.input_type:
                 spatial_enc_devices = nest.Create('step_current_generator', n=self.n_spatial_encoder)
 
             for i, generator in enumerate(spatial_enc_devices):
