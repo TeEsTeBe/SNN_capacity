@@ -14,7 +14,7 @@ from utils import state_utils, input_utils, general_utils, connection_utils
 
 
 class SimulationRunner:
-    implemented_input_types = ['step_rate', 'step_DC', 'spatial_rate', 'spatial_DC', 'None', 'spatial_DC_classification', 'spatial_rate_classification', 'spatial_DC_XORXOR']
+    implemented_input_types = ['step_rate', 'step_DC', 'spatial_rate', 'spatial_DC', 'None', 'spatial_DC_classification', 'spatial_rate_classification', 'spatial_DC_XORXOR', 'spatial_DC_XOR']
     implemented_network_types = ['alzheimers', 'brunel', 'microcircuit']
 
     def __init__(self, group_name, run_title, network_type, input_type, step_duration, num_steps, input_min_value,
@@ -71,6 +71,8 @@ class SimulationRunner:
             self.input_signal = np.random.choice(class_values, size=self.num_steps, replace=True)
         elif 'XORXOR' in self.input_type:
             self.input_signal = np.random.choice(np.arange(0, 16), size=self.num_steps, replace=True)  # values from 0 to 15 can be transformed into 4 zero or one values by using the binary representation
+        elif 'XOR' in self.input_type:
+            self.input_signal = np.random.choice(np.arange(0, 4), size=self.num_steps, replace=True)  # values from 0 to 3 can be transformed into 2 zero or one values by using the binary representation
         else:
             self.input_signal = np.random.uniform(-1, 1, size=num_steps)
         self.input_min_value = input_min_value
@@ -131,6 +133,16 @@ class SimulationRunner:
             neurons_per_device = int(len(input_neuronlist) / self.n_spatial_encoder)
             if 'XORXOR' in self.input_type:
                 input_utils.set_XORXOR_input_to_gaussian_spatial_encoder(
+                    input_values=self.input_signal[start_step:stop_step],
+                    encoding_generator=self.input_generators,
+                    step_duration=self.step_duration,
+                    min_value=self.input_min_value,
+                    max_value=self.input_max_value,
+                    std=self.spatial_std_factor / neurons_per_device,
+                    start=start_time
+                )
+            elif 'XOR' in self.input_type:
+                input_utils.set_XOR_input_to_gaussian_spatial_encoder(
                     input_values=self.input_signal[start_step:stop_step],
                     encoding_generator=self.input_generators,
                     step_duration=self.step_duration,
