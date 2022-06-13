@@ -20,7 +20,7 @@ class SimulationRunner:
     def __init__(self, group_name, run_title, network_type, input_type, step_duration, num_steps, input_min_value,
                  input_max_value, n_spatial_encoder, spatial_std_factor, input_connection_probability, network_params,
                  background_rate, background_weight, noise_loop_duration, paramfile, data_dir, dt, spike_recorder_duration,
-                 raster_plot_duration, batch_steps, add_ac_current, num_threads=1):
+                 raster_plot_duration, batch_steps, add_ac_current, enable_spike_filtering=False, num_threads=1):
         logging.basicConfig(filename=f'{run_title}.log', level=logging.DEBUG, format=f'{run_title} %(asctime)s %(levelname)s: %(message)s')
         self.logger = logging.getLogger(run_title)
         self.logger.setLevel(logging.DEBUG)
@@ -54,6 +54,7 @@ class SimulationRunner:
         self.network_type = network_type
         self.network_params = network_params
         self.network = self._create_network()
+        self.enable_spike_filtering = enable_spike_filtering
         self.background_rate = background_rate
         self.background_weight = background_weight
         self.noise_loop_duration = noise_loop_duration
@@ -114,7 +115,8 @@ class SimulationRunner:
     def _setup_state_recording(self):
         general_utils.print_memory_consumption('Memory usage - beginning _setup_state_recording', logger=self.logger)
         self.network.set_up_state_multimeter(interval=self.step_duration)
-        self.network.set_up_spike_filtering(interval=self.step_duration, filter_tau=20.)
+        if self.enable_spike_filtering:
+            self.network.set_up_spike_filtering(interval=self.step_duration, filter_tau=20.)
         general_utils.print_memory_consumption('Memory usage - end _setup_state_recording', logger=self.logger)
 
     def _set_input_to_generators(self, start_step, stop_step):
@@ -229,12 +231,13 @@ class SimulationRunner:
         del statemat_vm
         gc.collect()
 
-        self.logger.info('saving filtered spikes state matrix ....')
-        general_utils.print_memory_consumption('\tMemory usage - before saving filter_statemat', logger=self.logger)
-        statemat_filter = self.network.get_filter_statematrix()
-        np.save(os.path.join(self.results_folder, 'filter_statemat.npy'), statemat_filter)
-        del statemat_filter
-        gc.collect()
+        if self.enable_spike_filtering:
+            self.logger.info('saving filtered spikes state matrix ....')
+            general_utils.print_memory_consumption('\tMemory usage - before saving filter_statemat', logger=self.logger)
+            statemat_filter = self.network.get_filter_statematrix()
+            np.save(os.path.join(self.results_folder, 'filter_statemat.npy'), statemat_filter)
+            del statemat_filter
+            gc.collect()
 
         self.logger.info('saving spikes ...')
         general_utils.print_memory_consumption('\tMemory usage - before saving spike_events', logger=self.logger)

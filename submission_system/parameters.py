@@ -76,6 +76,7 @@ params = {
     'noise_loop_duration': 'step_duration',
     'add_ac_current': None,
     'batch_steps': 2,
+    'enable_spike_filtering': False,
     'network_params': {
         'N': 560,
         'neuron_model': 'hh_cond_exp_destexhe',
