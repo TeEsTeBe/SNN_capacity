@@ -288,22 +288,23 @@ class SimulationRunner:
         del statemat_vm_slice
         gc.collect()
 
-        self.logger.info('creating filtered spikes state matrix plot ...')
-        general_utils.print_memory_consumption('\tMemory usage - before filter state matrix plot', logger=self.logger)
-        plt.clf()
-        fig = plt.figure(figsize=(12, 9))
-        statemat_filter_slice = self.network.get_filter_statematrix()[:, :100].copy()
-        im = plt.matshow(statemat_filter_slice, fignum=fig.number, aspect='auto')
-        plt.ylabel('neuron id')
-        plt.xlabel('steps')
-        plt.colorbar(im, label='filter neuron V_m')
-        plt.title('filtered spikes')
-        filtered_states_plot_path = os.path.join(self.results_folder, 'filtered_states_plot.pdf')
-        plt.savefig(filtered_states_plot_path)
-        del im
-        del statemat_filter_slice
-        plt.clf()
-        gc.collect()
+        if self.enable_spike_filtering:
+            self.logger.info('creating filtered spikes state matrix plot ...')
+            general_utils.print_memory_consumption('\tMemory usage - before filter state matrix plot', logger=self.logger)
+            plt.clf()
+            fig = plt.figure(figsize=(12, 9))
+            statemat_filter_slice = self.network.get_filter_statematrix()[:, :100].copy()
+            im = plt.matshow(statemat_filter_slice, fignum=fig.number, aspect='auto')
+            plt.ylabel('neuron id')
+            plt.xlabel('steps')
+            plt.colorbar(im, label='filter neuron V_m')
+            plt.title('filtered spikes')
+            filtered_states_plot_path = os.path.join(self.results_folder, 'filtered_states_plot.pdf')
+            plt.savefig(filtered_states_plot_path)
+            del im
+            del statemat_filter_slice
+            plt.clf()
+            gc.collect()
 
         self.logger.info('creating spike statistics plot ...')
         general_utils.print_memory_consumption('\tMemory usage - before statistics plot', logger=self.logger)
