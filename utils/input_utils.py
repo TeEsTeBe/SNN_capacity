@@ -47,7 +47,7 @@ def set_input_to_step_encoder(input_signal, encoding_generator, step_duration, m
 
 
 def _get_XOR_positions(binary_string):
-    interpolated_XOR_values = np.array([0.5*int(binary_string[0]), -0.5*int(binary_string[1])])
+    interpolated_XOR_values = np.array([0.75*int(binary_string[0]), 0.25*int(binary_string[1])])
     interpolated_XOR_values[interpolated_XOR_values==0] = np.nan
 
     return interpolated_XOR_values
