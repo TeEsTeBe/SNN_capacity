@@ -121,10 +121,11 @@ def set_XORXOR_input_to_gaussian_spatial_encoder(input_values, encoding_generato
         interpolated_input_values[np.isnan(interpolated_input_values)] = -999999
 
         values[:] += scipy.stats.norm.pdf(xvals, interpolated_input_values[:], std)
-        values /= values.max()
-        values *= (max_value - min_value)
-        values += min_value
-        final_values[:] += values[:]
+        if values.max() > 0:
+            values /= values.max()
+            values *= (max_value - min_value)
+            values += min_value
+            final_values[:] += values[:]
 
     times = start + np.arange(0.1, step_duration * len(input_values) + 0.1, step_duration)
 
