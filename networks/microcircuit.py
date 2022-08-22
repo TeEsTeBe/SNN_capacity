@@ -133,11 +133,20 @@ class Microcircuit(BaseNetwork):
     # input_weight = 30. / base_neuron_pars['g_L']  # 1.924779612734342
 
     def __init__(self, neuron_model, neuron_params_exc, neuron_params_inh, N=560, S_rw=119.3304,
-                 static_synapses=False, random_synaptic_dynamics=False):
+                 static_synapses=False, random_synaptic_dynamics=False, vt_l23exc=None, vt_l23inh=None, vt_l4exc=None,
+                 vt_l4inh=None, vt_l5exc=None, vt_l5inh=None):
         super().__init__()
         self.network_type = 'microcircuit'
         self.neuron_model = neuron_model
         self.install_neuron_model_if_necessary()
+        self.v_ths = {
+            'l23_exc': vt_l23exc,
+            'l23_inh': vt_l23inh,
+            'l4_exc': vt_l4exc,
+            'l4_inh': vt_l4inh,
+            'l5_exc': vt_l5exc,
+            'l5_inh': vt_l5inh,
+        }
         self.neuron_params_exc = neuron_params_exc
         self.neuron_params_inh = neuron_params_inh
         # input_weight = 1.9  # mV
@@ -172,13 +181,17 @@ class Microcircuit(BaseNetwork):
 
     def create_neuron_pars(self):
         neuron_pars = {
-            'l23_exc': self.neuron_params_exc,
-            'l23_inh': self.neuron_params_inh,
-            'l4_exc': self.neuron_params_exc,
-            'l4_inh': self.neuron_params_inh,
-            'l5_exc': self.neuron_params_exc,
-            'l5_inh': self.neuron_params_inh,
+            'l23_exc': self.neuron_params_exc.copy(),
+            'l23_inh': self.neuron_params_inh.copy(),
+            'l4_exc': self.neuron_params_exc.copy(),
+            'l4_inh': self.neuron_params_inh.copy(),
+            'l5_exc': self.neuron_params_exc.copy(),
+            'l5_inh': self.neuron_params_inh.copy(),
         }
+
+        for pop_name, vth in self.v_ths.items():
+            if vth is not None:
+                neuron_pars[pop_name]['V_th'] = vth
 
         return neuron_pars
 
