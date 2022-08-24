@@ -19,7 +19,8 @@ class BrunelNetwork(BaseNetwork):
         'tau_m': 20.,  # membrane time constant (ms)
     }
 
-    def __init__(self, neuron_model='iaf_psc_delta', neuron_params=None, N=1250, g=5., J=0.2, density=0.1, delay=1.5, CEE=None):
+    def __init__(self, neuron_model='iaf_psc_delta', neuron_params=None, N=1250, g=5., J=0.2, density=0.1, delay=1.5,
+                 CEE=None):
         super().__init__()
         self.neuron_model = neuron_model
         if neuron_params is None:
@@ -50,7 +51,8 @@ class BrunelNetwork(BaseNetwork):
         for parname, parvalue in self.neuron_params.items():
             if isinstance(parvalue, dict):
                 params_with_distribution[parname] = parvalue
-                del neuron_params_copy[parname]
+                neuron_params_copy[parname] = self.default_neuron_params[parname]
+                # del neuron_params_copy[parname]
 
         pop_dict = {
             'E': nest.Create(self.neuron_model, n=self.NE, params=neuron_params_copy),
