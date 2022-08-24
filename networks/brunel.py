@@ -66,7 +66,13 @@ class BrunelNetwork(BaseNetwork):
             nest.SetStatus(pop_dict['I'], parname, eval(f"{fct}(size=self.NI, **fct_pars)"))
 
         vreset = self.neuron_params['V_reset']
-        vth = self.neuron_params['V_th']
+        if isinstance(self.neuron_params['V_th'], dict):
+            try:
+                vth = self.neuron_params['V_th']['parameters']['low']
+            except:
+                vth = self.default_neuron_params['V_th']
+        else:
+            vth = self.neuron_params['V_th']
         for pop in pop_dict.values():
             nest.SetStatus(pop, 'V_m', np.random.uniform(vreset, vth, size=len(pop)))
 
