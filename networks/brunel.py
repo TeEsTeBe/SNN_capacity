@@ -40,8 +40,8 @@ class BrunelNetwork(BaseNetwork):
         else:
             self.CEE = CEE
         self.delay = delay
-        if neuron_model == 'iaf_psc_delta':
-            self.nu_th = 1000. * self.neuron_params['V_th'] / (self.CE * self.J * self.neuron_params['tau_m'])
+        # if neuron_model == 'iaf_psc_delta':
+        #     self.nu_th = 1000. * self.neuron_params['V_th'] / (self.CE * self.J * self.neuron_params['tau_m'])
         self.populations = self._create_populations()
         self.connect_net()
 
