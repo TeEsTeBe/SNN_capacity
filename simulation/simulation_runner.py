@@ -7,6 +7,7 @@ from time import time
 from shutil import copyfile
 import nest
 import nest.raster_plot
+import nest.random
 import matplotlib.pyplot as plt
 
 from networks import brunel, alzheimers, microcircuit
@@ -14,7 +15,7 @@ from utils import state_utils, input_utils, general_utils, connection_utils
 
 
 class SimulationRunner:
-    implemented_input_types = ['step_rate', 'step_DC', 'spatial_rate', 'spatial_DC', 'None', 'spatial_DC_classification', 'spatial_rate_classification', 'spatial_DC_XORXOR', 'spatial_DC_XOR']
+    implemented_input_types = ['uniform_DC', 'uniform_rate', 'step_rate', 'step_DC', 'spatial_rate', 'spatial_DC', 'None', 'spatial_DC_classification', 'spatial_rate_classification', 'spatial_DC_XORXOR', 'spatial_DC_XOR', 'spatial_rate_XORXOR', 'spatial_rate_XOR']
     implemented_network_types = ['alzheimers', 'brunel', 'microcircuit']
 
     def __init__(self, group_name, run_title, network_type, input_type, step_duration, num_steps, input_min_value,
@@ -26,17 +27,17 @@ class SimulationRunner:
         self.logger.setLevel(logging.DEBUG)
 
         # create console handler and set level to debug
-        ch = logging.StreamHandler()
-        ch.setLevel(logging.DEBUG)
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.DEBUG)
 
         # create formatter
         formatter = logging.Formatter('%(asctime)s - %(name)s \n\t\t %(levelname)s - %(message)s')
 
         # add formatter to ch
-        ch.setFormatter(formatter)
+        console_handler.setFormatter(formatter)
 
         # add ch to logger
-        self.logger.addHandler(ch)
+        self.logger.addHandler(console_handler)
         general_utils.print_memory_consumption('Memory usage - beginning init SimulationRunner', logger=self.logger)
 
         assert input_type in self.implemented_input_types,  f'Unknown input type "{input_type}"'
@@ -121,7 +122,7 @@ class SimulationRunner:
 
     def _set_input_to_generators(self, start_step, stop_step):
         start_time = start_step * self.step_duration
-        if 'step_' in self.input_type:
+        if 'step_' in self.input_type or 'uniform_' in self.input_type:
             input_utils.set_input_to_step_encoder(
                 input_signal=self.input_signal[start_step:stop_step],
                 encoding_generator=self.input_generators,
@@ -176,10 +177,13 @@ class SimulationRunner:
             scaling_factor_s1 = 14.85
             input_weight = connection_utils.calc_synaptic_weight(input_weight, scaling_factor_s1,'exc', self.network.neuron_params_exc['g_L'])
 
-        if 'step_' in self.input_type:
-            if self.input_type == 'step_rate':
+        if 'uniform_' in self.input_type:
+            input_weight = nest.random.uniform(min=-input_weight, max=input_weight)
+
+        if 'step_' in self.input_type or 'uniform_' in self.input_type:
+            if 'rate' in self.input_type:
                 step_enc_generator = nest.Create('inhomogeneous_poisson_generator')
-            elif self.input_type == 'step_DC':
+            elif 'DC' in self.input_type:
                 step_enc_generator = nest.Create('step_current_generator')
 
             # nest.Connect(step_enc_generator, self.network.populations['E'],
@@ -318,9 +322,13 @@ class SimulationRunner:
 
             fig, axes = plt.subplots(ncols=len(hist_data.keys()), figsize=(15, 5))
             for i, (name, data) in enumerate(hist_data.items()):
-                axes[i].hist(data)
-                axes[i].set_title(name)
-                np.save(os.path.join(self.results_folder, f'{name}.npy'), data)
+                try:
+                    axes[i].hist(data)
+                    axes[i].set_title(name)
+                    np.save(os.path.join(self.results_folder, f'{name}.npy'), data)
+                    print(f'average {name}: {np.nanmean(data)}')
+                except:
+                    print(f'{name} hist failed')
 
             statistics_plot_path = os.path.join(self.results_folder, 'statistics_plot.pdf')
             plt.savefig(statistics_plot_path)

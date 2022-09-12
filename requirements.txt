@@ -1,0 +1,7 @@
+numpy>=1.20.2
+scipy>=1.6.2
+psutil>=5.8.0
+fna>=0.1
+yaml>=0.2.5
+pyyaml>=6.0
+matplotlib>=3.3.4

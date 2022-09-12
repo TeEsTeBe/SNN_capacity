@@ -151,4 +151,9 @@ def derive_parameters(params_dict):
     if params_dict['noise_loop_duration'] == 'step_duration':
         params_dict['noise_loop_duration'] = params_dict['step_duration']
 
+    if params_dict['input_min_value'] == 'input_max_value':
+        params_dict['input_min_value'] = params_dict['input_max_value']
+    elif params_dict['input_min_value'] == '-input_max_value':
+        params_dict['input_min_value'] = -params_dict['input_max_value']
+
     return params_dict
