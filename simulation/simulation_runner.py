@@ -15,7 +15,7 @@ from utils import state_utils, input_utils, general_utils, connection_utils
 
 
 class SimulationRunner:
-    implemented_input_types = ['uniform_DC_XOR','uniform_DC', 'uniform_rate', 'step_rate', 'step_DC', 'spatial_rate', 'spatial_DC', 'None', 'spatial_DC_classification', 'spatial_rate_classification', 'spatial_DC_XORXOR', 'spatial_DC_XOR', 'spatial_rate_XORXOR', 'spatial_rate_XOR']
+    implemented_input_types = ['uniform_DC_XOR','uniform_DC', 'uniform_rate', 'step_rate', 'step_DC', 'spatial_rate', 'spatial_DC', 'None', 'spatial_DC_classification', 'spatial_rate_classification', 'spatial_DC_XORXOR', 'spatial_DC_XOR', 'spatial_rate_XORXOR', 'spatial_rate_XOR', 'spatial_DC_temporal_XOR']
     implemented_network_types = ['alzheimers', 'brunel', 'microcircuit']
 
     def __init__(self, group_name, run_title, network_type, input_type, step_duration, num_steps, input_min_value,
@@ -74,6 +74,8 @@ class SimulationRunner:
             # self.input_signal = np.zeros(self.num_steps)
             # for class_idx, value in enumerate(class_values):
             #     self.input_signal[class_idx::n_classes] = value
+        elif 'temporal_XOR' in self.input_type:
+            self.input_signal = np.random.choice([-0.5, 0.5], size=self.num_steps, replace=True)
         elif 'XORXOR' in self.input_type:
             self.input_signal = np.random.choice(np.arange(0, 16), size=self.num_steps, replace=True)  # values from 0 to 15 can be transformed into 4 zero or one values by using the binary representation
         elif 'XOR' in self.input_type:
@@ -126,7 +128,7 @@ class SimulationRunner:
     def _set_input_to_generators(self, start_step, stop_step):
         start_time = start_step * self.step_duration
         if 'step_' in self.input_type or 'uniform_' in self.input_type:
-            if 'XOR' in self.input_type:
+            if 'XOR' in self.input_type and not 'temporal' in self.input_type:
                 input_binary_strings = [f'{iv:b}'.rjust(2, '0') for iv in self.input_signal]
                 for signal_id, _ in enumerate(['signal1', 'signal2']):
                     input_signal_XOR = [2*int(binstr[signal_id])-1 for binstr in input_binary_strings]
@@ -160,7 +162,7 @@ class SimulationRunner:
                     std=self.spatial_std_factor / neurons_per_device,
                     start=start_time
                 )
-            elif 'XOR' in self.input_type:
+            elif 'XOR' in self.input_type and not 'temporal' in self.input_type:
                 input_utils.set_XOR_input_to_gaussian_spatial_encoder(
                     input_values=self.input_signal[start_step:stop_step],
                     encoding_generator=self.input_generators,
