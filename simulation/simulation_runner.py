@@ -15,7 +15,7 @@ from utils import state_utils, input_utils, general_utils, connection_utils
 
 
 class SimulationRunner:
-    implemented_input_types = ['uniform_DC', 'uniform_rate', 'step_rate', 'step_DC', 'spatial_rate', 'spatial_DC', 'None', 'spatial_DC_classification', 'spatial_rate_classification', 'spatial_DC_XORXOR', 'spatial_DC_XOR', 'spatial_rate_XORXOR', 'spatial_rate_XOR']
+    implemented_input_types = ['uniform_DC_XOR','uniform_DC', 'uniform_rate', 'step_rate', 'step_DC', 'spatial_rate', 'spatial_DC', 'None', 'spatial_DC_classification', 'spatial_rate_classification', 'spatial_DC_XORXOR', 'spatial_DC_XOR', 'spatial_rate_XORXOR', 'spatial_rate_XOR']
     implemented_network_types = ['alzheimers', 'brunel', 'microcircuit']
 
     def __init__(self, group_name, run_title, network_type, input_type, step_duration, num_steps, input_min_value,
@@ -71,6 +71,9 @@ class SimulationRunner:
             n_classes = 10
             class_values = np.arange(-1, 1., 2./n_classes).round(1)  # if you want to use more classes then 10 you might want to remove the round() call
             self.input_signal = np.random.choice(class_values, size=self.num_steps, replace=True)
+            # self.input_signal = np.zeros(self.num_steps)
+            # for class_idx, value in enumerate(class_values):
+            #     self.input_signal[class_idx::n_classes] = value
         elif 'XORXOR' in self.input_type:
             self.input_signal = np.random.choice(np.arange(0, 16), size=self.num_steps, replace=True)  # values from 0 to 15 can be transformed into 4 zero or one values by using the binary representation
         elif 'XOR' in self.input_type:
@@ -86,7 +89,7 @@ class SimulationRunner:
         self.spatial_std_factor = spatial_std_factor
         self.input_connection_probability = input_connection_probability
         self.batch_steps = self.num_steps if batch_steps is None else batch_steps
-        self.input_generators = self._setup_input()
+        self.input_generators = self._setup_input_generators()
 
         self._setup_state_recording()
         self.spike_recorder_duration = spike_recorder_duration
@@ -123,14 +126,27 @@ class SimulationRunner:
     def _set_input_to_generators(self, start_step, stop_step):
         start_time = start_step * self.step_duration
         if 'step_' in self.input_type or 'uniform_' in self.input_type:
-            input_utils.set_input_to_step_encoder(
-                input_signal=self.input_signal[start_step:stop_step],
-                encoding_generator=self.input_generators,
-                step_duration=self.step_duration,
-                min_value=self.input_min_value,
-                max_value=self.input_max_value,
-                start=start_time
-            )
+            if 'XOR' in self.input_type:
+                input_binary_strings = [f'{iv:b}'.rjust(2, '0') for iv in self.input_signal]
+                for signal_id, _ in enumerate(['signal1', 'signal2']):
+                    input_signal_XOR = [2*int(binstr[signal_id])-1 for binstr in input_binary_strings]
+                    input_utils.set_input_to_step_encoder(
+                        input_signal=input_signal_XOR[start_step:stop_step],
+                        encoding_generator=self.input_generators[signal_id],
+                        step_duration=self.step_duration,
+                        min_value=self.input_min_value,
+                        max_value=self.input_max_value,
+                        start=start_time
+                    )
+            else:
+                input_utils.set_input_to_step_encoder(
+                    input_signal=self.input_signal[start_step:stop_step],
+                    encoding_generator=self.input_generators,
+                    step_duration=self.step_duration,
+                    min_value=self.input_min_value,
+                    max_value=self.input_max_value,
+                    start=start_time
+                )
         elif 'spatial_' in self.input_type:
             input_neuronlist = general_utils.combine_nodelists(list(self.network.get_input_populations().values()))
             neurons_per_device = int(len(input_neuronlist) / self.n_spatial_encoder)
@@ -167,7 +183,7 @@ class SimulationRunner:
         else:
             raise ValueError(f'Unknown input_type: {self.input_type}')
 
-    def _setup_input(self):
+    def _setup_input_generators(self):
         general_utils.print_memory_consumption('Memory usage - beginning _setup_input', logger=self.logger)
         input_generators = None
         input_neuronlist = general_utils.combine_nodelists(list(self.network.get_input_populations().values()))
@@ -182,16 +198,16 @@ class SimulationRunner:
 
         if 'step_' in self.input_type or 'uniform_' in self.input_type:
             if 'rate' in self.input_type:
-                step_enc_generator = nest.Create('inhomogeneous_poisson_generator')
+                generator_type = 'inhomogeneous_poisson_generator'
             elif 'DC' in self.input_type:
-                step_enc_generator = nest.Create('step_current_generator')
+                generator_type = 'step_current_generator'
 
-            # nest.Connect(step_enc_generator, self.network.populations['E'],
-            #              conn_spec={'rule': 'pairwise_bernoulli', 'p': self.input_connection_probability},
-            #              syn_spec={'weight': self.network.input_weight})
-            # nest.Connect(step_enc_generator, self.network.populations['I'],
-            #              conn_spec={'rule': 'pairwise_bernoulli', 'p': self.input_connection_probability},
-            #              syn_spec={'weight': self.network.input_weight})
+            if 'XOR' in self.input_type:
+                n_generators = 2
+            else:
+                n_generators = 1
+            step_enc_generator = nest.Create(generator_type, n=n_generators)
+
             nest.Connect(step_enc_generator, input_neuronlist,
                          conn_spec={'rule': 'pairwise_bernoulli', 'p': self.input_connection_probability},
                          syn_spec = {'weight': input_weight})
