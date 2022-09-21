@@ -204,7 +204,7 @@ class SimulationRunner:
             elif 'DC' in self.input_type:
                 generator_type = 'step_current_generator'
 
-            if 'XOR' in self.input_type:
+            if 'XOR' in self.input_type and 'temporal' not in self.input_type:
                 n_generators = 2
             else:
                 n_generators = 1
