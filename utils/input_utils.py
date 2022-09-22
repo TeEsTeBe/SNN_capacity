@@ -53,10 +53,10 @@ def _get_XOR_positions(binary_string):
     return interpolated_XOR_values
 
 
-def set_XOR_input_to_gaussian_spatial_encoder(input_values, encoding_generator, step_duration, min_value, max_value, std, start=0.):
+def get_gaussian_XOR_input_values(input_values, max_value, min_value, n_generators, std):
 
     # convert input values (0 ... 15) to binary strings ('0000' ... '1111')
-    input_binary_strings = [f'{iv:b}'.rjust(2,'0') for iv in input_values]
+    input_binary_strings = [f'{iv:b}'.rjust(2, '0') for iv in input_values]
 
     # convert binary strings ('0000' ... '1111') to 2D ndarray of positions
     # we have only the possible positions -0.75, -0.25, 0.25 and 0.75 for the 4 different input streams of the XORXOR task
@@ -64,12 +64,12 @@ def set_XOR_input_to_gaussian_spatial_encoder(input_values, encoding_generator, 
     array2d_input_positions = np.array([_get_XOR_positions(ibs) for ibs in input_binary_strings])
 
     # interpolated_input_values = np.interp(input_values, (-1, 1), (0, len(encoding_generator)))
-    xvals = np.arange(0, len(encoding_generator)).reshape(len(encoding_generator), 1)
+    xvals = np.arange(0, n_generators).reshape(n_generators, 1)
+    final_values = np.zeros([n_generators, len(input_values)])
 
-    final_values = np.zeros([len(encoding_generator), len(input_values)])
     for input_dim_index in range(array2d_input_positions.shape[1]):
-        values = np.zeros([len(encoding_generator), len(input_values)])
-        interpolated_input_values = np.interp(array2d_input_positions[:, input_dim_index], (-1, 1), (0, len(encoding_generator)))
+        values = np.zeros([n_generators, len(input_values)])
+        interpolated_input_values = np.interp(array2d_input_positions[:, input_dim_index], (-1, 1), (0, n_generators))
 
         # we set the inactive inputs (0) to a small value that is far out of the range of input neurons
         # then we can calculate the pdf in the normal way, without changing the values for the deactivated inputs
@@ -80,6 +80,15 @@ def set_XOR_input_to_gaussian_spatial_encoder(input_values, encoding_generator, 
         values *= (max_value - min_value)
         values += min_value
         final_values[:] += values[:]
+
+    return final_values
+
+
+def set_XOR_input_to_gaussian_spatial_encoder(input_values, encoding_generator, step_duration, min_value, max_value, std, start=0.):
+
+    n_generators = len(encoding_generator)
+
+    final_values = get_gaussian_XOR_input_values(input_values, max_value, min_value, n_generators, std)
 
     times = start + np.arange(0.1, step_duration * len(input_values) + 0.1, step_duration)
 
