@@ -24,15 +24,19 @@ def main():
 
     os.makedirs(args.output_folder, exist_ok=True)
 
-    signal = np.random.choice(np.arange(0, 4), size=args.num_steps, replace=True)
+    signal_path = os.path.join(args.output_folder, f'input_signal__steps={args.num_steps}.npy')
+    if os.path.exists(signal_path):
+        signal = np.load(signal_path)
+        print(f'Loaded existing signal from "{signal_path}"')
+    else:
+        signal = np.random.choice(np.arange(0, 4), size=args.num_steps, replace=True)
+        np.save(signal_path, signal)
+        print(f'Signal stored to "{signal_path}"')
     states = get_gaussian_XOR_input_values(signal, max_value=args.max, min_value=args.min, n_generators=args.N,
                                            std=args.std)
 
-    signal_path = os.path.join(args.output_folder, 'input_signal.npy')
-    np.save(signal_path, signal)
-    print(f'Signal stored to "{signal_path}"')
-
-    states_path = os.path.join(args.output_folder, 'spatialXOR_statemat.npy')
+    states_path = os.path.join(args.output_folder,
+                               f'spatialXOR_statemat__N={args.N}__steps={args.num_steps}__std={args.std}__min={args.min}__max={args.max}.npy')
     np.save(states_path, states)
     print(f'State matrix stored to "{states_path}"')
 
