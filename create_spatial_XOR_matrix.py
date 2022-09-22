@@ -11,7 +11,7 @@ def parse_cmd():
 
     parser.add_argument('--output_folder')
     parser.add_argument('--N', type=int, default=1000)
-    parser.add_argument('--num_steps', type=int, default=200000)
+    parser.add_argument('--num_steps', type=int, default=6000)
     parser.add_argument('--std', type=float, default=1.)
     parser.add_argument('--min', type=float, default=0.)
     parser.add_argument('--max', type=float, default=1.)
