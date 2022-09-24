@@ -15,7 +15,7 @@ from utils import state_utils, input_utils, general_utils, connection_utils
 
 
 class SimulationRunner:
-    implemented_input_types = ['uniform_DC_XOR','uniform_DC', 'uniform_rate', 'step_rate', 'step_DC', 'spatial_rate', 'spatial_DC', 'None', 'spatial_DC_classification', 'spatial_rate_classification', 'spatial_DC_XORXOR', 'spatial_DC_XOR', 'spatial_rate_XORXOR', 'spatial_rate_XOR', 'spatial_DC_temporal_XOR', 'uniform_DC_temporal_XOR']
+    implemented_input_types = ['uniform_DC_XORXOR', 'uniform_DC_XOR','uniform_DC', 'uniform_rate', 'step_rate', 'step_DC', 'spatial_rate', 'spatial_DC', 'None', 'spatial_DC_classification', 'spatial_rate_classification', 'spatial_DC_XORXOR', 'spatial_DC_XOR', 'spatial_rate_XORXOR', 'spatial_rate_XOR', 'spatial_DC_temporal_XOR', 'uniform_DC_temporal_XOR']
     implemented_network_types = ['alzheimers', 'brunel', 'microcircuit']
 
     def __init__(self, group_name, run_title, network_type, input_type, step_duration, num_steps, input_min_value,
