@@ -78,6 +78,9 @@ class SimulationRunner:
             self.input_signal = np.random.choice([-0.5, 0.5], size=self.num_steps, replace=True)
         elif 'XORXOR' in self.input_type:
             self.input_signal = np.random.choice(np.arange(0, 16), size=self.num_steps, replace=True)  # values from 0 to 15 can be transformed into 4 zero or one values by using the binary representation
+            # self.input_signal = np.random.choice([0, 4, 8, 12], size=self.num_steps, replace=True)  # 0000, 0100, 1000, 1100 -> XOR, but with different position of input streams
+            # self.input_signal = np.random.choice([3, 7, 11, 15], size=self.num_steps, replace=True)  # 0011, 0111, 1011, 1111 -> XOR, but with different position of input streams
+            # self.input_signal = np.random.choice([5, 6, 9, 10], size=self.num_steps, replace=True)  # 0101, 0110, 1001, 1010 -> XOR, but with different position of input streams
         elif 'XOR' in self.input_type:
             self.input_signal = np.random.choice(np.arange(0, 4), size=self.num_steps, replace=True)  # values from 0 to 3 can be transformed into 2 zero or one values by using the binary representation
         else:
@@ -131,6 +134,18 @@ class SimulationRunner:
             if 'XOR' in self.input_type and not 'temporal' in self.input_type:
                 input_binary_strings = [f'{iv:b}'.rjust(2, '0') for iv in self.input_signal]
                 for signal_id, _ in enumerate(['signal1', 'signal2']):
+                    input_signal_XOR = [2*int(binstr[signal_id])-1 for binstr in input_binary_strings]
+                    input_utils.set_input_to_step_encoder(
+                        input_signal=input_signal_XOR[start_step:stop_step],
+                        encoding_generator=self.input_generators[signal_id],
+                        step_duration=self.step_duration,
+                        min_value=self.input_min_value,
+                        max_value=self.input_max_value,
+                        start=start_time
+                    )
+            elif 'XORXOR' in self.input_type:
+                input_binary_strings = [f'{iv:b}'.rjust(4, '0') for iv in self.input_signal]
+                for signal_id, _ in enumerate(['signal1', 'signal2', 'signal3', 'signal4']):
                     input_signal_XOR = [2*int(binstr[signal_id])-1 for binstr in input_binary_strings]
                     input_utils.set_input_to_step_encoder(
                         input_signal=input_signal_XOR[start_step:stop_step],
