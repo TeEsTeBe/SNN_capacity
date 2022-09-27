@@ -15,7 +15,7 @@ from utils import state_utils, input_utils, general_utils, connection_utils
 
 
 class SimulationRunner:
-    implemented_input_types = ['uniform_DC_XORXOR', 'uniform_DC_XOR','uniform_DC', 'uniform_rate', 'step_rate', 'step_DC', 'spatial_rate', 'spatial_DC', 'None', 'spatial_DC_classification', 'spatial_rate_classification', 'spatial_DC_XORXOR', 'spatial_DC_XOR', 'spatial_rate_XORXOR', 'spatial_rate_XOR', 'spatial_DC_temporal_XOR', 'uniform_DC_temporal_XOR']
+    implemented_input_types = ['uniform_DC_classification', 'uniform_DC_XORXOR', 'uniform_DC_XOR','uniform_DC', 'uniform_rate', 'step_rate', 'step_DC', 'spatial_rate', 'spatial_DC', 'None', 'spatial_DC_classification', 'spatial_rate_classification', 'spatial_DC_XORXOR', 'spatial_DC_XOR', 'spatial_rate_XORXOR', 'spatial_rate_XOR', 'spatial_DC_temporal_XOR', 'uniform_DC_temporal_XOR']
     implemented_network_types = ['alzheimers', 'brunel', 'microcircuit']
 
     def __init__(self, group_name, run_title, network_type, input_type, step_duration, num_steps, input_min_value,
@@ -132,7 +132,7 @@ class SimulationRunner:
         start_time = start_step * self.step_duration
         if 'step_' in self.input_type or 'uniform_' in self.input_type:
             if 'XOR' in self.input_type and not 'temporal' in self.input_type:
-                input_binary_strings = [f'{iv:b}'.rjust(2, '0') for iv in self.input_signal]
+                input_binary_strings = [f'{iv:b}'.rjust(2, '0') for iv in self.input_signal[start_step:stop_step]]
                 for signal_id, _ in enumerate(['signal1', 'signal2']):
                     input_signal_XOR = [2*int(binstr[signal_id])-1 for binstr in input_binary_strings]
                     input_utils.set_input_to_step_encoder(
@@ -144,11 +144,24 @@ class SimulationRunner:
                         start=start_time
                     )
             elif 'XORXOR' in self.input_type:
-                input_binary_strings = [f'{iv:b}'.rjust(4, '0') for iv in self.input_signal]
+                input_binary_strings = [f'{iv:b}'.rjust(4, '0') for iv in self.input_signal[start_step:stop_step]]
                 for signal_id, _ in enumerate(['signal1', 'signal2', 'signal3', 'signal4']):
                     input_signal_XOR = [2*int(binstr[signal_id])-1 for binstr in input_binary_strings]
                     input_utils.set_input_to_step_encoder(
                         input_signal=input_signal_XOR[start_step:stop_step],
+                        encoding_generator=self.input_generators[signal_id],
+                        step_duration=self.step_duration,
+                        min_value=self.input_min_value,
+                        max_value=self.input_max_value,
+                        start=start_time
+                    )
+            elif 'classification' in self.input_type:
+                classes = list(np.unique(self.input_signal))
+                input_binary_strings = [f'{2**classes.index(iv):b}'.rjust(len(classes), '0') for iv in self.input_signal[start_step:stop_step]]
+                for signal_id in range(len(classes)):
+                    input_signal_classification = [int(binstr[signal_id]) for binstr in input_binary_strings]
+                    input_utils.set_input_to_step_encoder(
+                        input_signal=input_signal_classification[start_step:stop_step],
                         encoding_generator=self.input_generators[signal_id],
                         step_duration=self.step_duration,
                         min_value=self.input_min_value,
@@ -221,6 +234,8 @@ class SimulationRunner:
 
             if 'XOR' in self.input_type and 'temporal' not in self.input_type:
                 n_generators = 2
+            elif 'classification' in self.input_type:
+                n_generators = len(np.unique(self.input_signal))
             else:
                 n_generators = 1
             step_enc_generator = nest.Create(generator_type, n=n_generators)
