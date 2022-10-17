@@ -21,30 +21,38 @@ from heatmaps import plot_heatmap, get_heatmap_data, translate
 from colors import get_degree_color, get_color, adjust_color
 
 
-def draw_lines(axes, fig):
+def draw_lines(axes, fig, fill_background=True):
     linewidth = 2.5
     # rho09_color = 'wheat'
     rho09_color = 'darkseagreen'
+    rho113_color = 'wheat'
+    if fill_background:
+        rho09_face_color = rho09_color
+        rho113_face_color = rho113_color
+        additional_box_width = 0.1
+    else:
+        rho09_face_color = 'none'
+        rho113_face_color = 'none'
+        additional_box_width = 0.0
     conn_path = ConnectionPatch(xyA=(0.01, 1.1), xyB=(0.01, -0.23), coordsA='axes fraction', coordsB='axes fraction',
                                 axesA=axes['cap_heatmap'], axesB=axes['del_heatmap'], color=rho09_color, lw=linewidth,
                                 zorder=-1)
     axes['deg_heatmap'].add_artist(conn_path)
-    box_rho9_1 = FancyBboxPatch(xy=(0.33, 0.68), width=0.275, height=0.3, boxstyle=mpatches.BoxStyle("Round", pad=0.01),
-                                transform=fig.transFigure, edgecolor=rho09_color, facecolor="none", lw=linewidth)
+    box_rho9_1 = FancyBboxPatch(xy=(0.33, 0.68), width=0.275+additional_box_width, height=0.3, boxstyle=mpatches.BoxStyle("Round", pad=0.01),
+                                transform=fig.transFigure, edgecolor=rho09_color, facecolor=rho09_face_color, zorder=-10, lw=linewidth)
     box_rho9_2 = FancyBboxPatch(xy=(0.65, 0.33), width=0.33, height=0.65, boxstyle=mpatches.BoxStyle("Round", pad=0.01),
-                                transform=fig.transFigure, edgecolor=rho09_color, facecolor="none", lw=linewidth)
+                                transform=fig.transFigure, edgecolor=rho09_color, facecolor=rho09_face_color, zorder=-10, lw=linewidth)
     line_rho9 = FancyArrowPatch(posA=(0.67, 0.99), posB=(0.0518, 0.96), arrowstyle='-', transform=fig.transFigure,
                                 connectionstyle=ConnectionStyle('Angle', angleA=-180, angleB=-90, rad=0.2),
                                 lw=linewidth, color=rho09_color)
     fig.patches.extend([box_rho9_1, box_rho9_2, line_rho9])
-    rho113_color = 'wheat'
     # rho113_color = 'lightgrey'
     conn_path = ConnectionPatch(xyA=(0.382, 1.03), xyB=(0.382, -0.23), coordsA='axes fraction', coordsB='axes fraction',
-                                axesA=axes['cap_heatmap'], axesB=axes['del_heatmap'], color=rho113_color, lw=linewidth,
+                                axesA=axes['cap_heatmap'], axesB=axes['del_heatmap'], color=rho113_face_color, lw=linewidth,
                                 zorder=-1)
     axes['deg_heatmap'].add_artist(conn_path)
     box_rho113 = FancyBboxPatch(xy=(0.33, 0.33), width=0.275, height=0.3, boxstyle=mpatches.BoxStyle("Round", pad=0.01),
-                                transform=fig.transFigure, edgecolor=rho113_color, facecolor="none", lw=linewidth)
+                                transform=fig.transFigure, edgecolor=rho113_color, facecolor=rho113_color, zorder=-10, lw=linewidth)
     line_rho113 = FancyArrowPatch(posA=(0.321, 0.33), posB=(0.119, 0.33), arrowstyle='-', transform=fig.transFigure,
                                   connectionstyle=ConnectionStyle('Angle', angleA=-180, angleB=-90, rad=0.2),
                                   lw=linewidth, color=rho113_color)
