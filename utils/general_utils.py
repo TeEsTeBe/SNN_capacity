@@ -1,8 +1,13 @@
 import os
+import re
 import psutil
+import pickle
+from pathlib import Path
+from hashlib import sha1
+from copy import deepcopy
+
 import numpy as np
 import nest
-from pathlib import Path
 
 from fna.tools.signals import SpikeList
 
@@ -90,3 +95,99 @@ def combine_nodelists(list_of_nodelists):
         combined_nodelist += nodelist
 
     return combined_nodelist
+
+
+def filter_paths(paths, params_to_filter, other_filter_keys=None):
+    filtered_paths = paths
+
+    for paramname, paramvalue in params_to_filter.items():
+        filtered_paths = [p for p in paths if f'{paramname}={paramvalue}_' in p]
+
+    if other_filter_keys is not None:
+        for filter_key in other_filter_keys:
+            filtered_paths = [p for p in filtered_paths if filter_key in p]
+
+    return filtered_paths
+
+
+def translate(param_name):
+    translation_dict = {
+        'inpscaling': r'$\iota$',
+        'specrad': r'$\rho$',
+        'dur': r'$\Delta s$',
+        'max': r'$\mathrm{a_{max}}$'
+    }
+
+    if param_name in translation_dict.keys():
+        translation = translation_dict[param_name]
+    else:
+        translation = param_name
+
+    return translation
+
+
+def default_cast_function(value):
+    if value.isnumeric():
+        casted_value = int(value)
+    else:
+        try:
+            casted_value = float(value)
+        except:
+            casted_value = str(value)
+
+    return casted_value
+
+
+def get_param_from_path(pathstr, param_name, cast_function=default_cast_function):
+    re_result = re.search(f'_{param_name}=([^_^\/^-]+)_', pathstr)
+    if not re_result:
+        re_result = re.search(f'_{param_name}=([^_^\/^-]+).pkl', pathstr)
+    if not re_result:
+        raise ValueError(f'parameter {param_name} was not found in path "{pathstr}"')
+
+    return cast_function(re_result.group(1))
+
+
+def cached_data_path():
+    base_path = os.path.dirname(os.path.abspath(__file__))
+    cached_folder = os.path.join(base_path, 'cached_data')
+    os.makedirs(cached_folder, exist_ok=True)
+
+    return cached_folder
+
+
+def _remove_memory_address(string):
+    return re.sub('at 0x.+>', '', string)
+
+
+def get_cached_filepath(locals_):
+    parameters = deepcopy(locals_)
+    for key in parameters.keys():
+        if key.startswith('_'):
+            del parameters[key]
+    param_keys = sorted(list(parameters.keys()))
+    param_string = ''
+    for pkey in param_keys:
+        value_str = _remove_memory_address(f'{parameters[pkey]}')
+        param_string += f'{pkey}-{value_str}'
+    filename = f"{sha1(param_string.encode('utf-8')).hexdigest()}.pkl"
+    filepath = os.path.join(cached_data_path(), filename)
+
+    return filepath
+
+
+def get_cached_file(locals_):
+    filepath = get_cached_filepath(locals_)
+    if os.path.exists(filepath):
+        with open(filepath, 'rb') as f:
+            cached_data = pickle.load(f)
+    else:
+        cached_data = None
+
+    return cached_data
+
+
+def store_cached_file(data, locals_):
+    filepath = get_cached_filepath(locals_)
+    with open(filepath, 'wb') as f:
+        pickle.dump(data, f)
