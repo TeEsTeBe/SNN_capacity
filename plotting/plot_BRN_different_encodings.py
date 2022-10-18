@@ -14,8 +14,10 @@ def data_path():
 
 
 def get_capacity_directory(step_spatial_or_uniform, random_or_frozen, rate_or_DC, p=None, std=None):
-    assert step_spatial_or_uniform in ['step', 'spatial', 'uniform'], 'step_spatial_or_uniform should be "step", "spatial" or "uniform"'
-    assert random_or_frozen in ['randomnoise', 'frozennoise'], 'random_or_frozen should be "randomnoise" or "frozennoise"'
+    assert step_spatial_or_uniform in ['step', 'spatial',
+                                       'uniform'], 'step_spatial_or_uniform should be "step", "spatial" or "uniform"'
+    assert random_or_frozen in ['randomnoise',
+                                'frozennoise'], 'random_or_frozen should be "randomnoise" or "frozennoise"'
     assert rate_or_DC in ['rate', 'DC'], 'rate_or_DC should be "rate" or "DC"'
     assert (p is not None or std is not None), 'p or std should be set'
 
@@ -66,14 +68,22 @@ def add_capacity_percent_twinx(ax, N=1000, add_label=False):
     ylim = ax.get_ylim()
     axtwin.set_ylim(ylim)
 
-def plot_max_cap_per_p_or_std(step_spatial_or_uniform, ax=None, plot_degrees=False, plot_memory=False, use_cache=False, plot_stds=True):
+
+def plot_max_cap_per_p_or_std(step_spatial_or_uniform, ax=None, plot_degrees=False, plot_memory=False, use_cache=False,
+                              plot_stds=True):
     colors = {
         'DC': '#E84855',
         'rate': '#403F4C',
     }
     linestyles = {
-        'frozennoise': '-',
-        'randomnoise': '--',
+        'DC': {
+            'frozennoise': '-',
+            'randomnoise': (1., (5, 5)),
+        },
+        'rate': {
+            'frozennoise': '-',
+            'randomnoise': (4., (5, 5)),
+        }
     }
     if ax is None:
         _, ax = plt.subplots()
@@ -97,8 +107,13 @@ def plot_max_cap_per_p_or_std(step_spatial_or_uniform, ax=None, plot_degrees=Fal
                                                  random_or_frozen=random_or_frozen, p=p, std=std)
                 params_to_filter = {}
                 try:
-                    avg_cap_results = get_heatmap_data('dur', 'max', cap_dir, params_to_filter=params_to_filter, get_max_degrees=plot_degrees, get_max_delays=plot_memory, other_filter_keys=['vm'], use_cache=use_cache)
-                    std_cap_results = get_heatmap_data('dur', 'max', cap_dir, params_to_filter=params_to_filter, get_max_degrees=plot_degrees, get_max_delays=plot_memory, other_filter_keys=['vm'], use_cache=use_cache, avg_fct=np.nanstd)  # scipy.stats.sem)
+                    avg_cap_results = get_heatmap_data('dur', 'max', cap_dir, params_to_filter=params_to_filter,
+                                                       get_max_degrees=plot_degrees, get_max_delays=plot_memory,
+                                                       other_filter_keys=['vm'], use_cache=use_cache)
+                    std_cap_results = get_heatmap_data('dur', 'max', cap_dir, params_to_filter=params_to_filter,
+                                                       get_max_degrees=plot_degrees, get_max_delays=plot_memory,
+                                                       other_filter_keys=['vm'], use_cache=use_cache,
+                                                       avg_fct=np.nanstd)  # scipy.stats.sem)
                     if plot_memory:
                         for duration, max_delay_dict in avg_cap_results.items():
                             for max_amplitude, delay in max_delay_dict.items():
@@ -110,26 +125,31 @@ def plot_max_cap_per_p_or_std(step_spatial_or_uniform, ax=None, plot_degrees=Fal
                     stds.append(std_cap_results[duration][amplitude])
                     p_or_std_values_with_data.append(p_or_std)
                 except FileNotFoundError:
-                    print(f"Capacity data for {step_spatial_or_uniform}_{rate_or_DC}_p={p_or_std} ({random_or_frozen}) does not exist "
-                          f"and will not be added to the data!")
+                    print(
+                        f"Capacity data for {step_spatial_or_uniform}_{rate_or_DC}_p={p_or_std} ({random_or_frozen}) does not exist "
+                        f"and will not be added to the data!")
                 except BaseException as err:
                     print(f"Unexpected {type(err)}: {err}")
 
             if len(p_or_std_values_with_data) == 0:
-                print(f"No data for {step_spatial_or_uniform}_{rate_or_DC} ({random_or_frozen}) does exist for any p ({p_or_std_values})."
-                      f" This won't be part of the plot!")
+                print(
+                    f"No data for {step_spatial_or_uniform}_{rate_or_DC} ({random_or_frozen}) does exist for any p ({p_or_std_values})."
+                    f" This won't be part of the plot!")
             else:
                 if len(p_or_std_values_with_data) == 1:
                     half_width = 0.025
-                    p_or_std_values_with_data = [p_or_std_values_with_data[0]-half_width, p_or_std_values_with_data[0]+half_width]
+                    p_or_std_values_with_data = [p_or_std_values_with_data[0] - half_width,
+                                                 p_or_std_values_with_data[0] + half_width]
                     max_capacities = [max_capacities[0], max_capacities[0]]
                     stds = [stds[0], stds[0]]
                 stds = np.array(stds)
                 max_capacities = np.array(max_capacities)
                 if plot_stds:
-                    ax.fill_between(p_or_std_values_with_data, max_capacities + stds, max_capacities - stds, color=colors[rate_or_DC], alpha=0.3)
+                    ax.fill_between(p_or_std_values_with_data, max_capacities + stds, max_capacities - stds,
+                                    color=colors[rate_or_DC], alpha=0.3)
                 linewidth = 1  # 3  # Poster
-                ax.plot(p_or_std_values_with_data, max_capacities, label=f'{rate_or_DC}, {random_or_frozen}', linestyle=linestyles[random_or_frozen], color=colors[rate_or_DC], lw=linewidth)
+                ax.plot(p_or_std_values_with_data, max_capacities, label=f'{rate_or_DC}, {random_or_frozen}',
+                        linestyle=linestyles[rate_or_DC][random_or_frozen], color=colors[rate_or_DC], lw=linewidth)
 
     ax.set_xticks(p_or_std_values)
     if step_spatial_or_uniform == 'spatial':
@@ -184,7 +204,8 @@ def main():
 
     if args.figure_path.endswith('.eps'):
         plot_stds = False
-        print("\n\n !!!!!!!!! standard deviations are not plotted because .eps files can't handle transparency! !!!!!!!\n\n")
+        print(
+            "\n\n !!!!!!!!! standard deviations are not plotted because .eps files can't handle transparency! !!!!!!!\n\n")
     else:
         plot_stds = True
 
@@ -211,15 +232,18 @@ def main():
     axes['C'].set_ylabel(None)
     axes['C'].set_xlabel(None)
     axes['B'] = plot_max_cap_per_p_or_std('step', axes['B'], plot_memory=True, use_cache=use_cache, plot_stds=plot_stds)
-    axes['D'] = plot_max_cap_per_p_or_std('spatial', axes['D'], plot_memory=True, use_cache=use_cache, plot_stds=plot_stds)
+    axes['D'] = plot_max_cap_per_p_or_std('spatial', axes['D'], plot_memory=True, use_cache=use_cache,
+                                          plot_stds=plot_stds)
     axes['D'].set_ylabel(None)
 
-    axes['E'] = plot_max_cap_per_p_or_std('uniform', ax=axes['E'], plot_memory=False, use_cache=use_cache, plot_stds=plot_stds)
+    axes['E'] = plot_max_cap_per_p_or_std('uniform', ax=axes['E'], plot_memory=False, use_cache=use_cache,
+                                          plot_stds=plot_stds)
     add_capacity_percent_twinx(ax=axes['E'])
     axes['E'].set_title('uniform')
     axes['E'].set_ylabel(None)
     axes['E'].set_xlabel(None)
-    axes['F'] = plot_max_cap_per_p_or_std('uniform', ax=axes['F'], plot_memory=True, use_cache=use_cache, plot_stds=plot_stds)
+    axes['F'] = plot_max_cap_per_p_or_std('uniform', ax=axes['F'], plot_memory=True, use_cache=use_cache,
+                                          plot_stds=plot_stds)
     axes['F'].set_ylabel(None)
 
     fontsize = 8
