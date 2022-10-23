@@ -18,7 +18,8 @@ def subtract_capacities(total_capacities, capacities_to_subtract):
 
             result_cap['score'] = max(0, result_cap['score'] - subtraction_value)
 
-        result_capacities.append(result_cap)
+        if result_cap['score'] > 0.:
+            result_capacities.append(result_cap)
 
     return result_capacities
 
@@ -41,13 +42,32 @@ def get_effective_encoder_capacities(encoder_capacities, total_capacities):
     # calc resulting capacities
     effective_enc_capacities = defaultdict(dict)
     for enc_cap in encoder_capacities:
-        asdf = 0
         for delay, memory_value in linear_memory_total.items():
             effective_enc_capacities[delay][str(enc_cap['powerlist'])] = enc_cap['score'] * (
                     memory_value / enc_deg1_del0)
-            print(f'del {delay}\tenccap {enc_cap["powerlist"]}\tmemoryval {memory_value}')
+            # print(f'del {delay}\tenccap {enc_cap["powerlist"]}\tmemoryval {memory_value}')
 
     return effective_enc_capacities
+
+
+def get_effective_capacity_sum(effective_enc_capacities):
+    effective_cap_scores = []
+    for delay, powerlist_dict in effective_enc_capacities.items():
+        for powerlist_str, score in powerlist_dict.items():
+            effective_cap_scores.append(score)
+    total_effective_enc_capacity = np.sum(effective_cap_scores)
+
+    return total_effective_enc_capacity
+
+
+def get_network_capacities(encoder_capacities, total_capacities):
+    effective_enc_capacities = get_effective_encoder_capacities(encoder_capacities, total_capacities)
+    result_capacities = subtract_capacities(total_capacities, effective_enc_capacities)
+
+    print(f'Total capacity after: {np.sum([x["score"] for x in result_capacities])}')
+    print(f'Total possible encoder capacity: {get_effective_capacity_sum(effective_enc_capacities)}')
+
+    return result_capacities
 
 
 def load_capacities(capacity_path):
@@ -77,27 +97,21 @@ def main():
     print(f'Total capacity before: {total_cap_data["total_capacity"]}')
     total_capacities = total_cap_data['all_capacities']
 
-    result_capacities = get_network_capacities(encoder_capacities, total_capacities)
+    network_capacities = get_network_capacities(encoder_capacities, total_capacities)
+
+    result_capacities = {
+        'name': f'network_cap_{total_cap_data["name"]}',
+        'total_capacity': np.sum([x['score'] for x in network_capacities]),
+        'all_capacities': network_capacities,
+        'num_capacities': len(network_capacities),  # do I have to remove the new 0 value capacities?
+        'nodes': total_cap_data['nodes'],
+        'compute_time': total_cap_data['compute_time']
+    }
 
     with open(args.output_path, 'wb') as cap_file:
         pickle.dump(result_capacities, cap_file)
 
     print(f'Resulting capacities were stored to {args.output_path}')
-
-
-def get_network_capacities(encoder_capacities, total_capacities):
-    effective_enc_capacities = get_effective_encoder_capacities(encoder_capacities, total_capacities)
-    effective_cap_scores = []
-    for delay, powerlist_dict in effective_enc_capacities.items():
-        for powerlist_str, score in powerlist_dict.items():
-            effective_cap_scores.append(score)
-    total_effective_enc_capacity = np.sum(effective_cap_scores)
-    result_capacities = subtract_capacities(total_capacities, effective_enc_capacities)
-
-    print(f'Total capacity after: {np.sum([x["score"] for x in result_capacities])}')
-    print(f'Total possible encoder capacity: {total_effective_enc_capacity}')
-
-    return result_capacities
 
 
 if __name__ == "__main__":
