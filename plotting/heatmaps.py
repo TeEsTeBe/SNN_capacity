@@ -43,7 +43,7 @@ def max_degree(file_path, cutoff=0.):
     return max_degree
 
 
-def max_delay(file_path, cutoff=0.):
+def max_delay(file_path, cutoff=0., dambre_delay=False):
     with open(file_path, 'rb') as f:
         data = pickle.load(f)
 
@@ -51,8 +51,10 @@ def max_delay(file_path, cutoff=0.):
     if len(capacities) == 0:
         # max_delay = np.nan
         max_delay = 0.
-    else:
+    elif dambre_delay:
         max_delay = np.max([x['delay'] for x in capacities]) - 1
+    else:
+        max_delay = np.max([x['delay'] + x['variables'] for x in capacities]) - 2
 
     return max_delay
 
@@ -74,9 +76,9 @@ def get_colorbar_label(plot_max_degrees=False, plot_max_delays=False, plot_num_t
 
 
 def get_heatmap_data(x_name, y_name, capacity_folder, params_to_filter, cutoff=0., get_max_degrees=None,
-                     get_max_delays=None, get_num_trials=None, other_filter_keys=None, use_cache=False,
+                     get_max_delays=None, get_num_trials=None, other_filter_keys=None, use_cache=True,
                      overwrite_cache=False, mindegree=0, maxdegree=np.inf, mindelay=0, maxdelay=np.inf,
-                     avg_fct=np.mean):
+                     avg_fct=np.mean, use_dambre_delay=False):
     params = deepcopy(locals())
     cached_data = get_cached_file(params)
     if use_cache and cached_data is not None:
@@ -96,7 +98,7 @@ def get_heatmap_data(x_name, y_name, capacity_folder, params_to_filter, cutoff=0
                 if get_max_degrees:
                     avg_results_dict[x][y] = avg_fct([max_degree(dp) for dp in x_y_paths])
                 elif get_max_delays:
-                    avg_results_dict[x][y] = avg_fct([max_delay(dp) for dp in x_y_paths])
+                    avg_results_dict[x][y] = avg_fct([max_delay(dp, dambre_delay=use_dambre_delay) for dp in x_y_paths])
                 elif get_num_trials:
                     avg_results_dict[x][y] = len(x_y_paths)
                 else:
@@ -114,7 +116,6 @@ def plot_heatmap(x_name, y_name, capacity_folder, title, params_to_filter, cutof
                  plot_max_delays, plot_num_trials, annotate, plot_degree_delay_product=False, ax=None,
                  other_filter_keys=None, cmap=None, mindegree=0, maxdegree=np.inf, mindelay=0, maxdelay=np.inf,
                  use_cache=False):
-
     if cmap is None:
         if plot_max_degrees:
             cmap = sns.light_palette(get_color('degree'), as_cmap=True)
