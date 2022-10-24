@@ -446,8 +446,7 @@ def create_single_bars_svgs(figures_folder, capacity_folder, height, width, use_
     fig_single2_path = os.path.join(figures_folder, 'single2.svg')
 
     if not use_old_svgs:
-        fig_single1, ax_single1, fig_single2, ax_single2 = plot_single_run_bars(capacity_folder, axes=None,
-                                                                                width=width, height=height)
+        fig_single1, ax_single1, fig_single2, ax_single2 = plot_single_run_bars(capacity_folder, axes=None)
         fig_single1.savefig(fig_single1_path)
         fig_single2.savefig(fig_single2_path)
 
@@ -473,6 +472,8 @@ def setup_pyplot():
     plt.rc('ytick', labelsize=SMALL_SIZE)  # fontsize of the tick labels
     plt.rc('legend', fontsize=SMALL_SIZE)  # legend fontsize
     plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
+    # plt.rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+    plt.rc('font', family='serif')
     matplotlib.rcParams['figure.dpi'] = 600
 
 
