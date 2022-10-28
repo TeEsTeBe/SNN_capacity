@@ -167,7 +167,7 @@ def plot_bars_delay_level(dict_list, names, title='Capacities', savepath=None, d
     return ax
 
 
-def degree_delay_fct_dambre(dict_path, fct=np.sum, max_degree=None, max_delay=None):
+def degree_delay_fct_dambre(dict_path, fct=np.sum, max_degree=None, max_delay=None, use_dambre_delay=False):
     """
     Same function as degree_delay_fct, but for dictionaries which are computed by the original Dambre code.
     """
@@ -178,7 +178,10 @@ def degree_delay_fct_dambre(dict_path, fct=np.sum, max_degree=None, max_delay=No
     dambre_dict = {}
     for cap_item in dambre_cap_list:
         degree = cap_item['degree']
-        delay = cap_item['delay'] - 1
+        if use_dambre_delay:
+            delay = cap_item['delay'] - 1
+        else:
+            delay = cap_item['delay'] + cap_item['window'] - 2
 
         if degree not in dambre_dict.keys():
             dambre_dict[degree] = {}
