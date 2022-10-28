@@ -54,7 +54,7 @@ def max_delay(file_path, cutoff=0., dambre_delay=False):
     elif dambre_delay:
         max_delay = np.max([x['delay'] for x in capacities]) - 1
     else:
-        max_delay = np.max([x['delay'] + x['variables'] for x in capacities]) - 2
+        max_delay = np.max([x['delay'] + x['window'] for x in capacities]) - 2
 
     return max_delay
 
@@ -171,6 +171,26 @@ def plot_heatmap(x_name, y_name, capacity_folder, title, params_to_filter, cutof
     # plt.tight_layout()
     if figure_path is not None:
         plt.savefig(figure_path)
+
+    return fig, ax
+
+
+def plot_task_results_heatmap(results_df, xlabel, ylabel, fig=None, ax=None, title='XOR performance',
+                              cbar_label='kappa', vmin=0, vmax=1, cmap='rocket'):
+    if None in [fig, ax] and fig != ax:
+        raise ValueError(
+            "fig and ax can only be set together. Either set both to None (or don't set them) or give a value for both.")
+    if fig is None:
+        fig, ax = plt.subplots()
+    ax = sns.heatmap(results_df, annot=False, cbar_kws={'label': cbar_label}, ax=ax, fmt=".0f", cmap=cmap, vmin=vmin,
+                     vmax=vmax)
+    ax.invert_yaxis()
+    ax.set_title(title)
+    ax.set_ylabel(ylabel)
+    ax.set_xlabel(xlabel)
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
+    ax.set_yticklabels(ax.get_yticklabels(), rotation=0)
+    # fig.tight_layout()
 
     return fig, ax
 
