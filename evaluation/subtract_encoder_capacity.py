@@ -6,18 +6,24 @@ from collections import defaultdict
 import numpy as np
 
 from plotting.cap_bars_single_run import plot_capacity_bars
+from plotting.colors import get_degree_color
 
 
 def plot_capacity_figure(combined_capacities: dict, encoder_capacities: dict, remembered_enc_capacities: dict,
-                         network_capacities: dict):
-    fig, axes = plt.subplots(nrows=4, sharex='all', figsize=((5.2, 5.2)))
+                         subtract_capacities: dict, network_capacities: dict, linear_network_memory: dict):
+    cap_dict_list = [combined_capacities, encoder_capacities, remembered_enc_capacities, subtract_capacities,
+                     network_capacities]
+    titles = ['combined', 'encoder', 'remembered', 'subtract', 'network']
+    fig, axes = plt.subplots(nrows=len(titles) + 1, sharex='all', figsize=((5.2, 7.2)))
 
-    cap_dict_list = [combined_capacities, encoder_capacities, remembered_enc_capacities, network_capacities]
-    titles = ['combined', 'encoder', 'remembered', 'network']
+    delays = [d-1 for d in linear_network_memory.keys()]
+    axes[0].bar(delays, linear_network_memory.values(), color=get_degree_color(1))
+    axes[0].set_title('network memory')
 
-    for ax, capacities, title in zip(axes, cap_dict_list, titles):
+    for ax, capacities, title in zip(axes[1:], cap_dict_list, titles):
         plot_capacity_bars(capacity_dict=capacities, ax=ax)
         ax.set_title(title)
+
 
     return fig, axes
 
@@ -43,7 +49,7 @@ def delay_window_capdict_to_default_capdictlist_dummy(delay_window_capdict: dict
     return cap_dict_list_dummy
 
 
-def get_window_values(single_capacity):
+def get_window_values(single_capacity: dict) -> np.ndarray:
     poly_definition = np.zeros(single_capacity['window'])
     for pos, power in zip(single_capacity['window_positions'], single_capacity['powerlist']):
         poly_definition[pos] = power
@@ -51,12 +57,13 @@ def get_window_values(single_capacity):
     return poly_definition
 
 
-def subtract_capacities(combined_capacities: list, capacities_to_subtract: dict):
+def subtract_capacities(combined_capacities: list, capacities_to_subtract: dict, subtract_undelayed_degree1=False):
     result_capacities = []
 
     for cap in combined_capacities:
         result_cap = cap.copy()
-        if cap['degree'] > 1:  # we don't want to remove the linear memory of the system
+        # if cap['degree'] > 1:  # we don't want to remove the linear memory of the system
+        if subtract_undelayed_degree1 or not (cap['degree'] == 1 and cap['delay'] == 1):
             try:
                 window_values = get_window_values(cap)
                 subtraction_value = capacities_to_subtract[cap['delay']][str(window_values)]
@@ -94,29 +101,29 @@ def get_linear_network_memory(combined_linear_memory: dict, encoder_linear_memor
     return network_linear_memory
 
 
-def get_remenbered_encoder_capacities(encoder_capacities: list, total_capacities: list) -> dict:
-    # calc linear memory
-    combined_linear_memory = get_linear_memory(total_capacities)
-    encoder_linear_memory = get_linear_memory(encoder_capacities)
-    network_linear_memory = get_linear_network_memory(combined_linear_memory, encoder_linear_memory)
-
-    linear_encoder_delay0_memory = encoder_linear_memory[1]
+def get_remembered_encoder_capacities(encoder_capacities: list, network_linear_memory: dict, use_sqrt=True) -> dict:
+    linear_encoder_delay0_memory = get_linear_memory(encoder_capacities)[1]
 
     # calc resulting capacities
     # TODO: check whether it is correct how to do it with the linear network memory
 
     remembered_enc_capacities = defaultdict(lambda: defaultdict(int))
     for enc_cap in encoder_capacities:
-        enc_cap_delay = enc_cap['delay']
-        window_str = str(get_window_values(enc_cap))
-        # for delay, linear_network_memory_value in combined_linear_memory.items():
-        for delay, linear_network_memory_value in network_linear_memory.items():
-            delay_key = enc_cap_delay + delay - 1  # delays start with 1
-            old_remembered_score = remembered_enc_capacities[delay_key][
-                window_str]  # 0 if there was no old score, because of defaultdict
-            linear_memory_ratio = linear_network_memory_value / linear_encoder_delay0_memory
-            new_remembered_score = enc_cap['score'] * linear_memory_ratio
-            remembered_enc_capacities[delay_key][window_str] = max(old_remembered_score, new_remembered_score)
+        if enc_cap['degree'] > 1:
+            enc_cap_delay = enc_cap['delay']
+            window_str = str(get_window_values(enc_cap))
+            # for delay, linear_network_memory_value in combined_linear_memory.items():
+            for delay, linear_network_memory_value in network_linear_memory.items():
+                delay_key = enc_cap_delay + delay - 1  # delays start with 1
+                old_remembered_score = remembered_enc_capacities[delay_key][
+                    window_str]  # 0 if there was no old score, because of defaultdict
+                if use_sqrt:
+                    linear_memory_ratio = np.sqrt(linear_network_memory_value) / np.sqrt(linear_encoder_delay0_memory)
+                    new_remembered_score = (np.sqrt(enc_cap['score']) * linear_memory_ratio) ** 2
+                else:
+                    linear_memory_ratio = linear_network_memory_value / linear_encoder_delay0_memory
+                    new_remembered_score = enc_cap['score'] * linear_memory_ratio
+                remembered_enc_capacities[delay_key][window_str] = max(old_remembered_score, new_remembered_score)
 
     return remembered_enc_capacities
 
@@ -147,19 +154,51 @@ def parse_cmd():
     parser.add_argument('--output_path', required=True, help='Path to store the resulting capacities to.')
     parser.add_argument('--figure_path', help='Path to store the resulting capacity figure to.')
     parser.add_argument('--show_figure', action='store_true', help='Whether to show the resulting capacity figure.')
+    parser.add_argument('--disable_sqrt', action='store_true',
+                        help='Whether not to use the sqrt correction for the memory ratio.')
+    parser.add_argument('--subtract_undelayed_degree1', action='store_true',
+                        help='Whether to subtract also the undelayed reconstruction of the input signal.')
 
     return parser.parse_args()
 
 
+def get_capacity_maxes(encoder_capacities: list, remembered_capacities: dict) -> dict:
+    capacity_maxes = remembered_capacities.copy()
+    if type(capacity_maxes) != defaultdict:
+        capacity_maxes = defaultdict(lambda: defaultdict(int), capacity_maxes)
+
+    for enc_cap in encoder_capacities:
+        delay = enc_cap['delay']
+        window_str = str(get_window_values(enc_cap))
+        enc_score = enc_cap['score']
+        remembered_score = capacity_maxes[delay][window_str]
+        capacity_maxes[delay][window_str] = max(enc_score, remembered_score)
+
+    return capacity_maxes
+
+
 def main():
     args = parse_cmd()
+    use_sqrt = not args.disable_sqrt
+    # args.subtract_undelayed_degree1 = True
 
     total_cap_data = load_capacities(args.total_capacity)
 
     combined_capacities = total_cap_data['all_capacities']
+    combined_linear_memory = get_linear_memory(combined_capacities)
+
     encoder_capacities = load_capacities(args.encoder_capacity)['all_capacities']
-    remembered_enc_capacities = get_remenbered_encoder_capacities(encoder_capacities, combined_capacities)
-    network_capacities = subtract_capacities(combined_capacities, remembered_enc_capacities)
+    encoder_linear_memory = get_linear_memory(encoder_capacities)
+    network_linear_memory = get_linear_network_memory(combined_linear_memory, encoder_linear_memory)
+    remembered_enc_capacities = get_remembered_encoder_capacities(encoder_capacities=encoder_capacities,
+                                                                  network_linear_memory=network_linear_memory,
+                                                                  use_sqrt=use_sqrt)
+    # remembered_enc_capacities = get_remenbered_encoder_capacities(encoder_capacities, combined_capacities,
+    #                                                               use_sqrt=use_sqrt)
+    subtraction_capacities = get_capacity_maxes(encoder_capacities, remembered_enc_capacities)
+    # network_capacities = subtract_capacities(combined_capacities, remembered_enc_capacities, subtract_undelayed_degree1=args.subtract_undelayed_degree1)
+    network_capacities = subtract_capacities(combined_capacities, subtraction_capacities,
+                                             subtract_undelayed_degree1=args.subtract_undelayed_degree1)
 
     result_capacities_dict = {
         'name': f'network_cap_{total_cap_data["name"]}',
@@ -184,7 +223,11 @@ def main():
             encoder_capacities={'all_capacities': encoder_capacities},
             remembered_enc_capacities={
                 'all_capacities': delay_window_capdict_to_default_capdictlist_dummy(remembered_enc_capacities)},
-            network_capacities=result_capacities_dict)
+            subtract_capacities={
+                'all_capacities': delay_window_capdict_to_default_capdictlist_dummy(subtraction_capacities)},
+            network_capacities=result_capacities_dict,
+            linear_network_memory=network_linear_memory
+        )
         plt.tight_layout()
     if args.figure_path is not None:
         plt.savefig(args.figure_path)
