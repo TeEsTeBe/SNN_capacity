@@ -70,7 +70,7 @@ def add_capacity_percent_twinx(ax, N=1000, add_label=False):
 
 
 def plot_max_cap_per_p_or_std(step_spatial_or_uniform, ax=None, plot_degrees=False, plot_memory=False, use_cache=False,
-                              plot_stds=True):
+                              plot_stds=True, use_label=False):
     colors = {
         'DC': '#E84855',
         'rate': '#403F4C',
@@ -148,7 +148,13 @@ def plot_max_cap_per_p_or_std(step_spatial_or_uniform, ax=None, plot_degrees=Fal
                     ax.fill_between(p_or_std_values_with_data, max_capacities + stds, max_capacities - stds,
                                     color=colors[rate_or_DC], alpha=0.3)
                 linewidth = 1  # 3  # Poster
-                ax.plot(p_or_std_values_with_data, max_capacities, label=f'{rate_or_DC}, {random_or_frozen}',
+                if not use_label:
+                    label = None
+                elif random_or_frozen == 'randomnoise':
+                    label = f'{rate_or_DC}, changing noise'
+                else:
+                    label = f'{rate_or_DC}, frozen noise'
+                ax.plot(p_or_std_values_with_data, max_capacities, label=label,
                         linestyle=linestyles[rate_or_DC][random_or_frozen], color=colors[rate_or_DC], lw=linewidth)
 
     ax.set_xticks(p_or_std_values)
@@ -213,25 +219,29 @@ def main():
     sns.set_style('dark', {'xtick.bottom': True, 'ytick.left': True})
     setup_pyplot()
 
-    fig = plt.figure(constrained_layout=True, figsize=(5.2, 2.6))
-    fig.set_constrained_layout_pads(w_pad=0.05, h_pad=0.05)
+    # fig = plt.figure(constrained_layout=True, figsize=(5.2, 2.6))
+    # fig.set_constrained_layout_pads(w_pad=0.05, h_pad=0.05)
+    fig = plt.figure(figsize=(5.2, 2.8))
+    # fig.set_constrained_layout_pads(w_pad=0.05, h_pad=0.05)
     axes = fig.subplot_mosaic(
         """
         AEC
         BFD
         """
-    )
+    , gridspec_kw={'left': 0.1, 'right': 0.9, 'bottom': 0.22, 'top': 0.9, 'wspace': 0.5, 'hspace': 0.2})
 
     axes['A'] = plot_max_cap_per_p_or_std('step', axes['A'], use_cache=use_cache, plot_stds=plot_stds)
     add_capacity_percent_twinx(ax=axes['A'])
-    axes['A'].set_title('step')
+    axes['A'].set_title('amplitude')
     axes['A'].set_xlabel(None)
+    axes['A'].set_xticklabels([])
     axes['C'] = plot_max_cap_per_p_or_std('spatial', axes['C'], use_cache=use_cache, plot_stds=plot_stds)
-    axes['C'].legend(prop={'size': 5})
+    # axes['C'].legend(prop={'size': 5})
     add_capacity_percent_twinx(ax=axes['C'], add_label=True)
     axes['C'].set_title('spatial')
     axes['C'].set_ylabel(None)
     axes['C'].set_xlabel(None)
+    axes['C'].set_xticklabels([])
     axes['B'] = plot_max_cap_per_p_or_std('step', axes['B'], plot_memory=True, use_cache=use_cache, plot_stds=plot_stds)
     axes['D'] = plot_max_cap_per_p_or_std('spatial', axes['D'], plot_memory=True, use_cache=use_cache,
                                           plot_stds=plot_stds)
@@ -243,21 +253,24 @@ def main():
     axes['E'].set_title('uniform')
     axes['E'].set_ylabel(None)
     axes['E'].set_xlabel(None)
+    axes['E'].set_xticklabels([])
     axes['F'] = plot_max_cap_per_p_or_std('uniform', ax=axes['F'], plot_memory=True, use_cache=use_cache,
-                                          plot_stds=plot_stds)
+                                          plot_stds=plot_stds, use_label=True)
     axes['F'].set_ylabel(None)
+    # axes['F'].legend(prop={'size': 5}, ncol=4, loc='upper center', fancybox=True, bbox_to_anchor=(0.5, -0.05))
+    fig.legend(prop={'size': 6}, ncol=4, fancybox=True, loc='lower center')  # , loc='upper center', bbox_to_anchor=(0.5, -0.05))
 
     fontsize = 8
     x1 = 0.04
     x2 = 0.36
-    x3 = 0.68
+    x3 = 0.66
     y1 = 0.95
-    y2 = 0.48
+    y2 = 0.53
     fig.text(x1, y1, "A", size=fontsize)
     fig.text(x2, y1, "B", size=fontsize)
-    fig.text(x1, y2, "C", size=fontsize)
-    fig.text(x2, y2, "D", size=fontsize)
-    fig.text(x3, y1, "E", size=fontsize)
+    fig.text(x1, y2, "D", size=fontsize)
+    fig.text(x2, y2, "E", size=fontsize)
+    fig.text(x3, y1, "C", size=fontsize)
     fig.text(x3, y2, "F", size=fontsize)
 
     if args.figure_path[-3:] in ['eps', 'pdf', 'png', 'jpg', 'tif']:
