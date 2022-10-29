@@ -13,7 +13,7 @@ def parse_cmd():
     parser.add_argument('--parameters', required=True, help='Path to the parameter file of the simulation.')
     parser.add_argument('--inputs', required=True, help='Path to the inputs file of the simulation.')
     parser.add_argument('--output', help='Path to store the resulting state matrix to.')
-    parser.add_argument('--N', help='Number of encoding variables.')
+    parser.add_argument('--N', type=int, help='Number of encoding variables.')
 
     return parser.parse_args()
 
