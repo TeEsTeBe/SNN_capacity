@@ -24,7 +24,8 @@ def parse_cmd():
 
     parser.add_argument('--x_name', default='dur', help='Defines which variable will be on the x axis of the heatmap')
     parser.add_argument('--y_name', default='max', help='Defines which variable will be on the y axis of the heatmap')
-    parser.add_argument('--capacity_folder', default='/home/schultetobrinke/projects/recurrence/repos/capacity_visualisation/capacity_visualisation/data/spatial_randomnoise_dur1-50_max0.2-3.0__net=brunel__std=5.0__inp=spatial_DC__steps=200000/capacity')
+    parser.add_argument('--capacity_folder',
+                        default='/home/schultetobrinke/projects/recurrence/repos/capacity_visualisation/capacity_visualisation/data/spatial_randomnoise_dur1-50_max0.2-3.0__net=brunel__std=5.0__inp=spatial_DC__steps=200000/capacity')
     parser.add_argument('--title', default=None)
     parser.add_argument('--steps', default=200000)
     # parser.add_argument('--nodes', default=50)
@@ -35,9 +36,12 @@ def parse_cmd():
     parser.add_argument('--inp', default='spatial_DC')
     parser.add_argument('--cutoff', default=0., type=float)
     parser.add_argument('--figure_path', default=None)
-    parser.add_argument('--plot_max_degrees', action='store_true', help="Plot the maximum degrees instead of the capacities")
-    parser.add_argument('--plot_max_delays', action='store_true', help="Plot the maximum delays instead of the capacities")
-    parser.add_argument('--plot_num_trials', action='store_true', help="Plot the number of trials instead of the capacities")
+    parser.add_argument('--plot_max_degrees', action='store_true',
+                        help="Plot the maximum degrees instead of the capacities")
+    parser.add_argument('--plot_max_delays', action='store_true',
+                        help="Plot the maximum delays instead of the capacities")
+    parser.add_argument('--plot_num_trials', action='store_true',
+                        help="Plot the number of trials instead of the capacities")
     parser.add_argument('--annotate', action='store_true', help="Turn on the annotations inside the heatmap")
     parser.add_argument('--use_filtered_spikes', action='store_true', help="")
     parser.add_argument('--mindegree', type=int, default=0)
