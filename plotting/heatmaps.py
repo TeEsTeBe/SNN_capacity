@@ -20,8 +20,10 @@ def cap_array(file_path, cutoff=0., mindegree=0, maxdegree=np.inf, mindelay=0, m
     all_capacities = data['all_capacities']
     all_capacities = [cap for cap in all_capacities if cap['degree'] >= mindegree]
     all_capacities = [cap for cap in all_capacities if cap['degree'] <= maxdegree]
-    all_capacities = [cap for cap in all_capacities if cap['delay'] >= mindelay]
-    all_capacities = [cap for cap in all_capacities if cap['delay'] <= maxdelay]
+    # all_capacities = [cap for cap in all_capacities if cap['delay'] >= mindelay]
+    # all_capacities = [cap for cap in all_capacities if cap['delay'] <= maxdelay]
+    all_capacities = [cap for cap in all_capacities if cap['delay'] + cap['window'] - 2 >= mindelay]
+    all_capacities = [cap for cap in all_capacities if cap['delay'] + cap['window'] - 2 <= maxdelay]
 
     capacities = [x['score'] if x['score'] > cutoff else 0 for x in all_capacities]
     # capacities = [x['score'] if x['score'] > cutoff else 0 for x in data['all_capacities']]
@@ -155,6 +157,9 @@ def plot_heatmap(x_name, y_name, capacity_folder, title, params_to_filter, cutof
     else:
         fig = None
     colorbar_label = get_colorbar_label(plot_max_degrees, plot_max_delays, plot_num_trials, plot_degree_delay_product)
+
+    print(f'max: {df.max().max()}')
+
     # ax = sns.heatmap(df, annot=True, annot_kws={"fontsize":6}, cbar_kws={'label': colorbar_label}, ax=ax, fmt=".0f")
     ax = sns.heatmap(df, annot=annotate, cbar_kws={'label': colorbar_label}, ax=ax, fmt=".0f", cmap=cmap)
     ax.invert_yaxis()
