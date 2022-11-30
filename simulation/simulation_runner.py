@@ -21,7 +21,7 @@ class SimulationRunner:
     def __init__(self, group_name, run_title, network_type, input_type, step_duration, num_steps, input_min_value,
                  input_max_value, n_spatial_encoder, spatial_std_factor, input_connection_probability, network_params,
                  background_rate, background_weight, noise_loop_duration, paramfile, data_dir, dt, spike_recorder_duration,
-                 raster_plot_duration, batch_steps, add_ac_current, enable_spike_filtering=False, num_threads=1):
+                 raster_plot_duration, batch_steps, add_ac_current, enable_spike_filtering=False, stop_if_statemat_exists=True, num_threads=1):
         logging.basicConfig(filename=f'{run_title}.log', level=logging.DEBUG, format=f'{run_title} %(asctime)s %(levelname)s: %(message)s')
         self.logger = logging.getLogger(run_title)
         self.logger.setLevel(logging.DEBUG)
@@ -105,6 +105,9 @@ class SimulationRunner:
             data_dir = general_utils.get_default_data_dir()
         self.results_folder = os.path.join(data_dir, 'simulation_runs', self.group_name, self.run_title)
         os.makedirs(self.results_folder, exist_ok=True)
+        if stop_if_statemat_exists and os.path.exists(os.path.join(self.results_folder, 'vm_statemat.npy')):
+            print('Stopping because state matrix exists already!')
+            exit(0)
         general_utils.print_memory_consumption('Memory usage - end init SimulationRunner', logger=self.logger)
 
     def _create_network(self):
