@@ -45,7 +45,10 @@ def draw_lines(axes, fig, fill_background=True):
     line_rho9 = FancyArrowPatch(posA=(0.67, 0.99), posB=(0.0518, 0.96), arrowstyle='-', transform=fig.transFigure,
                                 connectionstyle=ConnectionStyle('Angle', angleA=-180, angleB=-90, rad=0.2),
                                 lw=linewidth, color=rho09_color)
-    fig.patches.extend([box_rho9_1, box_rho9_2, line_rho9])
+    # arrow_rho9 = FancyArrowPatch(posA=(0.5, 0.99), posB=(0.6, 0.99), arrowstyle='->', transform=fig.transFigure, lw=linewidth, color=rho09_color)
+    # arrow_rho9 = FancyArrowPatch(posA=(0.25, 0.99), posB=(0.3, 0.99), arrowstyle='->', transform=fig.transFigure, lw=linewidth, color=rho09_color, mutation_scale=10)
+    arrow_rho9 = FancyArrowPatch(posA=(0.27, 0.98), posB=(0.3, 0.98), arrowstyle='->', transform=fig.transFigure, lw=1, color='k', mutation_scale=4)
+    fig.patches.extend([box_rho9_1, box_rho9_2, line_rho9, arrow_rho9])
     # rho113_color = 'lightgrey'
     conn_path = ConnectionPatch(xyA=(0.382, 1.03), xyB=(0.382, -0.23), coordsA='axes fraction', coordsB='axes fraction',
                                 axesA=axes['cap_heatmap'], axesB=axes['del_heatmap'], color=rho113_face_color, lw=linewidth,
@@ -56,12 +59,14 @@ def draw_lines(axes, fig, fill_background=True):
     line_rho113 = FancyArrowPatch(posA=(0.321, 0.33), posB=(0.119, 0.33), arrowstyle='-', transform=fig.transFigure,
                                   connectionstyle=ConnectionStyle('Angle', angleA=-180, angleB=-90, rad=0.2),
                                   lw=linewidth, color=rho113_color)
+    # arrow_rho113 = FancyArrowPatch(posA=(0.25, 0.33), posB=(0.3, 0.33), arrowstyle='->', transform=fig.transFigure, lw=linewidth, color=rho113_color, mutation_scale=10)
+    arrow_rho113 = FancyArrowPatch(posA=(0.27, 0.34), posB=(0.3, 0.34), arrowstyle='->', transform=fig.transFigure, lw=1., color='k', mutation_scale=4)
     arrow_01_113 = FancyArrowPatch(posA=(0.39, 0.35), posB=(0.39, 0.28), arrowstyle='->', mutation_scale=10,
                                    transform=fig.transFigure, lw=1, color='black')  # , zorder=-2)
     arrow_2_09 = FancyArrowPatch(posA=(0.59, 0.7), posB=(0.70, 0.27), arrowstyle='->', mutation_scale=10,
                                  transform=fig.transFigure, lw=1, color='black')  # , zorder=-2)
     # arrow_09_2 = FancyArrowPatch(posA=(0.32, 0.33), posB=(0.12, 0.33), arrowstyle='->', transform=fig.transFigure, connectionstyle=ConnectionStyle('Angle', angleA=-180, angleB=-90, rad=0.2), lw=linewidth, color=rho113_color)
-    fig.patches.extend([box_rho113, line_rho113, arrow_01_113, arrow_2_09])
+    fig.patches.extend([box_rho113, line_rho113, arrow_01_113, arrow_2_09, arrow_rho113])
 
 
 def plot_delay_tasks(ax, capacity_folder, specrad=0.9, use_cache=False):
@@ -473,7 +478,7 @@ def setup_pyplot():
     plt.rc('legend', fontsize=SMALL_SIZE)  # legend fontsize
     plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
     # plt.rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
-    plt.rc('font', family='serif')
+    # plt.rc('font', family='serif')
     matplotlib.rcParams['figure.dpi'] = 600
 
 
@@ -578,8 +583,6 @@ def main():
     fig.savefig(os.path.join(args.figures_folder, 'ESN_figure.jpg'))
     fig.savefig(os.path.join(args.figures_folder, 'ESN_figure.png'))
     # plt.show()
-
-
 
 
 if __name__ == "__main__":
