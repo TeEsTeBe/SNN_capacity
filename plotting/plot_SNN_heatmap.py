@@ -49,6 +49,7 @@ def parse_cmd():
     parser.add_argument('--mindelay', type=int, default=0)
     parser.add_argument('--maxdelay', type=int, default=np.inf)
     parser.add_argument('--y_axis_factor', type=float, default=1.)
+    parser.add_argument('--max_marker_color', type=str, default=None)
 
     return parser.parse_args()
 
@@ -88,6 +89,22 @@ def main():
     del args_dict['y_axis_factor']
 
     _, ax = plot_heatmap(**args_dict, other_filter_keys=other_filter_keys, ax=ax)
+
+    if net == 'microcircuit':
+        yticklabels = []
+        for ytick_label in ax.get_yticklabels():
+            tick_str = ytick_label.get_text()
+            tick_int = int(float(tick_str))
+            ytick_label.set_text(tick_int)
+            yticklabels.append(ytick_label)
+        ax.set_yticklabels(yticklabels, rotation=0)
+    xticklabels = []
+    for xtick_label in ax.get_xticklabels():
+        tick_str = xtick_label.get_text()
+        tick_int = int(float(tick_str))
+        xtick_label.set_text(tick_int)
+        xticklabels.append(xtick_label)
+    ax.set_xticklabels(xticklabels, rotation=90)
     # fig, ax = plot_heatmap(**args_dict, other_filter_keys=other_filter_keys)
     # ax.set_yticklabels([f'{args.y_axis_factor * float(n.get_text()):.3f}' for n in ax.get_yticklabels()])
     # ax.set_yticklabels([])  # Poster
