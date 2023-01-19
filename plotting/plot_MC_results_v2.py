@@ -500,7 +500,7 @@ def plot_heatmaps_and_bars(axes, cap_base_folder, use_cache):
                                 params_to_filter=params_to_filter, ax=axes['F'], cutoff=0., figure_path=None,
                                 plot_max_degrees=False, plot_max_delays=True, plot_num_trials=False,
                                 annotate=False, other_filter_keys=None, use_cache=use_cache,
-                                max_marker_color=noenc_color2, colorbar_label='')
+                                max_marker_color=noenc_color2, colorbar_label='', cbar_ticks=[0, 5, 10])
     axes['F'].add_patch(Rectangle((7, 14), 1, 1, fill=False, edgecolor=noenc_color1, lw=2, clip_on=False))
     axes['F'].set_yticklabels([])
     axes['F'].set_ylabel(None)
@@ -636,7 +636,8 @@ def plot_single_correlations_plot(ax, bar_width, cap_dict, cap_folder, cap_title
         'capacity': get_color('capacity'),
         'nonlin. cap. delay 5': '#77CBB9',
         'nonlinear capacity\ndelay 5': '#77CBB9',
-        'nonlin. cap. delay 10': '#2C0735',
+        # 'nonlin. cap. delay 10': '#2C0735',
+        'nonlin. cap. delay 10': get_color('accent', desaturated=True),
         'nonlinear capacity\ndelay 10': '#2C0735',
         'degrees': get_color('degree'),  # 'wheat',
         'delays': get_color('delay'),  # 'plum',
