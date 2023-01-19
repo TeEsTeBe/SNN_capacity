@@ -8,39 +8,54 @@ import matplotlib.pyplot as plt
 from plotting.colors import get_degree_color
 
 
-def cap2vec(capacities):
-    maxdeg = np.max([cap['degree'] for cap in capacities])
-    maxdel = np.max([cap['delay'] for cap in capacities])
-    vec = np.zeros((maxdeg + 1, maxdel))
-    for idx in range(len(capacities)):
-        delay = capacities[idx]['delay']
-        degree = capacities[idx]['degree']
-        if (delay <= maxdel) and (degree <= maxdeg):
-            vec[degree, delay - 1] += capacities[idx]['score']
+def cap2vec(capacities, dambre_delay=False):
+    if len(capacities) > 0:
+        maxdeg = np.nanmax([cap['degree'] for cap in capacities])
+        # maxdel = np.max([cap['delay'] for cap in capacities])
+        maxdel = np.nanmax([cap['delay'] + cap['window'] - 2 for cap in capacities])
+        # vec = np.zeros((maxdeg + 1, maxdel))
+        vec = np.zeros((maxdeg + 1, maxdel + 1))
+        for idx in range(len(capacities)):
+            if dambre_delay:
+                delay = capacities[idx]['delay'] - 1
+            else:
+                delay = capacities[idx]['delay'] + capacities[idx]['window'] - 2
+            degree = capacities[idx]['degree']
+            if (delay <= maxdel) and (degree <= maxdeg):
+                # vec[degree, delay - 1] += capacities[idx]['score']
+                vec[degree, delay] += capacities[idx]['score']
+    else:
+        print('capacities are empty!')
+        vec = np.array([[0]])
 
     return vec
 
 
-def plot_capacity_bars(capacity_dict, ax=None, cutoff=0., show_sums=False, max_degree_to_plot=None):
+def plot_capacity_bars(capacity_dict, ax=None, cutoff=0., show_sums=False, max_degree_to_plot=None, dambre_delay=False):
     if ax is None:
         fig, ax = plt.subplots()
     else:
         fig = None
 
     capacities = [cap for cap in capacity_dict['all_capacities'] if cap['score'] > cutoff]
-    cap_matrix = cap2vec(capacities)
+    cap_matrix = cap2vec(capacities, dambre_delay=dambre_delay)
     degrees = np.unique([cap['degree'] for cap in capacities])
     if max_degree_to_plot is not None:
         degrees = degrees[degrees <= max_degree_to_plot]
-    max_delay = np.max([cap['delay'] for cap in capacities])
+    # max_delay = np.max([cap['delay'] for cap in capacities])
+    max_delay = np.nanmax([cap['delay']+cap['window']-2 for cap in capacities])
 
-    previous_heights = np.zeros(max_delay)
-    max_degree_per_delay = np.zeros(max_delay)
+    # previous_heights = np.zeros(max_delay)
+    # max_degree_per_delay = np.zeros(max_delay)
+    previous_heights = np.zeros(max_delay + 1)
+    max_degree_per_delay = np.zeros(max_delay + 1)
     for deg in degrees:
         degree_capacities = cap_matrix[deg]
         degreecolor = get_degree_color(deg)
-        ax.bar(x=list(range(max_delay)), height=degree_capacities, bottom=previous_heights, label=f'degree {deg}',
+        ax.bar(x=list(range(max_delay+1)), height=degree_capacities, bottom=previous_heights, label=f'degree {deg}',
                linewidth=0, color=degreecolor)
+        # ax.bar(x=list(range(max_delay)), height=degree_capacities, bottom=previous_heights, label=f'degree {deg}',
+        #        linewidth=0, color=degreecolor)
         previous_heights += cap_matrix[deg]
         for delay in range(max_delay):
             if degree_capacities[delay] > 0.:
