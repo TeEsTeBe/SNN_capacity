@@ -191,3 +191,11 @@ def store_cached_file(data, locals_):
     filepath = get_cached_filepath(locals_)
     with open(filepath, 'wb') as f:
         pickle.dump(data, f)
+
+
+def to_alpha(squared_corr_coeff, var_ratio=1.):
+    return 1 / (np.sqrt((1 / squared_corr_coeff - 1) / var_ratio) + 1)
+
+
+def to_squared_corr(alpha, var_ratio=1.):
+    return 1 / (1 + var_ratio * (1 - alpha) ** 2 / alpha ** 2)
