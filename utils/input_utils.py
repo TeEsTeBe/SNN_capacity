@@ -141,6 +141,10 @@ def set_XORXOR_input_to_gaussian_spatial_encoder(input_values, encoding_generato
 
     times = start + np.arange(0.1, step_duration * len(input_values) + 0.1, step_duration)
 
+    # TODO: delete this!!!!
+    # final_values[875 - int(std):875 + int(std)] = 0.85 * max_value
+    # final_values[625 - int(std):625 + int(std)] = 0.85 * max_value
+
     if encoding_generator.model[0] == 'inhomogeneous_poisson_generator':
         nest.SetStatus(encoding_generator, [{'rate_times': times, 'rate_values': vals} for vals in final_values])
     elif encoding_generator.model[0] == 'step_current_generator':
