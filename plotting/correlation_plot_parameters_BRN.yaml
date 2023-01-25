@@ -1,0 +1,153 @@
+  cap_base_folder: '/home/schultetobrinke/nextcloud/Juelich/projects/recurrence/repos/capacity_visualisation/capacity_visualisation/data'
+  task_base_folder: '/home/schultetobrinke/projects/SNN_capacity/repos/ESN/scripts'
+  fig_folder: "/home/schultetobrinke/nextcloud/Juelich/projects/recurrence/repos/capacity_visualisation/capacity_visualisation/capacity_plots_new/BRN_plots"
+#  fig_folder: "/home/schultetobrinke/nextcloud/Juelich/projects/recurrence/repos/capacity_visualisation/capacity_visualisation/capacity_plots_new/microcircuit_plots"
+  use_spearmanr: False
+
+  cap_to_tasks_dict:
+    "spatial std 20 (without encoder)":
+      #      cap_groupname: "/home/schultetobrinke/nextcloud/Juelich/projects/recurrence/repos/capacity_visualisation/capacity_visualisation/data/spatial-encoding-rerun__inp=spatial_DC__net=brunel__std=20__noise_loop_duration=step_duration/network_capacity"
+      cap_groupname: "/home/schultetobrinke/nextcloud/Juelich/projects/recurrence/repos/capacity_visualisation/capacity_visualisation/data/spatial-encoding-rerun__inp=spatial_DC__net=brunel__std=20__noise_loop_duration=step_duration/network_capacity_with-alpha-transform"
+      tasks:
+        XOR: "BRN-scan-normalXOR-test__net=brunel__inp=spatial_DC_XOR__std=20__loop=step_duration__g=5.0__J=0.2"
+        'tXOR': 'BRN-scan-discrete-temporal-XOR-test__net=brunel__inp=spatial_DC_temporal_XOR__std=20__noise_loop_duration=step_duration__g=5.0__J=0.2'
+        #        'disc.  tXOR': 'BRN-scan-discrete-temporal-XOR-test__net=brunel__inp=spatial_DC_temporal_XOR__std=20__noise_loop_duration=step_duration__g=5.0__J=0.2'
+        #        'cont.  tXOR': 'BRN-scan-temporalXOR-test__net=brunel__inp=spatial_DC__std=20__loop=step_duration__g=5.0__J=0.2'
+        XORXOR: 'BRN-scan-spatial-XORXOR-test__net=brunel__inp=spatial_DC_XORXOR__std=20__noise_loop_duration=step_duration__g=5.0__J=0.2'
+        class.: 'BRN-scan-spatial-classification-test__net=brunel__inp=spatial_DC_classification__std=20__noise_loop_duration=step_duration__g=5.0__J=0.2'
+        NARMA5: 'BRN-scan-NARMA5-test__net=brunel__inp=spatial_DC__std=20__loop=step_duration__g=5.0__J=0.2'
+      #      figname: 'cap-task-correlations_no-ctXOR_spatial_std=20_noencoder-cap.nonlincap-upto-del5.pdf'
+      #      figname: 'cap-task-correlations_no-ctXOR_spatial_std=20_noencoder-cap.pdf'
+      figname: 'cap-task-correlations_no-ctXOR_spatial_std=20_noencoder-alpha-transform-cap.pdf'
+    #      figname: 'cap-task-spearmanr-correlations_spatial_std=20_noencoder-cap.pdf'
+    #      figname: 'cap-task-correlations_spatial_std=20_noencoder-cap.pdf'
+    "spatial std 20, removed enc, uniform tasks":
+      #      cap_groupname: "/home/schultetobrinke/nextcloud/Juelich/projects/recurrence/repos/capacity_visualisation/capacity_visualisation/data/spatial-encoding-rerun__inp=spatial_DC__net=brunel__std=20__noise_loop_duration=step_duration/network_capacity"
+      cap_groupname: "/home/schultetobrinke/nextcloud/Juelich/projects/recurrence/repos/capacity_visualisation/capacity_visualisation/data/spatial-encoding-rerun__inp=spatial_DC__net=brunel__std=20__noise_loop_duration=step_duration/network_capacity_with-alpha-transform"
+      tasks:
+        XOR: 'BRN-scan-uniformXOR-test__net=brunel__inp=uniform_DC_XOR__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'
+        'tXOR': 'BRN-scan-uniform-discrete-temporal-XOR-test__net=brunel__inp=uniform_DC_temporal_XOR__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'  # Poster
+        #        'disc.  tXOR': 'BRN-scan-uniform-discrete-temporal-XOR-test__net=brunel__inp=uniform_DC_temporal_XOR__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'  # Poster
+        #        'cont.  tXOR': 'BRN-scan-uniform-continuous-temporal-XOR-test__net=brunel__inp=uniform_DC__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'  # Poster
+        XORXOR: 'BRN-scan-uniform-XORXOR-test__net=brunel__inp=uniform_DC_XORXOR__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'
+        class.: 'BRN-scan-uniform-classification-test__net=brunel__inp=uniform_DC_classification__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'  # Poster
+        NARMA5: 'NARMA5_BRN-scan-uniform-NARMA10-test__net=brunel__inp=uniform_DC__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'
+      #      figname: 'cap-task-correlations_no-ctXOR_spatial_std=20-removed-enc_uniform-tasks.nonlincap-upto-del5.pdf'
+      #      figname: 'cap-task-correlations_no-ctXOR_spatial_std=20-removed-enc_uniform-tasks.pdf'
+      figname: 'cap-task-correlations_no-ctXOR_spatial_std=20-removed-enc-alpha-transform_uniform-tasks.pdf'
+    #      figname: 'cap-task-spearmanr-correlations_spatial_std=20-removed-enc_uniform-tasks.pdf'
+    #      figname: 'cap-task-correlations_spatial_std=20-removed-enc_uniform-tasks.pdf'
+    "spatial std 1, removed enc, uniform tasks":
+      #      cap_groupname: "/home/schultetobrinke/nextcloud/Juelich/projects/recurrence/repos/capacity_visualisation/capacity_visualisation/data/spatial-encoding-rerun__inp=spatial_DC__net=brunel__std=1__noise_loop_duration=step_duration/network_capacity"
+      cap_groupname: "/home/schultetobrinke/nextcloud/Juelich/projects/recurrence/repos/capacity_visualisation/capacity_visualisation/data/spatial-encoding-rerun__inp=spatial_DC__net=brunel__std=1__noise_loop_duration=step_duration/network_capacity_with-alpha-transform"
+      tasks:
+        XOR: 'BRN-scan-uniformXOR-test__net=brunel__inp=uniform_DC_XOR__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'
+        'tXOR': 'BRN-scan-uniform-discrete-temporal-XOR-test__net=brunel__inp=uniform_DC_temporal_XOR__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'  # Poster
+        #        'disc.  tXOR': 'BRN-scan-uniform-discrete-temporal-XOR-test__net=brunel__inp=uniform_DC_temporal_XOR__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'  # Poster
+        #        'cont.  tXOR': 'BRN-scan-uniform-continuous-temporal-XOR-test__net=brunel__inp=uniform_DC__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'  # Poster
+        XORXOR: 'BRN-scan-uniform-XORXOR-test__net=brunel__inp=uniform_DC_XORXOR__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'
+        class.: 'BRN-scan-uniform-classification-test__net=brunel__inp=uniform_DC_classification__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'  # Poster
+        NARMA5: 'NARMA5_BRN-scan-uniform-NARMA10-test__net=brunel__inp=uniform_DC__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'
+      #      figname: 'cap-task-correlations_no-ctXOR_spatial_std=1-removed-enc_uniform-tasks.nonlincap-upto-del5.pdf'
+      #      figname: 'cap-task-correlations_no-ctXOR_spatial_std=1-removed-enc_uniform-tasks.pdf'
+      figname: 'cap-task-correlations_no-ctXOR_spatial_std=1-removed-enc-alpha-transform_uniform-tasks.pdf'
+    #      figname: 'cap-task-spearmanr-correlations_spatial_std=1-removed-enc_uniform-tasks.pdf'
+    #      figname: 'cap-task-correlations_spatial_std=1-removed-enc_uniform-tasks.pdf'
+    "spatial std 20":
+      cap_groupname: "spatial-encoding-rerun__inp=spatial_DC__net=brunel__std=20__noise_loop_duration=step_duration"
+      tasks:
+        XOR: "BRN-scan-normalXOR-test__net=brunel__inp=spatial_DC_XOR__std=20__loop=step_duration__g=5.0__J=0.2"
+        'tXOR': 'BRN-scan-discrete-temporal-XOR-test__net=brunel__inp=spatial_DC_temporal_XOR__std=20__noise_loop_duration=step_duration__g=5.0__J=0.2'
+        #        'disc.  tXOR': 'BRN-scan-discrete-temporal-XOR-test__net=brunel__inp=spatial_DC_temporal_XOR__std=20__noise_loop_duration=step_duration__g=5.0__J=0.2'
+        #        'cont.  tXOR': 'BRN-scan-temporalXOR-test__net=brunel__inp=spatial_DC__std=20__loop=step_duration__g=5.0__J=0.2'
+        XORXOR: 'BRN-scan-spatial-XORXOR-test__net=brunel__inp=spatial_DC_XORXOR__std=20__noise_loop_duration=step_duration__g=5.0__J=0.2'
+        class.: 'BRN-scan-spatial-classification-test__net=brunel__inp=spatial_DC_classification__std=20__noise_loop_duration=step_duration__g=5.0__J=0.2'
+        NARMA5: 'BRN-scan-NARMA5-test__net=brunel__inp=spatial_DC__std=20__loop=step_duration__g=5.0__J=0.2'
+#      figname: 'cap-task-correlations_no-ctXOR_spatial_std=20_with-encoder-cap.nonlincap-upto-del5.pdf'
+      figname: 'cap-task-correlations_no-ctXOR_spatial_std=20_with-encoder-cap.pdf'
+    #      figname: 'cap-task-spearmanr-correlations_spatial_std=20_with-encoder-cap.pdf'
+    #      figname: 'cap-task-correlations_spatial_std=20_with-encoder-cap.pdf'
+    uniform:
+      #      cap_groupname: "uniform-encoding-fullscan__inp=uniform_DC__net=brunel__g=5.0__J=0.2__p=1.0__noise_loop_duration=step_duration"
+      cap_groupname: "uniform-encoding-fullscan__inp=uniform_DC__net=brunel__g=5.0__J=0.2__p=1.0__noise_loop_duration=step_duration"
+      tasks:
+        XOR: 'BRN-scan-uniformXOR-test__net=brunel__inp=uniform_DC_XOR__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'
+        'tXOR': 'BRN-scan-uniform-discrete-temporal-XOR-test__net=brunel__inp=uniform_DC_temporal_XOR__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'  # Poster
+        #        'disc.  tXOR': 'BRN-scan-uniform-discrete-temporal-XOR-test__net=brunel__inp=uniform_DC_temporal_XOR__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'  # Poster
+        #        'cont.  tXOR': 'BRN-scan-uniform-continuous-temporal-XOR-test__net=brunel__inp=uniform_DC__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'  # Poster
+        XORXOR: 'BRN-scan-uniform-XORXOR-test__net=brunel__inp=uniform_DC_XORXOR__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'
+        class.: 'BRN-scan-uniform-classification-test__net=brunel__inp=uniform_DC_classification__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'  # Poster
+        NARMA5: 'NARMA5_BRN-scan-uniform-NARMA10-test__net=brunel__inp=uniform_DC__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'
+#      figname: 'cap-task-correlations_no-ctXOR_uniform_p=1.0.nonlincap-upto-del5.pdf'
+      figname: 'cap-task-correlations_no-ctXOR_uniform_p=1.0.narma5.no-delsum.newcolors.pdf'
+      #      figname: 'cap-task-spearmanr-correlations_uniform_p=1.0.narma5.no-delsum.newcolors.pdf'
+      #      figname: 'cap-task-correlations_uniform_p=1.0.narma5.no-delsum.newcolors.pdf'
+      # figname: 'cap-task-correlations_BRN_poster.pdf'
+    "uniform (spatial tasks)":
+      cap_groupname: "uniform-encoding-fullscan__inp=uniform_DC__net=brunel__g=5.0__J=0.2__p=1.0__noise_loop_duration=step_duration"
+      tasks:
+        XOR: "BRN-scan-normalXOR-test__net=brunel__inp=spatial_DC_XOR__std=20__loop=step_duration__g=5.0__J=0.2"
+        'tXOR': 'BRN-scan-discrete-temporal-XOR-test__net=brunel__inp=spatial_DC_temporal_XOR__std=20__noise_loop_duration=step_duration__g=5.0__J=0.2'
+        XORXOR: 'BRN-scan-spatial-XORXOR-test__net=brunel__inp=spatial_DC_XORXOR__std=20__noise_loop_duration=step_duration__g=5.0__J=0.2'
+        class.: 'BRN-scan-spatial-classification-test__net=brunel__inp=spatial_DC_classification__std=20__noise_loop_duration=step_duration__g=5.0__J=0.2'
+        NARMA5: 'BRN-scan-NARMA5-test__net=brunel__inp=spatial_DC__std=20__loop=step_duration__g=5.0__J=0.2'
+#      figname: 'cap-task-correlations_no-ctXOR_uniform_p=1.0_spatial-std20-tasks.nonlincap-upto-del5.pdf'
+      figname: 'cap-task-correlations_no-ctXOR_uniform_p=1.0_spatial-std20-tasks.pdf'
+    "spatial std 1 (without encoder)":
+#      cap_groupname: "/home/schultetobrinke/nextcloud/Juelich/projects/recurrence/repos/capacity_visualisation/capacity_visualisation/data/spatial-encoding-rerun__inp=spatial_DC__net=brunel__std=1__noise_loop_duration=step_duration/network_capacity"
+      cap_groupname: "/home/schultetobrinke/nextcloud/Juelich/projects/recurrence/repos/capacity_visualisation/capacity_visualisation/data/spatial-encoding-rerun__inp=spatial_DC__net=brunel__std=1__noise_loop_duration=step_duration/network_capacity_with-alpha-transform"
+      tasks:
+        XOR: "BRN-scan-normalXOR-test__net=brunel__inp=spatial_DC_XOR__std=1__loop=step_duration__g=5.0__J=0.2"
+        'tXOR': 'BRN-scan-discrete-temporal-XOR-test__net=brunel__inp=spatial_DC_temporal_XOR__std=1__noise_loop_duration=step_duration__g=5.0__J=0.2'
+#        'disc.  tXOR': 'BRN-scan-discrete-temporal-XOR-test__net=brunel__inp=spatial_DC_temporal_XOR__std=1__noise_loop_duration=step_duration__g=5.0__J=0.2'
+#        'cont.  tXOR': 'BRN-scan-temporalXOR-test__net=brunel__inp=spatial_DC__std=1__loop=step_duration__g=5.0__J=0.2'
+        XORXOR: 'BRN-scan-spatial-XORXOR-test__net=brunel__inp=spatial_DC_XORXOR__std=1__noise_loop_duration=step_duration__g=5.0__J=0.2'
+        class.: 'BRN-scan-spatial-classification-test__net=brunel__inp=spatial_DC_classification__std=1__noise_loop_duration=step_duration__g=5.0__J=0.2'
+        NARMA5: 'BRN-scan-NARMA5-test__net=brunel__inp=spatial_DC__std=1__loop=step_duration__g=5.0__J=0.2'
+#      figname: 'cap-task-correlations_no-ctXOR_spatial_std=1_noencoder-cap.nonlincap-upto-del5.pdf'
+#      figname: 'cap-task-correlations_no-ctXOR_spatial_std=1_noencoder-cap.pdf'
+      figname: 'cap-task-correlations_no-ctXOR_spatial_std=1_noencoder-alpha-transform-cap.pdf'
+#      figname: 'cap-task-spearmanr-correlations_spatial_std=1_noencoder-cap.pdf'
+#      figname: 'cap-task-correlations_spatial_std=1_noencoder-cap.pdf'
+    "spatial std 1":
+      cap_groupname: "spatial-encoding-rerun__inp=spatial_DC__net=brunel__std=1__noise_loop_duration=step_duration"
+      tasks:
+        XOR: "BRN-scan-normalXOR-test__net=brunel__inp=spatial_DC_XOR__std=1__loop=step_duration__g=5.0__J=0.2"
+        'tXOR': 'BRN-scan-discrete-temporal-XOR-test__net=brunel__inp=spatial_DC_temporal_XOR__std=1__noise_loop_duration=step_duration__g=5.0__J=0.2'
+#        'disc.  tXOR': 'BRN-scan-discrete-temporal-XOR-test__net=brunel__inp=spatial_DC_temporal_XOR__std=1__noise_loop_duration=step_duration__g=5.0__J=0.2'
+#        'cont.  tXOR': 'BRN-scan-temporalXOR-test__net=brunel__inp=spatial_DC__std=1__loop=step_duration__g=5.0__J=0.2'
+        XORXOR: 'BRN-scan-spatial-XORXOR-test__net=brunel__inp=spatial_DC_XORXOR__std=1__noise_loop_duration=step_duration__g=5.0__J=0.2'
+        class.: 'BRN-scan-spatial-classification-test__net=brunel__inp=spatial_DC_classification__std=1__noise_loop_duration=step_duration__g=5.0__J=0.2'
+        NARMA5: 'BRN-scan-NARMA5-test__net=brunel__inp=spatial_DC__std=1__loop=step_duration__g=5.0__J=0.2'
+#      figname: 'cap-task-correlations_no-ctXOR_spatial_std=1_with-encoder-cap.nonlincap-upto-del5.pdf'
+      figname: 'cap-task-correlations_no-ctXOR_spatial_std=1_with-encoder-cap.pdf'
+#      figname: 'cap-task-spearmanr-correlations_spatial_std=1_with-encoder-cap.pdf'
+#      figname: 'cap-task-correlations_spatial_std=1_with-encoder-cap.pdf'
+    "spatial std 20, uniform tasks":
+      cap_groupname: "spatial-encoding-rerun__inp=spatial_DC__net=brunel__std=20__noise_loop_duration=step_duration"
+      tasks:
+        XOR: 'BRN-scan-uniformXOR-test__net=brunel__inp=uniform_DC_XOR__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'
+        'tXOR': 'BRN-scan-uniform-discrete-temporal-XOR-test__net=brunel__inp=uniform_DC_temporal_XOR__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'  # Poster
+#        'disc.  tXOR': 'BRN-scan-uniform-discrete-temporal-XOR-test__net=brunel__inp=uniform_DC_temporal_XOR__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'  # Poster
+#        'cont.  tXOR': 'BRN-scan-uniform-continuous-temporal-XOR-test__net=brunel__inp=uniform_DC__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'  # Poster
+        XORXOR: 'BRN-scan-uniform-XORXOR-test__net=brunel__inp=uniform_DC_XORXOR__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'
+        class.: 'BRN-scan-uniform-classification-test__net=brunel__inp=uniform_DC_classification__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'  # Poster
+        NARMA5: 'NARMA5_BRN-scan-uniform-NARMA10-test__net=brunel__inp=uniform_DC__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'
+#      figname: 'cap-task-correlations_no-ctXOR_spatial_std=20_uniform-tasks.nonlincap-upto-del5.pdf'
+      figname: 'cap-task-correlations_no-ctXOR_spatial_std=20_uniform-tasks.pdf'
+#      figname: 'cap-task-spearmanr-correlations_spatial_std=20_uniform-tasks.pdf'
+#      figname: 'cap-task-correlations_spatial_std=20_uniform-tasks.pdf'
+    "spatial std 1, uniform tasks":
+      cap_groupname: "spatial-encoding-rerun__inp=spatial_DC__net=brunel__std=1__noise_loop_duration=step_duration"
+      tasks:
+        XOR: 'BRN-scan-uniformXOR-test__net=brunel__inp=uniform_DC_XOR__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'
+        'tXOR': 'BRN-scan-uniform-discrete-temporal-XOR-test__net=brunel__inp=uniform_DC_temporal_XOR__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'  # Poster
+#        'disc.  tXOR': 'BRN-scan-uniform-discrete-temporal-XOR-test__net=brunel__inp=uniform_DC_temporal_XOR__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'  # Poster
+#        'cont.  tXOR': 'BRN-scan-uniform-continuous-temporal-XOR-test__net=brunel__inp=uniform_DC__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'  # Poster
+        XORXOR: 'BRN-scan-uniform-XORXOR-test__net=brunel__inp=uniform_DC_XORXOR__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'
+        class.: 'BRN-scan-uniform-classification-test__net=brunel__inp=uniform_DC_classification__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'  # Poster
+        NARMA5: 'NARMA5_BRN-scan-uniform-NARMA10-test__net=brunel__inp=uniform_DC__p=1.0__noise_loop_duration=step_duration__g=5.0__J=0.2'
+#      figname: 'cap-task-correlations_no-ctXOR_spatial_std=1_uniform-tasks.nonlincap-upto-del5.pdf'
+      figname: 'cap-task-correlations_no-ctXOR_spatial_std=1_uniform-tasks.pdf'
+#      figname: 'cap-task-spearmanr-correlations_spatial_std=1_uniform-tasks.pdf'
+#      figname: 'cap-task-correlations_spatial_std=1_uniform-tasks.pdf'
