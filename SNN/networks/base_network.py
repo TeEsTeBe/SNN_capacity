@@ -4,6 +4,8 @@ from SNN.utils import state_utils
 
 
 class BaseNetwork(ABC):
+    """ Base class for all spiking network models that defines the needed functions and variables """
+
     populations = None
     state_multimeter = None
     filter_state_multimeter = None

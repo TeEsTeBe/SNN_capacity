@@ -6,6 +6,14 @@ from SNN.utils import connection_utils, input_utils
 
 
 class Microcircuit(BaseNetwork):
+    """ Data based microcircuit network model
+
+    based on  T. Schulte to Brinke, R. Duarte, and A. Morrison,
+    “Characteristic columnar connectivity caters to cortical computation: Replication, simulation, and evaluation of a
+    microcircuit model,” Frontiers in Integrative Neuroscience, vol. 16, 2022, Accessed: Oct. 24, 2022. [Online].
+    Available: https://www.frontiersin.org/articles/10.3389/fnint.2022.923468
+
+    """
 
     # Connection weights in mV
     psp_amp_from_to = {
@@ -129,9 +137,6 @@ class Microcircuit(BaseNetwork):
         },
     }
 
-    # # input_weight = 1.9  # mV
-    # input_weight = 30. / base_neuron_pars['g_L']  # 1.924779612734342
-
     def __init__(self, neuron_model, neuron_params_exc, neuron_params_inh, N=560, S_rw=119.3304,
                  static_synapses=False, random_synaptic_dynamics=False, vt_l23exc=None, vt_l23inh=None, vt_l4exc=None,
                  vt_l4inh=None, vt_l5exc=None, vt_l5inh=None):
@@ -163,11 +168,6 @@ class Microcircuit(BaseNetwork):
         else:
             self.syn_params_from_to = connection_utils.create_synapse_parameters()
         self.conn_ids_from_to = self.connect_net()
-        # self.multimeter_sample_interval = multimeter_sample_interval
-        #
-        # if not disable_filter_neurons:
-        #     self.l23exc_filter_neurons_per_pop, self.l23exc_filter_multimeter = self.create_filter_neurons('l23_exc')
-        #     self.l5exc_filter_neurons_per_pop, self.l5exc_filter_multimeter = self.create_filter_neurons('l5_exc')
 
         self.statemat23exc = None
         self.statemat5exc = None
@@ -189,6 +189,8 @@ class Microcircuit(BaseNetwork):
             print('Destexhe NEST module has been installed before')
 
     def create_neuron_pars(self):
+        """ Sets up the neuron parameters for each population """
+
         neuron_pars = {
             'l23_exc': self.neuron_params_exc.copy(),
             'l23_inh': self.neuron_params_inh.copy(),
@@ -223,6 +225,15 @@ class Microcircuit(BaseNetwork):
         return neuron_pop_dicts
 
     def get_neurons_separated_by_exc_inh(self):
+        """ Creates a dict which contains the neurons separated by excitatory and inhibitory
+
+        Returns
+        -------
+        neurons: dict
+            dictionary with neurons separated by excitatory and inhibitory
+
+        """
+
         exc_neurons = None
         inh_neurons = None
         for pop_name, nodes in self.populations.items():
@@ -246,6 +257,17 @@ class Microcircuit(BaseNetwork):
         return neurons
 
     def create_populations(self):
+        """ Creates the populations of neurons that are the basis of the network
+
+        Returns
+        -------
+        populations: dict
+            dictionary with nest neuron collections for each population
+        pop_counts: dict
+            neuron counts for the different layers
+
+        """
+
         # Layer 2/3
         N23 = int(self.N * 0.3)
         N23e = int(N23 * 0.8)
@@ -284,91 +306,20 @@ class Microcircuit(BaseNetwork):
 
         return populations, pop_counts
 
-    # def create_filter_neurons(self, population_to_imitate, filter_tau=15., static_synapses=True):
-    #     # TODO: docstring
-    #
-    #     filter_neurons_per_pop = {}
-    #
-    #     for src_pop_name, src_pop_neuron_ids in self.populations.items():
-    #         conn_probability = self.probabilities_from_to[src_pop_name][population_to_imitate]
-    #         if conn_probability > 0.:
-    #
-    #             filter_neuron_pars = {
-    #                 'C_m': 1.,
-    #                 'E_L': 0.,
-    #                 'V_th': sys.float_info.max,
-    #                 'V_m': 0.,
-    #                 'V_reset': 0.,
-    #                 'tau_m': filter_tau,
-    #             }
-    #
-    #             # pairwise bernoulli connections
-    #             presynaptic_neurons = []
-    #             while len(presynaptic_neurons) == 0:  # for small N (for example 160) it can happen that no random_values <= conn_prob
-    #                 random_values = np.random.uniform(low=0., high=1., size=len(src_pop_neuron_ids))
-    #                 presynaptic_neurons = src_pop_neuron_ids[random_values <= conn_probability]
-    #
-    #             filter_neurons = nest.Create('iaf_psc_exp', n=len(presynaptic_neurons), params=filter_neuron_pars)
-    #
-    #             conn_dict = {'rule': 'one_to_one'}
-    #             if static_synapses:
-    #                 weight = 1. if src_pop_name.endswith('exc') else -1.
-    #                 syn_dict = {'weight': weight}
-    #                 connections = nest.Connect(presynaptic_neurons, filter_neurons, syn_spec=syn_dict, conn_spec=conn_dict)
-    #             else:
-    #                 syn_dict = self.syn_params_from_to[src_pop_name[-3:]][population_to_imitate[-3:]]
-    #                 syn_dict['weight'] = connection_utils.calc_synaptic_weight(
-    #                     psp_amp=self.psp_amp_from_to[src_pop_name][population_to_imitate],
-    #                     scaling_factor=self.S_rw,
-    #                     exc_or_inh_src=src_pop_name[-3:],
-    #                     g_L=self.neuron_pars[src_pop_name]['g_L']
-    #                 )
-    #                 connections = connection_utils.connect_population_pair(presynaptic_neurons, filter_neurons,
-    #                                                                        syn_dict=syn_dict, conn_dict=conn_dict)
-    #
-    #             filter_neurons_per_pop[src_pop_name] = filter_neurons
-    #
-    #     multimeter_params = {'record_from': ['V_m'], 'interval': self.multimeter_sample_interval}
-    #     multimeter = nest.Create('multimeter', params=multimeter_params)
-    #     for filter_neurons in filter_neurons_per_pop.values():
-    #         nest.Connect(multimeter, filter_neurons, syn_spec={'weight': 1., 'delay': 0.1})
-    #
-    #     return filter_neurons_per_pop, multimeter
-
-    # def calculate_state_matrices(self):
-    #     mult5exc_status = nest.GetStatus(self.l5exc_filter_multimeter)[0]['events']
-    #     senders5exc = mult5exc_status['senders']
-    #     n_senders_5exc = np.unique(senders5exc).size
-    #     vms5exc = mult5exc_status['V_m']
-    #     self.statemat5exc = general_utils.order_array_by_ids(array_to_order=vms5exc, n_possible_ids=n_senders_5exc,
-    #                                                          ids=senders5exc).T
-    #
-    #     mult23exc_status = nest.GetStatus(self.l23exc_filter_multimeter)[0]['events']
-    #     senders23exc = mult23exc_status['senders']
-    #     n_senders_23exc = np.unique(senders23exc).size
-    #     vms23exc = mult23exc_status['V_m']
-    #     self.statemat23exc = general_utils.order_array_by_ids(array_to_order=vms23exc, n_possible_ids=n_senders_23exc, ids=senders23exc).T
-    #
-    #     print('\n## Statemat stats')
-    #     print('- l23_exc')
-    #     print(f'\t- min: {np.min(vms23exc)}')
-    #     print(f'\t- max: {np.max(vms23exc)}')
-    #     print(f'\t- mean: {np.mean(vms23exc)}')
-    #     print('- l5_exc')
-    #     print(f'\t- min: {np.min(vms5exc)}')
-    #     print(f'\t- max: {np.max(vms5exc)}')
-    #     print(f'\t- mean: {np.mean(vms5exc)}')
-    #
-    # def get_state_matrices(self, discard_steps=0, steps_per_trial=1):
-    #     statemats = {
-    #         'l23_exc': self.statemat23exc[discard_steps + steps_per_trial - 1::steps_per_trial],
-    #         'l5_exc': self.statemat5exc[discard_steps + steps_per_trial - 1::steps_per_trial],
-    #     }
-    #
-    #     return statemats
-
     def connect_net(self, print_connections=False):
-        # TODO: refactoring
+        """ Connects the neuron populations to create the networks connectivity structure
+
+        Parameters
+        ----------
+        print_connections: bool
+            whether to print the generated connections between populations
+
+        Returns
+        -------
+        connection_ids_from_to: dict
+            dictionary that contains all nest Connections in the network, organized by dict[src_pop][trg_pop]
+
+        """
 
         connection_ids_from_to = {}
         for (src_pop, trg_w_dict), (_, trg_probs) in zip(self.psp_amp_from_to.items(), self.probabilities_from_to.items()):
@@ -407,13 +358,34 @@ class Microcircuit(BaseNetwork):
         return connection_ids_from_to
 
     def connect_input_stream1(self, spike_generators, scaling_factor, weight=None):
+        """ Connects the first input stream to the network"""
+
         self.connect_input_stream(spike_generators, self.probabilities_from_input1, scaling_factor, weight=weight)
 
     def connect_input_stream2(self, spike_generators, scaling_factor, weight=None):
+        """ Connects the second input stream to the network"""
+
         self.connect_input_stream(spike_generators, self.probabilities_from_input2, scaling_factor, weight=weight)
 
     def connect_input_stream(self, spike_generators, connection_probabilities, scaling_factor, weight=None):
-        # TODO: docstring
+        """ Connects one of the input streams to the network
+
+        Parameters
+        ----------
+        spike_generators
+            NEST spike generators that will be connected to the network
+        connection_probabilities: dict
+            dictionary with the connection probabilities for all populations
+        scaling_factor: float
+            scaling factor of the connection weight
+        weight: float
+            weight of the input connections
+
+        Returns
+        -------
+        None
+
+        """
 
         if weight is None:
             scaled_input_weight = connection_utils.calc_synaptic_weight(
@@ -434,6 +406,26 @@ class Microcircuit(BaseNetwork):
                 connection_utils.randomize_conn_parameter(spike_generators, pop_neurons, 'weight', scaled_input_weight, 0.7)
 
     def add_spiking_noise(self, rate=None, weight=None, loop_duration=None):
+        """ Creates a spike generator and connects it to all populations
+
+        Parameters
+        ----------
+        rate: float
+            firing rate of the spike trains that should be generated
+        weight: float
+            weight for the connections from the generator to the network
+        loop_duration: float
+            if this is not None the generator produces frozen noise, that repeats every loop_duration ms
+
+        Returns
+        -------
+        noise_generator
+            nest poisson generator object
+        parrots
+            nest parrot neurons that are used to generate the frozen noise
+
+        """
+
         if rate is None:
             rate = 20.
 
@@ -500,6 +492,8 @@ class Microcircuit(BaseNetwork):
         return [noise_generators_s1, noise_generators_s2]
 
     def get_state_populations(self):
+        """ Returns the populations for the readout"""
+
         state_populations = {}
         for pop_name, pop_neurons in self.populations.items():
             if 'exc' in pop_name:
@@ -508,7 +502,7 @@ class Microcircuit(BaseNetwork):
         return state_populations
 
     def get_input_populations(self):
-        # self._input_populations = self.get_state_populations()
+        """ Returns the populations that get an input signal """
 
         if self._input_populations is None:
             self._input_populations = {}

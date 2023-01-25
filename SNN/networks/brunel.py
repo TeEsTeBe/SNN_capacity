@@ -7,6 +7,7 @@ from SNN.utils import input_utils
 
 
 class BrunelNetwork(BaseNetwork):
+    """ Balanced random network with two populations """
 
     default_neuron_params = {
         'C_m': 1.0,  # membrane capacity (pF)
@@ -46,6 +47,8 @@ class BrunelNetwork(BaseNetwork):
         self.connect_net()
 
     def _create_populations(self):
+        """ Creates the populations of neurons that are the basis of the network """
+
         params_with_distribution = {}
         neuron_params_copy = deepcopy(self.neuron_params)
         for parname, parvalue in self.neuron_params.items():
@@ -79,6 +82,8 @@ class BrunelNetwork(BaseNetwork):
         return pop_dict
 
     def connect_net(self):
+        """ Connects the neuron populations to create the networks connectivity structure """
+
         Jinh = -self.g * self.J
         # conn_dict = {'rule': 'pairwise_bernoulli', 'p': self.density}
         conn_dict_exc = {'rule': 'fixed_indegree', 'indegree': self.CE}
@@ -96,6 +101,26 @@ class BrunelNetwork(BaseNetwork):
         nest.Connect(self.populations['I'], self.populations['E'], syn_spec=syn_dict_inh, conn_spec=conn_dict_inh)
 
     def add_spiking_noise(self, rate=None, weight=None, loop_duration=None):
+        """ Creates a spike generator and connects it to all populations
+
+        Parameters
+        ----------
+        rate: float
+            firing rate of the spike trains that should be generated
+        weight: float
+            weight for the connections from the generator to the network
+        loop_duration: float
+            if this is not None the generator produces frozen noise, that repeats every loop_duration ms
+
+        Returns
+        -------
+        noise_generator
+            nest poisson generator object
+        parrots
+            nest parrot neurons that are used to generate the frozen noise
+
+        """
+
         if rate is None:
             rate = 40. * self.CE
 

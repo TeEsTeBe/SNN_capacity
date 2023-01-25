@@ -26,6 +26,22 @@ def print_memory_consumption(message, logger):
 
 
 def spikelist_from_recorder(spikedetector, stop=None, start=None):
+    """ Creates a fna SpikeList object from a nest spike detector
+
+    Parameters
+    ----------
+    spikedetector
+        nest spike detector
+    stop: float
+        stop time for the SpikeList in ms
+    start: float
+        start time for the SpikeList in ms
+
+    Returns
+    -------
+    fna SpikeList object
+
+    """
     detector_status = nest.GetStatus(spikedetector)[0]['events']
     senders = detector_status['senders']
     times = detector_status['times']
@@ -98,6 +114,22 @@ def combine_nodelists(list_of_nodelists):
 
 
 def filter_paths(paths, params_to_filter, other_filter_keys=None):
+    """ Filters the paths list based on the given parameters
+
+    Parameters
+    ----------
+    paths: list
+        unfiltered path strings
+    params_to_filter: dict
+        keys are the parameter names and values are the parameter values that should be written in the paths
+    other_filter_keys: list
+        other strings that should be present in the path strings
+
+    Returns
+    -------
+    list of paths that fit to the filter parameters
+
+    """
     filtered_paths = paths
 
     for paramname, paramvalue in params_to_filter.items():
@@ -127,6 +159,8 @@ def translate(param_name):
 
 
 def default_cast_function(value):
+    """ casts value to the correct numeric value if possible """
+
     if value.isnumeric():
         casted_value = int(value)
     else:
@@ -139,6 +173,22 @@ def default_cast_function(value):
 
 
 def get_param_from_path(pathstr, param_name, cast_function=default_cast_function):
+    """ Reads out a parameter value from a given path string
+
+    Parameters
+    ----------
+    pathstr: str
+        path string that contains the parameter value
+    param_name: str
+        parameter name
+    cast_function
+        optional function to cast the found paramter value string
+
+    Returns
+    -------
+    parameter value
+
+    """
     re_result = re.search(f'_{param_name}=([^_^\/^-]+)_', pathstr)
     if not re_result:
         re_result = re.search(f'_{param_name}=([^_^\/^-]+).pkl', pathstr)
@@ -161,6 +211,8 @@ def _remove_memory_address(string):
 
 
 def get_cached_filepath(locals_):
+    """ Returns the filepath to the cached data for the given parameters """
+
     parameters = deepcopy(locals_)
     for key in parameters.keys():
         if key.startswith('_'):
@@ -177,6 +229,8 @@ def get_cached_filepath(locals_):
 
 
 def get_cached_file(locals_):
+    """ Returns cached data based on the given parameters, if it exists. Returns None otherwise """
+
     filepath = get_cached_filepath(locals_)
     if os.path.exists(filepath):
         with open(filepath, 'rb') as f:
@@ -188,6 +242,8 @@ def get_cached_file(locals_):
 
 
 def store_cached_file(data, locals_):
+    """ Stores data that was generated with the given locals_ parameters """
+
     filepath = get_cached_filepath(locals_)
     with open(filepath, 'wb') as f:
         pickle.dump(data, f)

@@ -31,6 +31,22 @@ def create_spike_filtering_multimeter(population_list, interval, filter_tau):
 
 
 def create_spike_recorder(population_list, start=None, stop=None):
+    """ Creates spike recorders that record from the given population list
+
+    Parameters
+    ----------
+    population_list
+        populations to record from
+    start: float
+        recording start time in ms
+    stop
+        recording stop time in ms
+
+    Returns
+    -------
+    the generated nest spike recorders
+
+    """
     spike_recorder = nest.Create('spike_recorder')
     if start is not None:
         nest.SetStatus(spike_recorder, {'start': start})
