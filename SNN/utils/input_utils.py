@@ -4,6 +4,23 @@ import scipy.stats
 
 
 def add_poisson_noise(population_list, rate, weight):
+    """ Creates a poisson generator and connects it to the given populations
+
+    Parameters
+    ----------
+    population_list: list
+        list of neuron collections
+    rate: float
+        firing rate of the poisson generator
+    weight: float
+        weight for the connection from the generator to the populations
+
+    Returns
+    -------
+    poisson_generator
+        NEST poisson generator object
+
+    """
     poisson_generator = nest.Create('poisson_generator', {'rate': rate})
     for pop in population_list:
         nest.Connect(poisson_generator, pop, 'all_to_all', {'weight': weight})
@@ -12,6 +29,29 @@ def add_poisson_noise(population_list, rate, weight):
 
 
 def add_repeating_noise(population_list, rate, weight, loop_duration, connect_to_populations=True):
+    """ Adds repeating frozen noise to the given populations
+
+    Parameters
+    ----------
+    population_list: list
+        list of neuron nodecollections
+    rate: float
+        firing rate of the noise
+    weight: float
+        weigth for the connection between the generator and the neurons
+    loop_duration: float
+        duration of a single cycle of noise
+    connect_to_populations: bool
+        whether to directly connect the generator to the population or only create it without connecting
+
+    Returns
+    -------
+    poisson_generator
+        poisson generator object that generates the initial spikes that are then looped through the parrots
+    all_parrots
+        parrot neurons that are used to loop the noise
+
+    """
     poisson_generator = nest.Create('poisson_generator', {'rate': rate, 'stop': loop_duration})
     all_parrots = nest.NodeCollection()
     for pop in population_list:
@@ -26,6 +66,26 @@ def add_repeating_noise(population_list, rate, weight, loop_duration, connect_to
 
 
 def get_rate_encoding_generator(input_values, step_duration, min_rate, max_rate):
+    """ Creates the inhomogeneous poisson generator used for the rate encoded inputs
+
+    Parameters
+    ----------
+    input_values: list
+        input values that will be encoded
+    step_duration: float
+        duration of a single step in ms
+    min_rate: float
+        minimum rate of the generator
+    max_rate: float
+        maximum rate of the generator
+
+    Returns
+    -------
+    generator
+        inhomogenous poisson generator object
+
+    """
+
     rates = np.interp(input_values, (-1, 1), (min_rate, max_rate))
     times = np.arange(0.1, step_duration * len(input_values) + 0.1, step_duration)
     generator = nest.Create('inhomogeneous_poisson_generator')
@@ -140,10 +200,6 @@ def set_XORXOR_input_to_gaussian_spatial_encoder(input_values, encoding_generato
             final_values[:] += values[:]
 
     times = start + np.arange(0.1, step_duration * len(input_values) + 0.1, step_duration)
-
-    # TODO: delete this!!!!
-    # final_values[875 - int(std):875 + int(std)] = 0.85 * max_value
-    # final_values[625 - int(std):625 + int(std)] = 0.85 * max_value
 
     if encoding_generator.model[0] == 'inhomogeneous_poisson_generator':
         nest.SetStatus(encoding_generator, [{'rate_times': times, 'rate_values': vals} for vals in final_values])

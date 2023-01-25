@@ -5,8 +5,19 @@ import nest
 
 
 def create_synapse_parameters(synapse_model='tsodyks2_synapse'):
-    # syn_name = 'tsodyks2_synapse'
-    # syn_name = 'tsodyks_synapse'
+    """ Creates the default synapse parameters for the given synapse model
+
+    Parameters
+    ----------
+    synapse_model: str
+        name of the synapse model
+
+    Returns
+    -------
+    syn_params_from_to: dict
+        dictionary with synapse parameters, separated by excitatory and inhibitory synapses
+
+    """
 
     if synapse_model == 'static_synapse':
         syn_params_from_to = {
@@ -49,6 +60,8 @@ def create_synapse_parameters(synapse_model='tsodyks2_synapse'):
 
 
 def calc_synaptic_weight(psp_amp, scaling_factor, exc_or_inh_src, g_L):
+    """ Calculates the weight from the given psp amplitude and leak conductance """
+
     exc_codes = ['e', 'exc', 'ex', 'excitatory']
     inh_codes = ['i', 'inh', 'in', 'inhibitory']
     if exc_or_inh_src in exc_codes:
@@ -74,6 +87,8 @@ def calc_synaptic_weight(psp_amp, scaling_factor, exc_or_inh_src, g_L):
 
 
 def get_conn_parameter_distribution(mean, part_std, size, minimum=0., maximum=2**32, use_truncnorm=False):
+    """ Returns the distribution of the synapse parameter """
+
     if use_truncnorm:
         a = (minimum - mean) / abs(0.7 * mean)
         b = maximum
@@ -89,6 +104,8 @@ def get_conn_parameter_distribution(mean, part_std, size, minimum=0., maximum=2*
 
 
 def randomize_conn_parameter(source, target, param, mean, part_std, minimum=0., maximum=2**32, use_truncnorm=False):
+    """ Randomizes the given synapse parameter for the given source and target """
+
     conn = nest.GetConnections(source=source, target=target)
     distribution = get_conn_parameter_distribution(mean=mean, part_std=part_std, size=len(conn), minimum=minimum,
                                                    maximum=maximum, use_truncnorm=use_truncnorm)
@@ -97,8 +114,27 @@ def randomize_conn_parameter(source, target, param, mean, part_std, minimum=0., 
 
 
 def connect_population_pair(source_ids, target_ids, syn_dict, conn_dict, static_synapses=False):
-    # TODO: rename to connect_population_pair_with_randomization
-    # TODO: docstring
+    """ Connects the two given neuron populations and randomizes the synapse parameters
+
+    Parameters
+    ----------
+    source_ids
+        nest neuron ids of the source population
+    target_ids
+        nest neuron ids of the target population
+    syn_dict: dict
+        dictionary with the synapse parameters
+    conn_dict
+        dictionary with the connection parameters
+    static_synapses: bool
+        whether to use static synapses instead of tsodyks
+
+    Returns
+    -------
+    connections
+        the NEST connection ids
+
+    """
 
     connections = nest.Connect(source_ids, target_ids, conn_spec=conn_dict, syn_spec=syn_dict)
     randomize_conn_parameter(source_ids, target_ids, 'weight', syn_dict['weight'], 0.7)
@@ -123,6 +159,7 @@ def connect_population_pair(source_ids, target_ids, syn_dict, conn_dict, static_
 
 
 def get_in_and_outdegrees(neuron_nodecollection):
+    """ Calculates the indegrees and outdegrees of the given neuron node collection """
     outdegrees = []
     indegrees = []
     for neuron in neuron_nodecollection:
@@ -142,6 +179,19 @@ def get_in_and_outdegrees(neuron_nodecollection):
 
 
 def get_total_degrees_per_pop(network):
+    """ Calculates the total degree for all populations
+
+    Parameters
+    ----------
+    network
+        network object for the degree calculation
+
+    Returns
+    -------
+    degrees_per_pop: dict
+        dictionary with all total degrees, separated by population
+
+    """
     degrees_per_pop = {}
     for pop_name, pop_neurons in network.populations.items():
         indegrees, outdegrees = get_in_and_outdegrees(pop_neurons)
@@ -155,6 +205,8 @@ def get_total_degrees_per_pop(network):
 
 
 def get_network_graph(network):
+    """ Creates a networkx graph object from the network connectivity structure """
+
     network_neurons = nest.NodeCollection([])
     for neurons in network.populations.values():
         network_neurons += neurons
