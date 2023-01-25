@@ -88,6 +88,8 @@ def add_capacity_percent_twinx(ax, N=447, add_label=False):
     ytwin_ticklabels = [int(100 * t / N) for t in ax.get_yticks()][1:]
     if ytwin_ticklabels[0] == 4 and ytwin_ticklabels[1] == 8:  # for spatial microcircuit plot (looks nicer that way)
         ytwin_ticklabels[2] = 12
+    if ytwin_ticklabels[3] == 6 and ytwin_ticklabels[4] == 8 and ytwin_ticklabels[5] == 11:  # looks nicer for MC uniform
+        ytwin_ticklabels[5] = 10
     ytwin_tickpositions = [N * t / 100. for t in ytwin_ticklabels]
     axtwin.set_yticks(ytwin_tickpositions, labels=ytwin_ticklabels)
     if add_label:
@@ -225,7 +227,7 @@ def colorize_spines(ax, color):
 
 
 def setup_axes():
-    fig = plt.figure(figsize=(9, 6))
+    fig = plt.figure(figsize=(8, 7))
     left_space = 10
     top_space = 5
     gs = fig.add_gridspec(100+top_space, 100+left_space)
@@ -347,9 +349,9 @@ def main():
     draw_lines(fig, axes)
 
     fontsize = 14
-    fig.text(0.01, 0.825, 'uniform', size=fontsize, rotation=90)
-    fig.text(0.01, 0.625, 'spatial', size=fontsize, rotation=90)
-    fig.text(0.01, 0.37, 'no encoder', size=fontsize, rotation=90)
+    fig.text(0.01, 0.83, 'uniform', size=fontsize, rotation=90)
+    fig.text(0.01, 0.63, 'spatial', size=fontsize, rotation=90)
+    fig.text(0.01, 0.38, 'no encoder', size=fontsize, rotation=90)
 
 
     # plt.show()
@@ -591,7 +593,7 @@ def plot_correlations(axes, use_cache):
             },
             "figname": 'MC_cap-task-correlations_spatial_std=20.pdf'
         },
-        "uniform (spatial tasks)": {
+        "uniform\n(spatial tasks)": {
             "axes_letter": '8',
             "cap_groupname": "iaf-diffVth-microcircuit_uniform-encoding_frozennoise__inp=uniform_DC__net=microcircuit__p=1.0__noise_loop_duration=step_duration",
             "tasks": {
