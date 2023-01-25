@@ -4,7 +4,7 @@ import argparse
 import numpy as np
 import yaml
 
-from utils.input_utils import get_gaussian_input_values
+from SNN.utils.input_utils import get_gaussian_input_values
 
 
 def parse_cmd():

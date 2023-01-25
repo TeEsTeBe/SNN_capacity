@@ -10,8 +10,8 @@ import nest.raster_plot
 import nest.random
 import matplotlib.pyplot as plt
 
-from networks import brunel, alzheimers, microcircuit
-from utils import state_utils, input_utils, general_utils, connection_utils
+from SNN.networks import alzheimers, brunel, microcircuit
+from SNN.utils import state_utils, input_utils, general_utils, connection_utils
 
 
 class SimulationRunner:
@@ -88,7 +88,8 @@ class SimulationRunner:
         self.input_min_value = input_min_value
         self.input_max_value = input_max_value
         if n_spatial_encoder == 'n_input_neurons':
-            self.n_spatial_encoder = len(general_utils.combine_nodelists(list(self.network.get_input_populations().values())))
+            self.n_spatial_encoder = len(
+                general_utils.combine_nodelists(list(self.network.get_input_populations().values())))
         else:
             self.n_spatial_encoder = n_spatial_encoder
         self.spatial_std_factor = spatial_std_factor
@@ -224,7 +225,7 @@ class SimulationRunner:
         input_weight = 1. if '_DC' in self.input_type else self.network.input_weight
         if '_rate' in self.input_type and self.network_type == 'microcircuit':
             scaling_factor_s1 = 14.85
-            input_weight = connection_utils.calc_synaptic_weight(input_weight, scaling_factor_s1,'exc', self.network.neuron_params_exc['g_L'])
+            input_weight = connection_utils.calc_synaptic_weight(input_weight, scaling_factor_s1, 'exc', self.network.neuron_params_exc['g_L'])
 
         if 'uniform_' in self.input_type:
             input_weight = nest.random.uniform(min=-input_weight, max=input_weight)

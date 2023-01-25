@@ -1,4 +1,4 @@
-from networks.brunel import BrunelNetwork
+from SNN.networks.brunel import BrunelNetwork
 
 
 class AlzheimersNetwork(BrunelNetwork):

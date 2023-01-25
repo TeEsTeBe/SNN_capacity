@@ -2,8 +2,8 @@ from copy import deepcopy
 import numpy as np
 import nest
 
-from networks.base_network import BaseNetwork
-from utils import input_utils, state_utils
+from SNN.networks.base_network import BaseNetwork
+from SNN.utils import input_utils
 
 
 class BrunelNetwork(BaseNetwork):
@@ -85,6 +85,8 @@ class BrunelNetwork(BaseNetwork):
         conn_dict_inh = {'rule': 'fixed_indegree', 'indegree': self.CI}
         conn_dict_ee = {'rule': 'fixed_indegree', 'indegree': self.CEE}
         syn_dict_exc = {'weight': self.J, 'delay': self.delay}
+        # syn_dict_exc = {'weight': np.sqrt(10)*0.1, 'delay': self.delay}
+        # syn_dict_exc = {'weight': 0., 'delay': self.delay}
         syn_dict_inh = {'weight': Jinh, 'delay': self.delay}
 
         # nest.Connect(self.populations['E'], self.populations['E'], syn_spec=syn_dict_exc, conn_spec=conn_dict_exc)

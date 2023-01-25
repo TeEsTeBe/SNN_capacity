@@ -3,7 +3,7 @@ import argparse
 
 import numpy as np
 
-from utils.input_utils import get_gaussian_XOR_input_values
+from SNN.utils.input_utils import get_gaussian_XOR_input_values
 
 
 def parse_cmd():

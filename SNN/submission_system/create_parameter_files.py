@@ -3,8 +3,8 @@ import itertools
 import copy
 import numpy as np
 import yaml
-from submission_system.parameters import params, derive_parameters
-from utils import general_utils
+from SNN.submission_system.parameters import params, derive_parameters
+from SNN.utils import general_utils
 
 
 def get_dict_combinations(dictionary):

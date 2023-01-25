@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from utils import state_utils
+from SNN.utils import state_utils
 
 
 class BaseNetwork(ABC):
