@@ -10,7 +10,7 @@ import yaml
 from matplotlib import pyplot as plt
 from matplotlib.patches import Rectangle
 
-from utils.general_utils import filter_paths, translate, get_param_from_path, get_cached_file, store_cached_file
+from SNN.utils.general_utils import filter_paths, translate, get_param_from_path, get_cached_file, store_cached_file
 from colors import get_color
 
 

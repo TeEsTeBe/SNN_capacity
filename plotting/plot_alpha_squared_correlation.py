@@ -5,7 +5,7 @@ from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 
-from utils.general_utils import to_squared_corr
+from SNN.utils.general_utils import to_squared_corr
 from colors import adjust_color
 
 

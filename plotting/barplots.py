@@ -1,17 +1,15 @@
 import copy
 import os
 import pickle
-import re
 from copy import deepcopy
 
 import numpy as np
-import seaborn as sns
 from colour import Color
 from matplotlib import pyplot as plt
 
 # import utils
 from plotting.colors import get_degree_color
-from utils.general_utils import translate, get_param_from_path, filter_paths, get_cached_file, store_cached_file
+from SNN.utils.general_utils import translate, get_param_from_path, filter_paths, get_cached_file, store_cached_file
 
 
 def plot_bars_delay_level(dict_list, names, title='Capacities', savepath=None, delay_shading_step=10,

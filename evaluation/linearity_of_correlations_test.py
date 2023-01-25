@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from utils.general_utils import to_alpha, to_squared_corr
+from SNN.utils.general_utils import to_alpha, to_squared_corr
 
 
 def main():
