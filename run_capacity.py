@@ -122,9 +122,8 @@ def parse_cmd():
     return parser.parse_args()
 
 
-def main():
+def main(args):
     print('================= Processing Capacity =================')
-    args = parse_cmd()
     inputs = np.load(args.input)
     print(f'Loading state matrix from {args.states_path}', flush=True)
     states = np.load(args.states_path)
@@ -246,4 +245,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(parse_cmd())
