@@ -11,9 +11,9 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import scipy.special
 
-import capacity.capacities as CAP
+from capacity import capacity_calculation
 
-CAP.test_loading()
+capacity_calculation.test_loading()
 
 
 def plot_capacity_histogram(capacity_dict, ax=None, max=None, min=None, **kwargs):
@@ -32,16 +32,6 @@ def plot_capacity_histogram(capacity_dict, ax=None, max=None, min=None, **kwargs
     ax.set_title('capacity histogram')
 
     return fig, ax
-
-
-# def cap2vec(capacities, maxdel=1000, maxdeg=10):
-#     vec = np.zeros((maxdeg+1, maxdel+1))
-#     for idx in range(len(capacities)):
-#         delay = capacities[idx]['delay']
-#         degree = capacities[idx]['degree']
-#         if (delay <= maxdel) and (degree <= maxdeg):
-#             vec[degree, delay-1] += capacities[idx]['score']
-#     return vec
 
 
 def cap2vec(capacities):
@@ -95,9 +85,9 @@ def plot_capacity_cumsum(capacity_dict, ax=None):
     cumsums = np.cumsum(capacities)
     ax.plot(capacities, cumsums)
     for c in [0.05, 0.1, 0.15, 0.2, 0.5, 1.]:
-        y = cumsums[capacities<=c][-1]
+        y = cumsums[capacities <= c][-1]
         ax.axvline(c, ymax=y, color='lightgrey')
-        ax.text(c, y, f'{round(y,2)}')
+        ax.text(c, y, f'{round(y, 2)}')
 
     ax.set_ylabel('capacity cumsum')
     ax.set_xlabel('cutoff')
@@ -132,13 +122,10 @@ def parse_cmd():
     return parser.parse_args()
 
 
-if __name__ == '__main__':
+def main():
     print('================= Processing Capacity =================')
     args = parse_cmd()
-
-    # load inputs and
     inputs = np.load(args.input)
-
     print(f'Loading state matrix from {args.states_path}', flush=True)
     states = np.load(args.states_path)
     if states.shape[1] > states.shape[0]:
@@ -146,13 +133,11 @@ if __name__ == '__main__':
         states = states.T
     if args.n_warmup > 0:
         print(f'Discarding first {args.n_warmup} steps.', flush=True)
-        # inputs = inputs[args.n_warmup:, :]
         inputs = inputs[args.n_warmup:]
         states = states[args.n_warmup:, :]
         if states.shape[0] > inputs.shape[0]:
             states = states[:-1, :]
         print(f'State shape: {states.shape}, input shape: {inputs.shape}', flush=True)
-
     if args.sample_size is not None or args.sample_ids is not None:
         if args.sample_ids is not None and os.path.exists(args.sample_ids):
             print(f'Using precomputed sample ids from {args.sample_ids}', flush=True)
@@ -169,24 +154,27 @@ if __name__ == '__main__':
         states = states[:, ::args.sample_step]
     else:
         print('Using full state matrix without subsampling.', flush=True)
-
     # run the processing capacity
     time_before_cap = time()
     if args.use_scipy:
-        cap_iter = CAP.capacity_iterator(verbose=args.verbosity, orth_factor=args.orth_factor, maxdeg=args.max_degree,
-                                         maxdel=args.max_delay, m_variables=args.m_variables, m_powerlist=args.m_powerlist,
-                                         m_windowpos=args.m_windowpos,
-                                         basis=lambda n, x: scipy.special.legendre(n)(x), delskip=args.delskip,
-                                         windowskip=args.windowskip)
+        cap_iter = capacity_calculation.capacity_iterator(verbose=args.verbosity, orth_factor=args.orth_factor,
+                                                          maxdeg=args.max_degree,
+                                                          maxdel=args.max_delay, m_variables=args.m_variables,
+                                                          m_powerlist=args.m_powerlist,
+                                                          m_windowpos=args.m_windowpos,
+                                                          basis=lambda n, x: scipy.special.legendre(n)(x),
+                                                          delskip=args.delskip,
+                                                          windowskip=args.windowskip)
     else:
-        cap_iter = CAP.capacity_iterator(verbose=args.verbosity, orth_factor=args.orth_factor, maxdeg=args.max_degree,
-                                         maxdel=args.max_delay, m_variables=args.m_variables, m_powerlist=args.m_powerlist,
-                                         m_windowpos=args.m_windowpos,
-                                         delskip=args.delskip, windowskip=args.windowskip)
+        cap_iter = capacity_calculation.capacity_iterator(verbose=args.verbosity, orth_factor=args.orth_factor,
+                                                          maxdeg=args.max_degree,
+                                                          maxdel=args.max_delay, m_variables=args.m_variables,
+                                                          m_powerlist=args.m_powerlist,
+                                                          m_windowpos=args.m_windowpos,
+                                                          delskip=args.delskip, windowskip=args.windowskip)
     total_capacity, all_capacities, num_capacities, nodes = cap_iter.collect(inputs, states)
     cap_duration = time() - time_before_cap
-    print(f'Capacity computation took {cap_duration} sec ({cap_duration/60.} min).', flush=True)
-
+    print(f'Capacity computation took {cap_duration} sec ({cap_duration / 60.} min).', flush=True)
     full_results = {
         'name': args.name,
         'total_capacity': total_capacity,
@@ -195,15 +183,12 @@ if __name__ == '__main__':
         'nodes': nodes,
         'compute_time': cap_duration,
     }
-
     with open(args.capacity_results, 'wb') as pklfile:
         pickle.dump(full_results, pklfile)
         print(f'Results saved to {args.capacity_results}', flush=True)
-
     try:
 
         os.makedirs(args.figures_path, exist_ok=True)
-        # plt.savefig(os.path.join(args.figures_path, f'{args.name}.pdf'))
         for cutoff in [0.05, 0.1, 0.15, 0.2]:
             plt.clf()
             fig, ax = plot_capacity_bars(full_results, cutoff=cutoff)
@@ -222,25 +207,8 @@ if __name__ == '__main__':
         plot_capacity_cumsum(full_results)
         plt.savefig(os.path.join(args.figures_path, f'cap_cumsums_{args.name}.pdf'))
 
-        # plt.clf()
-        # fig, ax = plt.subplots(figsize=(40, 40))
-        # delays = list(range(max_delay+1))
-        # for degree in range(1, max_degree+1):
-        #     previous_sum = np.sum(degree_delay_cap_array[:degree, :], axis=0)
-        #     current_sum = np.sum(degree_delay_cap_array[:degree+1, :], axis=0)
-        #     degree_cap_sum = np.sum(degree_delay_cap_array[degree, :])
-        #     ax.fill_between(delays, current_sum, previous_sum, label=f'degree {degree}, capacity = {round(degree_cap_sum, 2)}')
-        #
-        # plt.legend()
-        # plt.title(f'{args.name}')
-        # plt.xlabel('delay')
-        # plt.ylabel('capacity')
-        # plt.savefig(os.path.join(args.figure_path, f'smooth_delay_caps_{args.name}.pdf'))
-
-
     except:
         print(f"Error while plotting: {sys.exc_info()[0]}", flush=True)
-
     if args.results_file is not None:
         result_dict = {
             'name': [args.name],
@@ -275,3 +243,7 @@ if __name__ == '__main__':
             result_df.to_csv(args.results_file, mode='a', sep='\t', header=False, index=False)
         else:
             result_df.to_csv(args.results_file, sep='\t', header=True, index=False)
+
+
+if __name__ == '__main__':
+    main()
