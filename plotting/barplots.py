@@ -257,19 +257,19 @@ def default_cast_function(value):
 def plot_capacity_bars(x_name, capacity_folder, title, params_to_filter, cutoff, delay_shading_step, annotate,
                        annotate_sums, ax=None, other_filter_keys=None, disable_legend=False, use_cache=False,
                        overwrite_cache=False, precalculated_data_path=None):
-    capacity_dict_paths = [os.path.join(capacity_folder, filename) for filename in os.listdir(capacity_folder)]
-    capacity_dict_paths = filter_paths(capacity_dict_paths, params_to_filter, other_filter_keys=other_filter_keys)
-    x_values = np.unique([get_param_from_path(dictpath, x_name) for dictpath in capacity_dict_paths])
-
     params = deepcopy(locals())
     cached_data = get_cached_file(params)
     if precalculated_data_path is not None:
+        x_values = [round(x, 1) for x in np.arange(0.1, 2.001, 0.1)]
         with open(precalculated_data_path, 'rb') as data_file:
             averaged_capacities_per_x = pickle.load(data_file)
     elif use_cache and cached_data is not None:
         averaged_capacities_per_x = cached_data
         print('using cached file')
     else:
+        capacity_dict_paths = [os.path.join(capacity_folder, filename) for filename in os.listdir(capacity_folder)]
+        capacity_dict_paths = filter_paths(capacity_dict_paths, params_to_filter, other_filter_keys=other_filter_keys)
+        x_values = np.unique([get_param_from_path(dictpath, x_name) for dictpath in capacity_dict_paths])
         averaged_capacities_per_x = []
         for x in x_values:
             x_paths = [dp for dp in capacity_dict_paths if f"{x_name}={x}_" in dp]

@@ -575,7 +575,7 @@ def get_axes(fig):
     return axes
 
 
-def main(capacity_folder, figures_folder, xor_results_folder=None, xorxor_results_folder=None,
+def main(capacity_folder=None, figures_folder='figures', xor_results_folder=None, xorxor_results_folder=None,
          classification_results_folder=None, use_cache=True, use_precalculated=True):
 
     os.makedirs(figures_folder, exist_ok=True)
