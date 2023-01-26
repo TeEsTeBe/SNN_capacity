@@ -69,7 +69,7 @@ def draw_lines(axes, fig, fill_background=True):
     fig.patches.extend([box_rho113, line_rho113, arrow_01_113, arrow_2_09, arrow_rho113])
 
 
-def plot_delay_tasks(ax, capacity_folder, specrad=0.9, use_cache=False):
+def plot_delay_tasks(ax, capacity_folder, specrad=0.9, classification_results_folder=None, use_cache=False, use_precalculated=False):
     params_to_filter = {
         'steps': 100000,
         'nodes': 50,
@@ -77,70 +77,69 @@ def plot_delay_tasks(ax, capacity_folder, specrad=0.9, use_cache=False):
     }
 
     ax2 = ax.twinx()
-    # ax.grid(False)
     ax2.grid(False)
 
-    classification_results_folder = '/home/schultetobrinke/nextcloud/Juelich/projects/SNN_capacity/repos/ESN/data/DelayedClassificationdiff-iscaling'
-    filter_strings = [
-        '_testratio=0.3_',
-        '_steps=100000_',
-        f'_specrad={specrad}_',
-        '_nwarmup=500_',
-        '_nodes=50_',
-    ]
-
-    classification_folders = os.listdir(classification_results_folder)
-    for filterstr in filter_strings:
-        classification_folders = [f for f in classification_folders if filterstr in f]
 
     cmap = matplotlib.cm.Greys
-    # cmap = matplotlib.cm.RdPu
-    # cmap = matplotlib.cm.YlOrBr
 
     classification_delays = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
-    # delay_colors = plt.cm.Greens(np.linspace(0, 1, len(classification_delays)))
-    # delay_colors = plt.cm.Blues(np.linspace(0, 1, len(classification_delays)))
     delay_colors = cmap(np.linspace(0, 1, len(classification_delays)))
 
-    for delay_idx, delay in enumerate(classification_delays):
-        print(f'-------------- Delay: {delay} -------------')
-        classification_accuracies = {}
-        for iscaling in [round(x, 1) for x in np.arange(0.1, 2.001, 0.1)]:
-            print(iscaling)
+    if use_precalculated:
+        with open(os.path.join('data', 'ESN_delayed_classification_results.pkl'), 'rb') as class_results_file:
+            delay_to_classification_accuracies = pickle.load(class_results_file)
+    else:
+        # classification_results_folder = '/home/schultetobrinke/nextcloud/Juelich/projects/SNN_capacity/repos/ESN/data/DelayedClassificationdiff-iscaling'
+        filter_strings = [
+            '_testratio=0.3_',
+            '_steps=100000_',
+            f'_specrad={specrad}_',
+            '_nwarmup=500_',
+            '_nodes=50_',
+        ]
 
-            classification_is_files = [os.path.join(classification_results_folder, f, 'test_results.yml') for f in
-                                       classification_folders if
-                                       f"inpscaling={iscaling}" in f and f'delay={delay}_' in f]
-            classification_accuracies[iscaling] = []
-            for classificationfile in classification_is_files:
-                with open(classificationfile, 'r') as classification_results_file:
-                    classification_accuracies[iscaling].append(yaml.safe_load(classification_results_file)['accuracy'])
+        classification_folders = os.listdir(classification_results_folder)
+        for filterstr in filter_strings:
+            classification_folders = [f for f in classification_folders if filterstr in f]
+        delay_to_classification_accuracies = {}
+        for delay_idx, delay in enumerate(classification_delays):
+            print(f'-------------- Delay: {delay} -------------')
+            classification_accuracies = {}
+            for iscaling in [round(x, 1) for x in np.arange(0.1, 2.001, 0.1)]:
+                print(iscaling)
+
+                classification_is_files = [os.path.join(classification_results_folder, f, 'test_results.yml') for f in
+                                           classification_folders if
+                                           f"inpscaling={iscaling}" in f and f'delay={delay}_' in f]
+                classification_accuracies[iscaling] = []
+                for classificationfile in classification_is_files:
+                    with open(classificationfile, 'r') as classification_results_file:
+                        classification_accuracies[iscaling].append(yaml.safe_load(classification_results_file)['accuracy'])
+            delay_to_classification_accuracies[delay] = classification_accuracies.copy()
+
+    for delay_idx, delay in enumerate(classification_delays):
+        classification_accuracies = delay_to_classification_accuracies[delay]
         ax.plot(list(classification_accuracies.keys()), [np.mean(x) for x in classification_accuracies.values()],
                 label=f'class, del {delay}', color=delay_colors[delay_idx])
 
     ax.set_xlabel(translate('inpscaling'))
     ax.set_ylabel('classification accuracy')
-    # ax.legend()
 
-    data = get_heatmap_data(x_name='specrad', y_name='inpscaling', capacity_folder=capacity_folder,
-                            params_to_filter=params_to_filter, get_max_delays=True, use_cache=use_cache)
+    if use_precalculated:
+        with open(os.path.join('data', 'ESN_delays.pkl'), 'rb') as delays_file:
+            data = pickle.load(delays_file)
+    else:
+        data = get_heatmap_data(x_name='specrad', y_name='inpscaling', capacity_folder=capacity_folder,
+                                params_to_filter=params_to_filter, get_max_delays=True, use_cache=use_cache)
     inpscalings = list(data[specrad].keys())
     delays = list(data[specrad].values())
 
     ax2.set_ylabel('max. capacity delay')
-    # ax2.plot(inpscalings, delays, color='k', label='max. capacity\ndelay', linestyle='--', lw=2)
     ax2.plot(inpscalings, delays, color=get_color('delay', desaturated=True), label='max. capacity\ndelay',
              linestyle='--', lw=2)
     ax2.legend(loc='center right')
 
-    # colorbar = mpl.colorbar.ColorBase(cax, cmap='Greens', vim=1, vmax=10)
-    # colorbar.set_label('classification delay')
-    # cmap = matplotlib.cm.Greens
-    # cmap = matplotlib.cm.Blues
-    # cmap = matplotlib.cm.Greys
     norm = plt.Normalize(vmin=1, vmax=15)
-    # plt.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap),cax=cax, orientation='horizontal')
-    # plt.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap),ax=ax, orientation='horizontal')
     cbar = plt.colorbar(matplotlib.cm.ScalarMappable(norm=norm, cmap=cmap), orientation='horizontal',
                         label='classification delay', ticks=classification_delays[::2], pad=0.2, ax=ax)
     cbar.ax.tick_params(labelsize=10)
@@ -148,8 +147,8 @@ def plot_delay_tasks(ax, capacity_folder, specrad=0.9, use_cache=False):
     return ax
 
 
-def plot_degree_tasks(ax, capacity_folder, specrad=0.9, use_cache=False):
-    # capacity_folder = '/home/schultetobrinke/projects/recurrence/repos/capacity_visualisation/capacity_visualisation/data/ESN-iscaling-rscaling'
+def plot_degree_tasks(ax, capacity_folder, specrad=0.9, use_cache=False, use_precalculated=False,
+                      xor_results_folder=None, xorxor_results_folder=None):
 
     params_to_filter = {
         'steps': 100000,
@@ -157,61 +156,64 @@ def plot_degree_tasks(ax, capacity_folder, specrad=0.9, use_cache=False):
         'nwarmup': 500,
     }
 
-    data = get_heatmap_data(x_name='specrad', y_name='inpscaling', capacity_folder=capacity_folder,
-                            params_to_filter=params_to_filter, get_max_degrees=True, use_cache=use_cache)
+    if use_precalculated:
+        with open(os.path.join('data', 'ESN_degrees.pkl'), 'rb') as degrees_file:
+            data = pickle.load(degrees_file)
+    else:
+        data = get_heatmap_data(x_name='specrad', y_name='inpscaling', capacity_folder=capacity_folder,
+                                params_to_filter=params_to_filter, get_max_degrees=True, use_cache=use_cache)
     inpscalings = list(data[specrad].keys())
     degrees = list(data[specrad].values())
 
-    # fig, ax = plt.subplots(figsize=(4.5, 3.5))
-    # fig, ax = plt.subplots(figsize=(3 * (4 / 3), 3 * (5 / 6)))
+    if use_precalculated:
+        with open(os.path.join('data', 'ESN_xor_results.pkl'), 'rb') as xor_file:
+            xor_kappas = pickle.load(xor_file)
+        with open(os.path.join('data', 'ESN_xorxor_results.pkl'), 'rb') as xorxor_file:
+            xorxor_kappas = pickle.load(xorxor_file)
+    else:
+        # xor_results_folder = '/home/schultetobrinke/nextcloud/Juelich/projects/SNN_capacity/repos/ESN/data/XORdiff-iscaling'
+        # xorxor_results_folder = '/home/schultetobrinke/nextcloud/Juelich/projects/SNN_capacity/repos/ESN/data/XORXORdiff-iscaling'
 
-    # xor_results_folder = '/home/schultetobrinke/projects/teaching/repos/ESN/data/XORdiff-iscaling'
-    xor_results_folder = '/home/schultetobrinke/nextcloud/Juelich/projects/SNN_capacity/repos/ESN/data/XORdiff-iscaling'
-    xorxor_results_folder = '/home/schultetobrinke/nextcloud/Juelich/projects/SNN_capacity/repos/ESN/data/XORXORdiff-iscaling'
+        filter_strings = [
+            '_testratio=0.3_',
+            '_steps=20000_',
+            f'_specrad={specrad}_',
+            '_nwarmup=500_',
+            '_nodes=50_',
+        ]
 
-    filter_strings = [
-        '_testratio=0.3_',
-        '_steps=20000_',
-        f'_specrad={specrad}_',
-        '_nwarmup=500_',
-        '_nodes=50_',
-    ]
+        xor_folders = os.listdir(xor_results_folder)
+        xorxor_folders = os.listdir(xorxor_results_folder)
+        for filterstr in filter_strings:
+            xor_folders = [f for f in xor_folders if filterstr in f]
+            xorxor_folders = [f for f in xorxor_folders if filterstr in f]
 
-    xor_folders = os.listdir(xor_results_folder)
-    xorxor_folders = os.listdir(xorxor_results_folder)
-    for filterstr in filter_strings:
-        xor_folders = [f for f in xor_folders if filterstr in f]
-        xorxor_folders = [f for f in xorxor_folders if filterstr in f]
+        xor_kappas = {}
+        xorxor_kappas = {}
+        for iscaling in [round(x, 1) for x in np.arange(0.1, 2.001, 0.1)]:
+            print(iscaling)
 
-    xor_kappas = {}
-    xorxor_kappas = {}
-    for iscaling in [round(x, 1) for x in np.arange(0.1, 2.001, 0.1)]:
-        print(iscaling)
+            xor_is_files = [os.path.join(xor_results_folder, f, 'test_results.yml') for f in xor_folders if
+                            f"inpscaling={iscaling}" in f]
+            xor_kappas[iscaling] = []
+            for xorfile in xor_is_files:
+                with open(xorfile, 'r') as xor_results_file:
+                    xor_kappas[iscaling].append(yaml.safe_load(xor_results_file)['kappa'])
 
-        xor_is_files = [os.path.join(xor_results_folder, f, 'test_results.yml') for f in xor_folders if
-                        f"inpscaling={iscaling}" in f]
-        xor_kappas[iscaling] = []
-        for xorfile in xor_is_files:
-            with open(xorfile, 'r') as xor_results_file:
-                xor_kappas[iscaling].append(yaml.safe_load(xor_results_file)['kappa'])
-
-        xorxor_is_files = [os.path.join(xorxor_results_folder, f, 'test_results.yml') for f in xorxor_folders if
-                           f"inpscaling={iscaling}" in f]
-        xorxor_kappas[iscaling] = []
-        for xorxorfile in xorxor_is_files:
-            with open(xorxorfile, 'r') as xorxor_results_file:
-                xorxor_kappas[iscaling].append(yaml.safe_load(xorxor_results_file)['kappa'])
+            xorxor_is_files = [os.path.join(xorxor_results_folder, f, 'test_results.yml') for f in xorxor_folders if
+                               f"inpscaling={iscaling}" in f]
+            xorxor_kappas[iscaling] = []
+            for xorxorfile in xorxor_is_files:
+                with open(xorxorfile, 'r') as xorxor_results_file:
+                    xorxor_kappas[iscaling].append(yaml.safe_load(xorxor_results_file)['kappa'])
     xorline = ax.plot(list(xor_kappas.keys()), [np.mean(x) for x in xor_kappas.values()], label='XOR',
                       color=get_color('XOR'))
     xorxorline = ax.plot(list(xorxor_kappas.keys()), [np.mean(x) for x in xorxor_kappas.values()], label='XORXOR',
                          color=get_color('XORXOR'))
     ax.set_ylabel('kappa score')
     ax.set_xlabel(translate('inpscaling'))
-    # ax.legend()
     ax2 = ax.twinx()
-    # ax.grid(False)
     ax2.grid(False)
-    # degreeline = ax2.plot(inpscalings, degrees, color='tab:green', label='degree')
     degreeline = ax2.plot(inpscalings, degrees, color=get_color('degree'), label='degree')
     ax2.set_ylabel('max degree')
 
@@ -222,7 +224,7 @@ def plot_degree_tasks(ax, capacity_folder, specrad=0.9, use_cache=False):
     return ax
 
 
-def plot_heatmaps(capacity_folder, axes, use_cache=False):
+def plot_heatmaps(capacity_folder, axes, use_cache=False, use_precalculated=False):
     heatmap_params = {
         'cap_heatmap': {
             'title': 'total capacity',
@@ -263,6 +265,10 @@ def plot_heatmaps(capacity_folder, axes, use_cache=False):
             # 'figure_name': 'ESN_max_delay_heatmap.pdf'
         },
     }
+    if use_precalculated:
+        heatmap_params['cap_heatmap']['precalculated_data_path'] = os.path.join('data', 'ESN_capacities.pkl')
+        heatmap_params['deg_heatmap']['precalculated_data_path'] = os.path.join('data', 'ESN_degrees.pkl')
+        heatmap_params['del_heatmap']['precalculated_data_path'] = os.path.join('data', 'ESN_delays.pkl')
     for i, (ax_label, params) in enumerate(heatmap_params.items()):
         ax = axes[ax_label]
         params['params_to_filter'] = {
@@ -288,9 +294,14 @@ def plot_heatmaps(capacity_folder, axes, use_cache=False):
     return axes
 
 
-def plot_bars_for_different_inputscaling(capacity_folder, axes, use_cache=False):
+def plot_bars_for_different_inputscaling(capacity_folder, axes, use_cache=False, use_precalculated=False):
     nodes = 50
     ax1 = axes['capbars09']
+    if use_precalculated:
+        precalculated_data_path = os.path.join('data', 'ESN_capbars_rho0.9.pkl')
+    else:
+        precalculated_data_path = None
+
     ax1 = barplots.plot_capacity_bars(
         x_name='inpscaling',
         capacity_folder=capacity_folder,
@@ -307,11 +318,16 @@ def plot_bars_for_different_inputscaling(capacity_folder, axes, use_cache=False)
         annotate_sums=False,
         ax=ax1,
         disable_legend=True,
-        use_cache=use_cache
+        use_cache=use_cache,
+        precalculated_data_path=precalculated_data_path
     )
     ax1.set_ylim((0, nodes))
 
     ax2 = axes['capbars113']
+    if use_precalculated:
+        precalculated_data_path = os.path.join('data', 'ESN_capbars_rho1.13.pkl')
+    else:
+        precalculated_data_path = None
 
     ax2 = barplots.plot_capacity_bars(
         x_name='inpscaling',
@@ -329,7 +345,8 @@ def plot_bars_for_different_inputscaling(capacity_folder, axes, use_cache=False)
         annotate_sums=False,
         ax=ax2,
         disable_legend=True,
-        use_cache=use_cache
+        use_cache=use_cache,
+        precalculated_data_path=precalculated_data_path
     )
     ax2.set_ylim((0, nodes))
 
@@ -355,15 +372,20 @@ def filter_cap_dict_paths(capacity_folder, inpscaling, specrad):
     return filtered_paths
 
 
-def plot_single_run_bars(capacity_folder, axes):
-    dict_path_f = filter_cap_dict_paths(capacity_folder, inpscaling=2.0, specrad=0.9)[0]
+def plot_single_run_bars(capacity_folder, axes, use_precalculated=False):
+    if use_precalculated:
+        dict_path_f = os.path.join('data', 'ESN_single_capacities_i2.0_rho0.9.pkl')
+        dict_path_g = os.path.join('data', 'ESN_single_capacities_i0.1_rho1.13.pkl')
+    else:
+        dict_path_f = filter_cap_dict_paths(capacity_folder, inpscaling=2.0, specrad=0.9)[0]
+        dict_path_g = filter_cap_dict_paths(capacity_folder, inpscaling=0.1, specrad=1.13)[0]
+
     with open(dict_path_f, 'rb') as dict_file_f:
         dict_f = pickle.load(dict_file_f)
 
     _, axes['single_cap09'] = cap_bars_single_run.plot_capacity_bars(dict_f, axes['single_cap09'])
     axes['single_cap09'].set_title(r"capacities ($\iota$ = 2, $\rho$ = 0.9)")
 
-    dict_path_g = filter_cap_dict_paths(capacity_folder, inpscaling=0.1, specrad=1.13)[0]
     with open(dict_path_g, 'rb') as dict_file_g:
         dict_g = pickle.load(dict_file_g)
     _, axes['single_cap113'] = cap_bars_single_run.plot_capacity_bars(dict_g, axes['single_cap113'])
@@ -486,9 +508,16 @@ def parse_cmd():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--capacity_folder', type=str, help='Path to the folder with the capacity results',
-                        required=True)
+                        default=None)
     parser.add_argument('--figures_folder', type=str, help='Path to the folder where the figures will be stored',
-                        required=True)
+                        default='figures')
+    parser.add_argument('--xor_results_folder', type=str, help='Path to the folder with the XOR task results',
+                        default=None)
+    parser.add_argument('--xorxor_results_folder', type=str, help='Path to the folder with the XORXOR task results',
+                        default=None)
+    parser.add_argument('--classification_results_folder', type=str, help='Path to the folder with the delayed '
+                                                                          'classification task results',
+                        default=None)
 
     return parser.parse_args()
 
@@ -546,44 +575,48 @@ def get_axes(fig):
     return axes
 
 
-def main():
-    args = parse_cmd()
+def main(capacity_folder, figures_folder, xor_results_folder=None, xorxor_results_folder=None,
+         classification_results_folder=None, use_cache=True, use_precalculated=True):
 
-    os.makedirs(args.figures_folder, exist_ok=True)
+    os.makedirs(figures_folder, exist_ok=True)
 
     setup_pyplot()
 
-    use_cache = True
     fig = plt.figure(figsize=(7.5, 5.625))
     axes = get_axes(fig)
 
     print('start degree task')
-    plot_degree_tasks(axes['deg_tasks'], capacity_folder=args.capacity_folder, use_cache=use_cache)
+    plot_degree_tasks(axes['deg_tasks'], capacity_folder=capacity_folder, use_cache=use_cache,
+                      xor_results_folder=xor_results_folder, xorxor_results_folder=xorxor_results_folder,
+                      use_precalculated=use_precalculated)
     print('starg delay tasks')
-    plot_delay_tasks(axes['del_tasks'], capacity_folder=args.capacity_folder, use_cache=use_cache)
+    plot_delay_tasks(axes['del_tasks'], capacity_folder=capacity_folder,
+                     classification_results_folder=classification_results_folder, use_cache=use_cache,
+                     use_precalculated=use_precalculated)
 
     sns.set()
     setup_pyplot()
 
     print('start single bars')
-    plot_single_run_bars(capacity_folder=args.capacity_folder, axes=axes)
+    plot_single_run_bars(capacity_folder=capacity_folder, axes=axes, use_precalculated=use_precalculated)
     print('start heatmaps')
-    plot_heatmaps(capacity_folder=args.capacity_folder, axes=axes, use_cache=use_cache)
+    plot_heatmaps(capacity_folder=capacity_folder, axes=axes, use_cache=use_cache, use_precalculated=use_precalculated)
     print('start capbars')
-    plot_bars_for_different_inputscaling(capacity_folder=args.capacity_folder, axes=axes, use_cache=use_cache)
+    plot_bars_for_different_inputscaling(capacity_folder=capacity_folder, axes=axes, use_cache=use_cache,
+                                         use_precalculated=use_precalculated)
     print('start legend')
-    create_legend(args.figures_folder, axes=axes)
+    create_legend(figures_folder, axes=axes)
 
     draw_lines(axes, fig)
 
     add_subplot_letters(fig)
 
-    fig.savefig(os.path.join(args.figures_folder, 'ESN_figure.pdf'))
-    fig.savefig(os.path.join(args.figures_folder, 'ESN_figure.eps'))
-    fig.savefig(os.path.join(args.figures_folder, 'ESN_figure.jpg'))
-    fig.savefig(os.path.join(args.figures_folder, 'ESN_figure.png'))
+    fig.savefig(os.path.join(figures_folder, 'ESN_figure.pdf'))
+    # fig.savefig(os.path.join(args.figures_folder, 'ESN_figure.eps'))
+    # fig.savefig(os.path.join(args.figures_folder, 'ESN_figure.jpg'))
+    # fig.savefig(os.path.join(args.figures_folder, 'ESN_figure.png'))
     # plt.show()
 
 
 if __name__ == "__main__":
-    main()
+    main(**vars(parse_cmd()))

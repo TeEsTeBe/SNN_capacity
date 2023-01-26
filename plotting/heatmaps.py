@@ -128,7 +128,8 @@ def get_heatmap_data(x_name, y_name, capacity_folder, params_to_filter, cutoff=0
 def plot_heatmap(x_name, y_name, capacity_folder, title, params_to_filter, cutoff, figure_path, plot_max_degrees,
                  plot_max_delays, plot_num_trials, annotate, plot_degree_delay_product=False, ax=None,
                  other_filter_keys=None, cmap=None, mindegree=0, maxdegree=np.inf, mindelay=0, maxdelay=np.inf,
-                 use_cache=False, max_marker_color=None, colorbar_label=None, cbar_ticks=None):
+                 use_cache=False, max_marker_color=None, colorbar_label=None, cbar_ticks=None,
+                 precalculated_data_path=None):
     if cmap is None:
         if plot_max_degrees:
             cmap = sns.light_palette(get_color('degree'), as_cmap=True)
@@ -156,10 +157,14 @@ def plot_heatmap(x_name, y_name, capacity_folder, title, params_to_filter, cutof
 
         df = df_degrees * df_delays
     else:
-        avg_results_dict = get_heatmap_data(x_name, y_name, capacity_folder, params_to_filter, cutoff, plot_max_degrees,
-                                            plot_max_delays, plot_num_trials, other_filter_keys, mindegree=mindegree,
-                                            maxdegree=maxdegree, mindelay=mindelay, maxdelay=maxdelay,
-                                            use_cache=use_cache)
+        if precalculated_data_path is None:
+            avg_results_dict = get_heatmap_data(x_name, y_name, capacity_folder, params_to_filter, cutoff, plot_max_degrees,
+                                                plot_max_delays, plot_num_trials, other_filter_keys, mindegree=mindegree,
+                                                maxdegree=maxdegree, mindelay=mindelay, maxdelay=maxdelay,
+                                                use_cache=use_cache)
+        else:
+            with open(precalculated_data_path, 'rb') as data_file:
+                avg_results_dict = pickle.load(data_file)
         df = pd.DataFrame.from_dict(avg_results_dict)
 
     # fig, ax = plt.subplots(figsize=(4, 3))

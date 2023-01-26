@@ -254,49 +254,19 @@ def default_cast_function(value):
     return casted_value
 
 
-# def filter_paths(paths, params_to_filter):
-#     filtered_paths = paths
-#
-#     for paramname, paramvalue in params_to_filter.items():
-#         filtered_paths = [p for p in filtered_paths if f'{paramname}={paramvalue}_' in p]
-#
-#     return filtered_paths
-
-
-# def get_param_from_path(pathstr, param_name, cast_function=default_cast_function):
-#     re_result = re.search(f'_{param_name}=([^_^\/^-]+)_', pathstr)
-#     if not re_result:
-#         re_result = re.search(f'_{param_name}=([^_^\/^-]+).pkl', pathstr)
-#     if not re_result:
-#         raise ValueError(f'parameter {param_name} was not found in path "{pathstr}"')
-#
-#     return cast_function(re_result.group(1))
-
-
-# def translate(param_name):
-#     translation_dict = {
-#         'inpscaling': 'input gain',
-#         'specrad': 'feedback gain'
-#     }
-#
-#     if param_name in translation_dict.keys():
-#         translation = translation_dict[param_name]
-#     else:
-#         translation = param_name
-#
-#     return translation
-
-
 def plot_capacity_bars(x_name, capacity_folder, title, params_to_filter, cutoff, delay_shading_step, annotate,
                        annotate_sums, ax=None, other_filter_keys=None, disable_legend=False, use_cache=False,
-                       overwrite_cache=False):
+                       overwrite_cache=False, precalculated_data_path=None):
     capacity_dict_paths = [os.path.join(capacity_folder, filename) for filename in os.listdir(capacity_folder)]
     capacity_dict_paths = filter_paths(capacity_dict_paths, params_to_filter, other_filter_keys=other_filter_keys)
     x_values = np.unique([get_param_from_path(dictpath, x_name) for dictpath in capacity_dict_paths])
 
     params = deepcopy(locals())
     cached_data = get_cached_file(params)
-    if use_cache and cached_data is not None:
+    if precalculated_data_path is not None:
+        with open(precalculated_data_path, 'rb') as data_file:
+            averaged_capacities_per_x = pickle.load(data_file)
+    elif use_cache and cached_data is not None:
         averaged_capacities_per_x = cached_data
         print('using cached file')
     else:
@@ -306,7 +276,7 @@ def plot_capacity_bars(x_name, capacity_folder, title, params_to_filter, cutoff,
             capacity_dicts = [degree_delay_fct_dambre(xp) for xp in x_paths]
             averaged_capacity_dict = average_capacity_dicts(capacity_dicts, cutoff=cutoff)
             averaged_capacities_per_x.append(averaged_capacity_dict)
-    if (use_cache and cached_data is None) or overwrite_cache:
+    if precalculated_data_path is None and ((use_cache and cached_data is None) or overwrite_cache):
         store_cached_file(averaged_capacities_per_x, params)
 
     if annotate:
