@@ -64,8 +64,7 @@ def get_full_runnname(args, steps):
     return full_runname
 
 
-def main():
-    args = parse_cmd()
+def main(args):
     if args.seed is None:
         seed = np.random.randint(2 ** 32 - 1)
     else:
@@ -137,4 +136,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(args=parse_cmd())
