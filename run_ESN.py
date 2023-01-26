@@ -14,11 +14,14 @@ esn.test_loading()
 def parse_cmd():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--input', type=str, default=None, help='Path to input. If not set, the input is generated and stored to the run path.')
-    parser.add_argument('--runname', type=str, default='defaultname', help='Name of the current run. A folder with this name and the parameters will be created.')
+    parser.add_argument('--input', type=str, default=None,
+                        help='Path to input. If not set, the input is generated and stored to the run path.')
+    parser.add_argument('--runname', type=str, default='defaultname',
+                        help='Name of the current run. A folder with this name and the parameters will be created.')
     parser.add_argument('--groupname', type=str, default='defaultgroup', )
     parser.add_argument('--data_path', type=str, default='data')
-    parser.add_argument('--steps', type=int, default=100000, help="Number of inputs. Only used if --input file does not exist.")
+    parser.add_argument('--steps', type=int, default=100000,
+                        help="Number of inputs. Only used if --input file does not exist.")
     parser.add_argument('--nodes', type=int, default=50)
     parser.add_argument('--input_scaling', type=float, default=0.5)
     parser.add_argument('--spectral_radius', type=float, default=0.95)
@@ -32,7 +35,6 @@ def parse_cmd():
     parser.add_argument('--use_linear_activation', action='store_true')
     parser.add_argument('--results_file', type=str, default=None)
     parser.add_argument('--figures_path', type=str, default='figures')
-    # parser.add_argument('--use_scipy', action='store_true')
     parser.add_argument('--recurrence_density', type=float, default=None,
                         help="For orthogonalization use --ortho_density_denominator!")
     parser.add_argument('--trial', type=int, default=1)
@@ -65,7 +67,7 @@ def get_full_runnname(args, steps):
 def main():
     args = parse_cmd()
     if args.seed is None:
-        seed = np.random.randint(2**32-1)
+        seed = np.random.randint(2 ** 32 - 1)
     else:
         seed = args.seed
     np.random.seed(seed)
@@ -112,17 +114,7 @@ def main():
             R2R = esn.CM_Initialise_Orthogonal(args.nodes, args.nodes)
 
     if args.ortho_density_denominator == 1 and args.recurrence_density is not None and args.recurrence_density < 1.0:
-        # if args.orthogonalize:
-        #     R2R = ESN.set_abs_small_vals_to_zero(R2R, density=args.recurrence_density)
-        # else:
-        #     R2R = ESN.set_randomly_to_zero(R2R, density=args.recurrence_density)
         R2R = esn.set_randomly_to_zero(R2R, density=args.recurrence_density)
-
-    # is_ortho = lambda mat: np.allclose(mat.T @ mat, np.eye(mat.shape[0]))
-    # asdf = ESN.CM_Initialise_Sparse_Orthogonal(args.nodes, args.nodes, 20)
-    #
-    # ortho = is_ortho(asdf)
-    # density = np.count_nonzero(asdf) / asdf.size
 
     R2R = esn.CM_scale_specrad(R2R, args.spectral_radius)
     B2R = esn.CM_Initialise_Normal(1, args.nodes, scale=0)  # no input bias is used
