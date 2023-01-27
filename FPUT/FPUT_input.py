@@ -1,8 +1,8 @@
-from FPUT_analysis import analyse_damped
-from Simulation import DampedSimulation
+from FPUT.FPUT_analysis import analyse_damped
+from FPUT.Simulation import DampedSimulation
+import FPUT.utils
 
 import numpy as np
-import utils
 from contextlib import contextmanager
 from pathlib import Path
 import yaml
@@ -177,7 +177,7 @@ def run_multi_input_experiment(file_prefix, **simparams):
         except KeyError:
             scaled_input = np.reshape(
                 np.random.uniform(-1, 1, size=64 * simparams["nbr_batches"]),
-                (64, simparams["nbr_batches"]),
+                (simparmas["osc"], simparams["nbr_batches"]),
             )
             input_seq = scaled_input
     input_seq, trajectories = used_input_seq_and_trajectories(
@@ -214,7 +214,7 @@ def writeable_file(file_path, mode="wb"):
         file = open(file_path, mode=mode)
         yield file
     except FileNotFoundError:
-        Path.mkdir(Path(file_path).parent.resolve())
+        Path.mkdir(Path(file_path).parent.resolve(), parents=True)
         file = open(file_path, mode=mode)
         yield file
     finally:
