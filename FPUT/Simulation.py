@@ -4,12 +4,12 @@ import numpy as np
 import numpy.random as rnd
 import matplotlib.pyplot as plt
 
-from Sim_util import simulate_steps as simulate_steps_cython
-from Sim_util import simulate_steps_damped as simulate_steps_damped_cython
-from Sim_util import (
+from FPUT.Sim_util import simulate_steps as simulate_steps_cython
+from FPUT.Sim_util import simulate_steps_damped as simulate_steps_damped_cython
+from FPUT.Sim_util import (
     simulate_steps_damped_multi_input as simulate_steps_damped_multi_input_cython,
 )
-import utils
+import FPUT.utils as utils
 
 # OBSOLETE
 # DEBUG = False # can be set upon import to activate DEBUG option

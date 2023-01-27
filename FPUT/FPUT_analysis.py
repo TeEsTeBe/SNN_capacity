@@ -10,42 +10,14 @@ import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 
 
-from Simulation import Simulation, DampedSimulation, FPUSkipTransientAndPlot
+from FPUT.Simulation import Simulation, DampedSimulation, FPUSkipTransientAndPlot
 
 
-import utils
-
-
-DEFAULT_DATAPATH = "../Data/FPU/ParamScan_timeMultiplexing_20210216/"
-
-parser = argparse.ArgumentParser(description="Analysis of SNN")
-parser.add_argument("-path", "--datapath", default=DEFAULT_DATAPATH, type=str)
-parser.add_argument("-init-seed", "--init-seed", default=200, type=int)
-parser.add_argument("-n", "--nbr-runs", default=1, type=int)
-parser.add_argument("-jitter", "--jitter", default=0.01, type=float)
-parser.add_argument("-eps", "--init-epsilon", default=0.05, type=float)
-parser.add_argument("-N", "--N", default=32, type=int)
-parser.add_argument("-amp", "--input-amplitude", default=0, type=int)
-parser.add_argument("-dur", "--input-duration", default=0, type=int)
-parser.add_argument("-tau", "--tau-relax", default=0, type=int)
-parser.add_argument("-n-readouts", "--n-readouts-per-batch", default=1, type=int)
-args = parser.parse_args()
-
-DATAPATH = args.datapath
-
-init_seed = args.init_seed
-nbr_runs = args.nbr_runs
-jitter = args.jitter
-init_epsilon = args.init_epsilon
-N = args.N
-amp_idx = args.input_amplitude
-dur_idx = args.input_duration
-tau_idx = args.tau_relax
-n_readouts_per_batch = args.n_readouts_per_batch
+import FPUT.utils
 
 
 def _rescomp_initconds_analysis(
-    init_seed=init_seed, jitter=jitter, init_epsilon=init_epsilon, **add_simparams
+    init_seed=200, jitter=0.01, init_epsilon=0.05, **add_simparams
 ):
     print("Starting ResComp analysis...")
 
