@@ -43,8 +43,7 @@ def parse_cmd():
     return parser.parse_args()
 
 
-def main():
-    args = parse_cmd()
+def main(args):
     args.seed = setup_seeding(args.seed)
     runpath = setup_runfolder(args)
     task = get_task(args.task, args.steps, args.input)
@@ -74,5 +73,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(args=parse_cmd())
 
