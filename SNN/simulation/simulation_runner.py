@@ -45,7 +45,6 @@ class SimulationRunner:
 
         # add ch to logger
         self.logger.addHandler(console_handler)
-        general_utils.print_memory_consumption('Memory usage - beginning init SimulationRunner', logger=self.logger)
 
         assert input_type in self.implemented_input_types, f'Unknown input type "{input_type}"'
         assert network_type in self.implemented_network_types, f'Unknown network type"{network_type}"'
@@ -112,7 +111,6 @@ class SimulationRunner:
         if stop_if_statemat_exists and os.path.exists(os.path.join(self.results_folder, 'vm_statemat.npy')):
             print('Stopping because state matrix exists already!')
             exit(0)
-        general_utils.print_memory_consumption('Memory usage - end init SimulationRunner', logger=self.logger)
 
     def _create_network(self):
         """ Creates the network that is specified by the network parameters
@@ -123,7 +121,6 @@ class SimulationRunner:
 
         """
 
-        general_utils.print_memory_consumption('Memory usage - beginning _create_network', logger=self.logger)
         if self.network_type == 'brunel':
             network = brunel.BrunelNetwork(**self.network_params)
         elif self.network_type == 'alzheimers':
@@ -132,18 +129,15 @@ class SimulationRunner:
             network = microcircuit.Microcircuit(**self.network_params)
         else:
             raise ValueError(f'Network type unknown: "{self.network_type}"')
-        general_utils.print_memory_consumption('Memory usage - end _create_network', logger=self.logger)
 
         return network
 
     def _setup_state_recording(self):
         """ Sets up the recording of Vm (and filtered spikes if enabled) """
 
-        general_utils.print_memory_consumption('Memory usage - beginning _setup_state_recording', logger=self.logger)
         self.network.set_up_state_multimeter(interval=self.step_duration)
         if self.enable_spike_filtering:
             self.network.set_up_spike_filtering(interval=self.step_duration, filter_tau=20.)
-        general_utils.print_memory_consumption('Memory usage - end _setup_state_recording', logger=self.logger)
 
     def _set_input_to_generators(self, start_step, stop_step):
         """ Sets up the generators for the inputs from start_step to stop_step
@@ -252,7 +246,6 @@ class SimulationRunner:
 
         """
 
-        general_utils.print_memory_consumption('Memory usage - beginning _setup_input', logger=self.logger)
         input_generators = None
         input_neuronlist = general_utils.combine_nodelists(list(self.network.get_input_populations().values()))
 
@@ -301,24 +294,20 @@ class SimulationRunner:
 
             input_generators = spatial_enc_devices
 
-        general_utils.print_memory_consumption('Memory usage - end _setup_input', logger=self.logger)
 
         return input_generators
 
     def _save_states(self):
         """ Stores the state matrices, the spike events, the input signal and the parameters to the results folder """
 
-        general_utils.print_memory_consumption('\n\nMemory usage - beginning _save_states', logger=self.logger)
 
         self.logger.info('copying parameters file ...')
         copyfile(self.paramfile, os.path.join(self.results_folder, 'parameters.yaml'))
 
         self.logger.info('saving input signal file ...')
-        general_utils.print_memory_consumption('\tMemory usage - before saving input_signal', logger=self.logger)
         np.save(os.path.join(self.results_folder, 'input_signal.npy'), self.input_signal)
 
         self.logger.info('saving Vm state matrix ...')
-        general_utils.print_memory_consumption('\tMemory usage - before saving vm_statemat', logger=self.logger)
         statemat_vm = self.network.get_statematrix()
         np.save(os.path.join(self.results_folder, 'vm_statemat.npy'), statemat_vm)
         del statemat_vm
@@ -326,26 +315,22 @@ class SimulationRunner:
 
         if self.enable_spike_filtering:
             self.logger.info('saving filtered spikes state matrix ....')
-            general_utils.print_memory_consumption('\tMemory usage - before saving filter_statemat', logger=self.logger)
             statemat_filter = self.network.get_filter_statematrix()
             np.save(os.path.join(self.results_folder, 'filter_statemat.npy'), statemat_filter)
             del statemat_filter
             gc.collect()
 
         self.logger.info('saving spikes ...')
-        general_utils.print_memory_consumption('\tMemory usage - before saving spike_events', logger=self.logger)
         spike_events = self.spike_recorder.get('events')
         with open(os.path.join(self.results_folder, 'spike_events.pkl'), 'wb') as spikes_file:
             pickle.dump(spike_events, spikes_file)
         del spike_events
         gc.collect()
 
-        general_utils.print_memory_consumption('Memory usage - end _save_states', logger=self.logger)
 
     def _create_plots(self):
         """ Creates figures and stores them """
 
-        general_utils.print_memory_consumption('\n\nMemory usage - beginning _create_plots', logger=self.logger)
         self.logger.info('creating raster plot ...')
 
         rasterplot_spikelist = general_utils.spikelist_from_recorder(self.spike_recorder,
@@ -368,7 +353,6 @@ class SimulationRunner:
         gc.collect()
 
         self.logger.info('creating Vm state matrix plot ...')
-        general_utils.print_memory_consumption('\tMemory usage - before vm state matrix plot', logger=self.logger)
         plt.clf()
         fig = plt.figure(figsize=(12, 9))
         statemat_vm_slice = self.network.get_statematrix()[:, :100].copy()
@@ -386,8 +370,6 @@ class SimulationRunner:
 
         if self.enable_spike_filtering:
             self.logger.info('creating filtered spikes state matrix plot ...')
-            general_utils.print_memory_consumption('\tMemory usage - before filter state matrix plot',
-                                                   logger=self.logger)
             plt.clf()
             fig = plt.figure(figsize=(12, 9))
             statemat_filter_slice = self.network.get_filter_statematrix()[:, :100].copy()
@@ -404,7 +386,6 @@ class SimulationRunner:
             gc.collect()
 
         self.logger.info('creating spike statistics plot ...')
-        general_utils.print_memory_consumption('\tMemory usage - before statistics plot', logger=self.logger)
         statistic_spikelist = general_utils.spikelist_from_recorder(self.spike_recorder)
         if len(statistic_spikelist.id_list) > 0:
             hist_data = {
@@ -425,7 +406,6 @@ class SimulationRunner:
 
             statistics_plot_path = os.path.join(self.results_folder, 'statistics_plot.pdf')
             plt.savefig(statistics_plot_path)
-            general_utils.print_memory_consumption('Memory usage - end _create_plots', logger=self.logger)
         del statistic_spikelist
         gc.collect()
 
@@ -440,9 +420,7 @@ class SimulationRunner:
             batch_steps = min(self.batch_steps, self.num_steps - start_step)
 
             self._set_input_to_generators(start_step=start_step, stop_step=start_step + batch_steps)
-            general_utils.print_memory_consumption('Memory usage - before simulation', logger=self.logger)
             nest.Simulate(batch_steps * self.step_duration)
-            general_utils.print_memory_consumption('Memory usage - after simulation batch', logger=self.logger)
             gc.collect()
             start_step += self.batch_steps
 

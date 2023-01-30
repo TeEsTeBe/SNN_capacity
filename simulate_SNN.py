@@ -1,6 +1,6 @@
 import argparse
 import yaml
-from SNN.simulation import SimulationRunner
+from SNN.simulation.simulation_runner import SimulationRunner
 
 
 def parse_cmd():

@@ -20,11 +20,6 @@ def get_paramfiles_dir():
     return os.path.join(Path(__file__).parent.parent.resolve(), 'parameter_files')
 
 
-def print_memory_consumption(message, logger):
-    memory_mb = psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2
-    logger.info(f"{message}: {memory_mb} MB")
-
-
 def spikelist_from_recorder(spikedetector, stop=None, start=None):
     """ Creates a fna SpikeList object from a nest spike detector
 

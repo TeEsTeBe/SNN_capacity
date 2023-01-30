@@ -81,7 +81,7 @@ def add_capacity_percent_twinx(ax, N=1000, add_label=False):
     axtwin.set_ylim(ylim)
 
 def plot_max_cap_per_p_or_std(step_spatial_or_uniform, ax=None, plot_degrees=False, plot_memory=False, use_cache=False,
-                              plot_stds=True, use_label=False):
+                              plot_stds=True, use_label=False, use_precalculated=True):
     colors = {
         'DC': '#E84855',
         'rate': '#403F4C',
@@ -102,45 +102,58 @@ def plot_max_cap_per_p_or_std(step_spatial_or_uniform, ax=None, plot_degrees=Fal
         p_or_std_values = [1.0, 2.0, 5.0, 10.0, 15.0, 20.0]
     else:
         p_or_std_values = [0.25, 0.5, 0.75, 1.0]
+    if plot_memory:
+        data_type = 'memory'
+    else:
+        data_type = 'capacity'
+
+    if use_precalculated:
+        with open(os.path.join('data', f'BRN_encoding_lines_{step_spatial_or_uniform}_{data_type}.pkl'), 'rb') as data_file:
+            precalculated_data = pickle.load(data_file)
     for random_or_frozen in ['frozennoise', 'randomnoise']:
         for rate_or_DC in ['DC', 'rate']:
-            max_capacities = []
-            p_or_std_values_with_data = []
-            stds = []  # standard error of mean
-            for p_or_std in p_or_std_values:
-                if step_spatial_or_uniform == 'spatial':
-                    p = None
-                    std = p_or_std
-                else:
-                    p = p_or_std
-                    std = None
-                cap_dir = get_capacity_directory(step_spatial_or_uniform=step_spatial_or_uniform, rate_or_DC=rate_or_DC,
-                                                 random_or_frozen=random_or_frozen, p=p, std=std)
-                params_to_filter = {}
-                try:
-                    avg_cap_results = get_heatmap_data('dur', 'max', cap_dir, params_to_filter=params_to_filter,
-                                                       get_max_degrees=plot_degrees, get_max_delays=plot_memory,
-                                                       other_filter_keys=['vm'], use_cache=use_cache)
-                    std_cap_results = get_heatmap_data('dur', 'max', cap_dir, params_to_filter=params_to_filter,
-                                                       get_max_degrees=plot_degrees, get_max_delays=plot_memory,
-                                                       other_filter_keys=['vm'], use_cache=use_cache,
-                                                       avg_fct=np.nanstd)  # scipy.stats.sem)
-                    if plot_memory:
-                        for duration, max_delay_dict in avg_cap_results.items():
-                            for max_amplitude, delay in max_delay_dict.items():
-                                avg_cap_results[duration][max_amplitude] = duration * delay
-                    max_cap, dur_and_amp = get_max(avg_cap_results, return_keys=True)
-                    duration = dur_and_amp['duration']
-                    amplitude = dur_and_amp['amplitude']
-                    max_capacities.append(max_cap)
-                    stds.append(std_cap_results[duration][amplitude])
-                    p_or_std_values_with_data.append(p_or_std)
-                except FileNotFoundError:
-                    print(
-                        f"Capacity data for {step_spatial_or_uniform}_{rate_or_DC}_p={p_or_std} ({random_or_frozen}) does not exist "
-                        f"and will not be added to the data!")
-                except BaseException as err:
-                    print(f"Unexpected {type(err)}: {err}")
+            if use_precalculated:
+                max_capacities = precalculated_data[random_or_frozen][rate_or_DC]['max_values']
+                stds = precalculated_data[random_or_frozen][rate_or_DC]['stds']
+                p_or_std_values_with_data = precalculated_data[random_or_frozen][rate_or_DC]['p_or_std_values_with_data']
+            else:
+                max_capacities = []
+                p_or_std_values_with_data = []
+                stds = []  # standard error of mean
+                for p_or_std in p_or_std_values:
+                    if step_spatial_or_uniform == 'spatial':
+                        p = None
+                        std = p_or_std
+                    else:
+                        p = p_or_std
+                        std = None
+                    cap_dir = get_capacity_directory(step_spatial_or_uniform=step_spatial_or_uniform, rate_or_DC=rate_or_DC,
+                                                     random_or_frozen=random_or_frozen, p=p, std=std)
+                    params_to_filter = {}
+                    try:
+                        avg_cap_results = get_heatmap_data('dur', 'max', cap_dir, params_to_filter=params_to_filter,
+                                                           get_max_degrees=plot_degrees, get_max_delays=plot_memory,
+                                                           other_filter_keys=['vm'], use_cache=use_cache)
+                        std_cap_results = get_heatmap_data('dur', 'max', cap_dir, params_to_filter=params_to_filter,
+                                                           get_max_degrees=plot_degrees, get_max_delays=plot_memory,
+                                                           other_filter_keys=['vm'], use_cache=use_cache,
+                                                           avg_fct=np.nanstd)  # scipy.stats.sem)
+                        if plot_memory:
+                            for duration, max_delay_dict in avg_cap_results.items():
+                                for max_amplitude, delay in max_delay_dict.items():
+                                    avg_cap_results[duration][max_amplitude] = duration * delay
+                        max_cap, dur_and_amp = get_max(avg_cap_results, return_keys=True)
+                        duration = dur_and_amp['duration']
+                        amplitude = dur_and_amp['amplitude']
+                        max_capacities.append(max_cap)
+                        stds.append(std_cap_results[duration][amplitude])
+                        p_or_std_values_with_data.append(p_or_std)
+                    except FileNotFoundError:
+                        print(
+                            f"Capacity data for {step_spatial_or_uniform}_{rate_or_DC}_p={p_or_std} ({random_or_frozen}) does not exist "
+                            f"and will not be added to the data!")
+                    except BaseException as err:
+                        print(f"Unexpected {type(err)}: {err}")
 
             if len(p_or_std_values_with_data) == 0:
                 print(
@@ -155,6 +168,7 @@ def plot_max_cap_per_p_or_std(step_spatial_or_uniform, ax=None, plot_degrees=Fal
                     stds = [stds[0], stds[0]]
                 stds = np.array(stds)
                 max_capacities = np.array(max_capacities)
+
                 if plot_stds:
                     ax.fill_between(p_or_std_values_with_data, max_capacities + stds, max_capacities - stds,
                                     color=colors[rate_or_DC], alpha=0.3)
@@ -231,7 +245,8 @@ def set_color_markers(axes):
 
 
 def plot_bars(axes):
-    cap_dict_path_1 = '/home/schultetobrinke/projects/recurrence/repos/capacity_visualisation/capacity_visualisation/data/spatial_frozennoise_dur1-50_max0.2-3.0__net=brunel__std=1.0__inp=spatial_DC__steps=200000/capacity/capacities_spatial_frozennoise_dur1-50_max0.2-3.0__net=brunel__std=1.0__inp=spatial_DC__steps=200000__max=0.2__dur=50.0__1_vm.pkl'
+    # cap_dict_path_1 = '/home/schultetobrinke/projects/recurrence/repos/capacity_visualisation/capacity_visualisation/data/spatial_frozennoise_dur1-50_max0.2-3.0__net=brunel__std=1.0__inp=spatial_DC__steps=200000/capacity/capacities_spatial_frozennoise_dur1-50_max0.2-3.0__net=brunel__std=1.0__inp=spatial_DC__steps=200000__max=0.2__dur=50.0__1_vm.pkl'
+    cap_dict_path_1 = os.path.join('data', 'BRN_capbars_std1.pkl')
     with open(cap_dict_path_1, 'rb') as cap_file_enc:
         cap_dict_enc = pickle.load(cap_file_enc)
     cap_bars_single_run.plot_capacity_bars(cap_dict_enc, ax=axes['bar2'])
@@ -246,13 +261,15 @@ def plot_bars(axes):
     axes['bar2'].set_xlabel(None)
     # xwidth = xmax - xmin
     # axes['bar1'].add_patch(Rectangle((xmin+(xwidth/2), ymin+(ywidth/2)), xwidth/2, ywidth/2, fill=False, edgecolor=barmarker_sigma20, lw=2, clip_on=False))
-    cap_dict_path_20 = '/home/schultetobrinke/projects/recurrence/repos/capacity_visualisation/capacity_visualisation/data/spatial_frozennoise_dur1-50_max0.2-3.0__net=brunel__std=20.0__inp=spatial_DC__steps=200000/capacity/capacities_spatial_frozennoise_dur1-50_max0.2-3.0__net=brunel__std=20.0__inp=spatial_DC__steps=200000__max=3.0__dur=2.0__1_vm.pkl'
+    # cap_dict_path_20 = '/home/schultetobrinke/projects/recurrence/repos/capacity_visualisation/capacity_visualisation/data/spatial_frozennoise_dur1-50_max0.2-3.0__net=brunel__std=20.0__inp=spatial_DC__steps=200000/capacity/capacities_spatial_frozennoise_dur1-50_max0.2-3.0__net=brunel__std=20.0__inp=spatial_DC__steps=200000__max=3.0__dur=2.0__1_vm.pkl'
+    cap_dict_path_20 = os.path.join('data', 'BRN_capbars_std20.pkl')
     with open(cap_dict_path_20, 'rb') as cap_file_20:
         cap_dict_20 = pickle.load(cap_file_20)
     cap_bars_single_run.plot_capacity_bars(cap_dict_20, ax=axes['bar1'])
     axes['bar1'].set_xlabel('delay', labelpad=-10)
     # axes['bar1'].set_title(r'$\sigma$ 20.0, $a_{max}$ 3.0, $\Delta s$ 2.0')
-    cap_dict_path_enc = '/home/schultetobrinke/nextcloud/Juelich/projects/recurrence/repos/capacity_visualisation/capacity_visualisation/data/BestBRN-test_substitutes_and_artificial_states/gaussinputs-substitute_capacity/capacities_gaussinputs-substitute_BestBRN-test__net=brunel__std=1__max=0.04__dur=50.0__inp=spatial_DC__loop=step_duration__bgrate=None__1_vm.pkl'
+    # cap_dict_path_enc = '/home/schultetobrinke/nextcloud/Juelich/projects/recurrence/repos/capacity_visualisation/capacity_visualisation/data/BestBRN-test_substitutes_and_artificial_states/gaussinputs-substitute_capacity/capacities_gaussinputs-substitute_BestBRN-test__net=brunel__std=1__max=0.04__dur=50.0__inp=spatial_DC__loop=step_duration__bgrate=None__1_vm.pkl'
+    cap_dict_path_enc = os.path.join('data', 'BRN_capbars_enc.pkl')
     with open(cap_dict_path_enc, 'rb') as cap_file_enc:
         cap_dict_enc = pickle.load(cap_file_enc)
     cap_bars_single_run.plot_capacity_bars(cap_dict_enc, ax=axes['bar3'])
@@ -269,25 +286,37 @@ def plot_bars(axes):
     axes['bar2'].set_ylim((0, cap_enc_ymax))
 
 
-def plot_heatmaps(axes, use_cache):
+def plot_heatmaps(axes, use_cache, use_precalculated=True):
     # DC spatial frozen , std 1 and 20
     cap_folder = get_capacity_directory('spatial', 'frozennoise', 'DC', std=1.0)
     params_to_filter = {}
+
+    if use_precalculated:
+        precalculated_data_path = os.path.join('data', 'BRN_capacities_std1.pkl')
+    else:
+        precalculated_data_path = None
     _, axes['E'] = plot_heatmap('dur', 'max', capacity_folder=cap_folder, title=r'Total Capacity',
                                 params_to_filter=params_to_filter, ax=axes['E'],
                                 cutoff=0., figure_path=None, plot_max_degrees=False, plot_max_delays=False,
                                 plot_num_trials=False,
-                                annotate=False, other_filter_keys=['vm'], use_cache=use_cache, colorbar_label='')
+                                annotate=False, other_filter_keys=['vm'], use_cache=use_cache, colorbar_label='',
+                                precalculated_data_path=precalculated_data_path)
     axes['E'].set_title('Total Capacity', pad=12)
     axes['E'].set_xticklabels([])
     axes['E'].set_xticks(np.arange(0.5, 7.6, 1))
     axes['E'].set_yticklabels([f'{0.2 * float(n.get_text()):.2f}' for n in axes['E'].get_yticklabels()])
     axes['E'].set_xlabel(None)
+
+    if use_precalculated:
+        precalculated_data_path = os.path.join('data', 'BRN_degrees_std1.pkl')
+    else:
+        precalculated_data_path = None
     _, axes['F'] = plot_heatmap('dur', 'max', capacity_folder=cap_folder, title='Max. Degrees',
                                 params_to_filter=params_to_filter, ax=axes['F'],
                                 cutoff=0., figure_path=None, plot_max_degrees=True, plot_max_delays=False,
                                 plot_num_trials=False,
-                                annotate=False, other_filter_keys=['vm'], use_cache=use_cache, colorbar_label='')
+                                annotate=False, other_filter_keys=['vm'], use_cache=use_cache, colorbar_label='',
+                                precalculated_data_path=precalculated_data_path)
     axes['F'].set_title('Max. Degrees', pad=12)
     axes['F'].set_ylabel(None)
     axes['F'].set_xlabel(None)
@@ -295,11 +324,17 @@ def plot_heatmaps(axes, use_cache):
     axes['F'].set_yticks([])
     axes['F'].set_xticklabels([])
     axes['F'].set_xticks(np.arange(0.5, 7.6, 1))
+
+    if use_precalculated:
+        precalculated_data_path = os.path.join('data', 'BRN_delays_std1.pkl')
+    else:
+        precalculated_data_path = None
     _, axes['G'] = plot_heatmap('dur', 'max', capacity_folder=cap_folder, title='Max. Delays',
                                 params_to_filter=params_to_filter, ax=axes['G'],
                                 cutoff=0., figure_path=None, plot_max_degrees=False, plot_max_delays=True,
                                 plot_num_trials=False,
-                                annotate=False, other_filter_keys=['vm'], use_cache=use_cache, colorbar_label='')
+                                annotate=False, other_filter_keys=['vm'], use_cache=use_cache, colorbar_label='',
+                                precalculated_data_path=precalculated_data_path)
     axes['G'].set_title('Max. Delays', pad=12)
     axes['G'].set_ylabel(None)
     axes['G'].set_xlabel(None)
@@ -307,32 +342,49 @@ def plot_heatmaps(axes, use_cache):
     axes['G'].set_yticks([])
     axes['G'].set_xticks(np.arange(0.5, 7.6, 1))
     axes['G'].set_xticklabels([])
+    if use_precalculated:
+        precalculated_data_path = os.path.join('data', 'BRN_capacities_std20.pkl')
+    else:
+        precalculated_data_path = None
     cap_folder = get_capacity_directory('spatial', 'frozennoise', 'DC', std=20.0)
     _, axes['J'] = plot_heatmap('dur', 'max', capacity_folder=cap_folder, title=r'Total Capacity ($\sigma$ 20.0)',
                                 params_to_filter=params_to_filter, ax=axes['J'],
                                 cutoff=0., figure_path=None, plot_max_degrees=False, plot_max_delays=False,
                                 plot_num_trials=False,
-                                annotate=False, other_filter_keys=['vm'], use_cache=use_cache, colorbar_label='')
+                                annotate=False, other_filter_keys=['vm'], use_cache=use_cache, colorbar_label='',
+                                precalculated_data_path=precalculated_data_path)
     axes['J'].set_title(None)
     axes['J'].set_xticks(np.arange(0.5, 7.6, 1))
     axes['J'].set_xticklabels([1, 2, 5, 10, 20, 30, 40, 50], rotation=90.)
     axes['J'].set_yticklabels([f'{0.2 * float(n.get_text()):.2f}' for n in axes['J'].get_yticklabels()])
+
+    if use_precalculated:
+        precalculated_data_path = os.path.join('data', 'BRN_degrees_std20.pkl')
+    else:
+        precalculated_data_path = None
     _, axes['K'] = plot_heatmap('dur', 'max', capacity_folder=cap_folder, title=r'Max. Degrees ($\sigma$ 20.0)',
                                 params_to_filter=params_to_filter, ax=axes['K'],
                                 cutoff=0., figure_path=None, plot_max_degrees=True, plot_max_delays=False,
                                 plot_num_trials=False,
-                                annotate=False, other_filter_keys=['vm'], use_cache=use_cache, colorbar_label='')
+                                annotate=False, other_filter_keys=['vm'], use_cache=use_cache, colorbar_label='',
+                                precalculated_data_path=precalculated_data_path)
     axes['K'].set_title(None)
     axes['K'].set_ylabel(None)
     axes['K'].set_xticks(np.arange(0.5, 7.6, 1))
     axes['K'].set_xticklabels([1, 2, 5, 10, 20, 30, 40, 50], rotation=90.)
     axes['K'].set_yticklabels([])
     axes['K'].set_yticks([])
+
+    if use_precalculated:
+        precalculated_data_path = os.path.join('data', 'BRN_delays_std20.pkl')
+    else:
+        precalculated_data_path = None
     _, axes['L'] = plot_heatmap('dur', 'max', capacity_folder=cap_folder, title=r'Max. Delays ($\sigma$ 20.0)',
                                 params_to_filter=params_to_filter, ax=axes['L'],
                                 cutoff=0., figure_path=None, plot_max_degrees=False, plot_max_delays=True,
                                 plot_num_trials=False,
-                                annotate=False, other_filter_keys=['vm'], use_cache=use_cache, colorbar_label='')
+                                annotate=False, other_filter_keys=['vm'], use_cache=use_cache, colorbar_label='',
+                                precalculated_data_path=precalculated_data_path)
     axes['L'].set_title(None)
     axes['L'].set_ylabel(None)
     axes['L'].set_yticklabels([])
@@ -341,9 +393,9 @@ def plot_heatmaps(axes, use_cache):
     axes['L'].set_xticklabels([1, 2, 5, 10, 20, 30, 40, 50], rotation=90.)
 
 
-def plot_encoding_line_graphs(axes, use_cache):
+def plot_encoding_line_graphs(axes, use_cache, use_precalculated=True):
     plot_stds = True
-    axes['1'] = plot_max_cap_per_p_or_std('spatial', axes['1'], use_cache=use_cache, plot_stds=plot_stds)
+    axes['1'] = plot_max_cap_per_p_or_std('spatial', axes['1'], use_cache=use_cache, plot_stds=plot_stds, use_precalculated=use_precalculated)
     # axes['1'].legend(prop={'size': 5})
     add_capacity_percent_twinx(ax=axes['1'], add_label=True)
     axes['1'].scatter([1], [686.4552198555509], marker='o', facecolor='none', s=75, linewidth=1, edgecolor='black', zorder=10)
@@ -357,7 +409,7 @@ def plot_encoding_line_graphs(axes, use_cache):
     axes['1'].set_xlabel(None)
     axes['1'].set_xticklabels([])
     axes['2'] = plot_max_cap_per_p_or_std('spatial', axes['2'], plot_memory=True, use_cache=use_cache,
-                                          plot_stds=plot_stds)
+                                          plot_stds=plot_stds, use_precalculated=use_precalculated)
     axes['2'].scatter([1], [30.], marker='o', facecolor='none', s=75, linewidth=1, edgecolor='black', zorder=10)
     axes['2'].scatter([20], [80.], marker='s', facecolor='none', s=75, linewidth=1, edgecolor='black', zorder=10)
     xmin, xmax = axes['2'].get_xlim()
@@ -365,32 +417,32 @@ def plot_encoding_line_graphs(axes, use_cache):
     ymin, ymax = axes['2'].get_ylim()
     axes['2'].set_ylim(ymin, ymax+3)
     # axes['2'].set_ylabel(None)
-    axes['3'] = plot_max_cap_per_p_or_std('step', axes['3'], use_cache=use_cache, plot_stds=plot_stds)
+    axes['3'] = plot_max_cap_per_p_or_std('step', axes['3'], use_cache=use_cache, plot_stds=plot_stds, use_precalculated=use_precalculated)
     add_capacity_percent_twinx(ax=axes['3'])
     axes['3'].set_title('amplitude')
     axes['3'].set_xlabel(None)
     axes['3'].set_xticklabels([])
-    axes['4'] = plot_max_cap_per_p_or_std('step', axes['4'], plot_memory=True, use_cache=use_cache, plot_stds=plot_stds, use_label=True)
+    axes['4'] = plot_max_cap_per_p_or_std('step', axes['4'], plot_memory=True, use_cache=use_cache, plot_stds=plot_stds, use_label=True, use_precalculated=use_precalculated)
     axes['4'].set_xticklabels([0.25, '', '', 1.0])
     axes['4'].set_xlabel(r'$p$', labelpad=-6)
     legend = axes['4'].legend(ncol=1, loc='upper left', bbox_to_anchor=(0.15, -0.45), fontsize=10, handlelength=3)
     for legobj in legend.legendHandles:
         legobj.set_linewidth(2.5)
     axes['5'] = plot_max_cap_per_p_or_std('uniform', ax=axes['5'], plot_memory=False, use_cache=use_cache,
-                                          plot_stds=plot_stds)
+                                          plot_stds=plot_stds, use_precalculated=use_precalculated)
     add_capacity_percent_twinx(ax=axes['5'])
     axes['5'].set_title('uniform')
     axes['5'].set_ylabel(None)
     axes['5'].set_xlabel(None)
     axes['5'].set_xticklabels([])
     axes['6'] = plot_max_cap_per_p_or_std('uniform', ax=axes['6'], plot_memory=True, use_cache=use_cache,
-                                          plot_stds=plot_stds, use_label=True)
+                                          plot_stds=plot_stds, use_label=True, use_precalculated=use_precalculated)
     axes['6'].set_ylabel(None)
     axes['6'].set_xticklabels([0.25, '', '', 1.0])
     axes['6'].set_xlabel(r'$p$', labelpad=-6)
 
 
-def plot_task_correlations(axes, use_cache):
+def plot_task_correlations(axes, use_cache, use_precalculated=True):
     cap_base_folder = '/home/schultetobrinke/nextcloud/Juelich/projects/recurrence/repos/capacity_visualisation/capacity_visualisation/data'
     task_base_folder = '/home/schultetobrinke/projects/SNN_capacity/repos/ESN/scripts'
     use_spearmanr = False
@@ -444,7 +496,8 @@ def plot_task_correlations(axes, use_cache):
         else:
             cap_folder = os.path.join(cap_base_folder, cap_dict['cap_groupname'], 'capacity')
         ax = axes[cap_dict['axes_letter']]
-        plot_single_correlations_plot(ax, bar_width, cap_dict, cap_folder, cap_title, task_base_folder, use_spearmanr, use_cache)
+        plot_single_correlations_plot(ax, bar_width, cap_dict, cap_folder, cap_title, task_base_folder, use_spearmanr,
+                                      use_cache, use_precalculated=use_precalculated)
 
     axes['tasks1'].set_ylabel('correlation', labelpad=-5)
     axes['tasks2'].set_yticklabels([])
@@ -453,7 +506,8 @@ def plot_task_correlations(axes, use_cache):
     axes['tasks2'].legend(ncol=4, loc='upper center', bbox_to_anchor=(0.5, -0.33), fontsize=10)
 
 
-def plot_single_correlations_plot(ax, bar_width, cap_dict, cap_folder, cap_title, task_base_folder, use_spearmanr, use_cache):
+def plot_single_correlations_plot(ax, bar_width, cap_dict, cap_folder, cap_title, task_base_folder, use_spearmanr,
+                                  use_cache, use_precalculated=True):
     # fig, ax = plt.subplots(figsize=(5, 8))
     # fac = 1.25  # Poster
     # fig, ax = plt.subplots(figsize=(fac*5, fac*4))  # Poster
@@ -477,64 +531,77 @@ def plot_single_correlations_plot(ax, bar_width, cap_dict, cap_folder, cap_title
     capacity_info_types = ['degrees', 'capacity', 'delays', 'nonlin. cap. delay 5']
     # capacity_info_types = ['degrees', 'capacity', 'delays', 'nonlinear capacity\ndelay 10']
     # capacity_info_types = ['degrees', 'capacity', 'delays', 'nonlinear capacity\ndelay 5', 'nonlinear capacity\ndelay 10']
+    if use_precalculated:
+        if '(' in cap_title:
+            network_type = 'uniform-spatial'
+        else:
+            network_type = cap_title
+        with open(f'data/BRN_task_correlations_{network_type}.pkl', 'rb') as task_correlations_file:
+            precalculated_data = pickle.load(task_correlations_file)
     for info_type_idx, cap_info_type in enumerate(capacity_info_types):
         print(f'\t{cap_info_type}')
         shift_factor = info_type_idx - 1
-        get_max_degrees = (cap_info_type == 'degrees')
-        get_max_delays = (cap_info_type == 'delays')
 
-        if cap_info_type in ['nonlin. cap. delay 5', 'nonlinear capacity\ndelay 5']:
-            cap_data_dict = get_heatmap_data(x_name='dur', y_name='max', capacity_folder=cap_folder,
-                                             params_to_filter={}, mindelay=5, maxdelay=5, mindegree=2)
-            # params_to_filter={}, mindelay=6, maxdelay=6, mindegree=2)
-        elif cap_info_type in ['nonlin. cap. delay 10', 'nonlinear capacity\ndelay 10']:
-            cap_data_dict = get_heatmap_data(x_name='dur', y_name='max', capacity_folder=cap_folder,
-                                             params_to_filter={}, mindelay=10, maxdelay=10, mindegree=1)
-            # params_to_filter={}, mindelay=11, maxdelay=11, mindegree=1)
+        if use_precalculated:
+            tasknames = precalculated_data[cap_info_type]['tasknames']
+            correlations = precalculated_data[cap_info_type]['correlations']
         else:
-            cap_data_dict = get_heatmap_data(x_name='dur', y_name='max', capacity_folder=cap_folder,
-                                             params_to_filter={}, get_max_delays=get_max_delays,
-                                             get_max_degrees=get_max_degrees)
+            get_max_degrees = (cap_info_type == 'degrees')
+            get_max_delays = (cap_info_type == 'delays')
 
-        if np.max(list(cap_data_dict[1.0].keys())) == 3.0:
-            tmp_cap_data_dict = {}
-            for dur, amp_dict in cap_data_dict.items():
-                tmp_cap_data_dict[dur] = {}
-                for amp, cap in amp_dict.items():
-                    tmp_cap_data_dict[dur][round(amp * 0.2, 2)] = cap
-            cap_data_dict = tmp_cap_data_dict
-
-        tasknames = []
-        correlations = []
-
-        for task_name, task_group in cap_dict['tasks'].items():
-            print(f'\n______ {task_name} ___________')
-            task_folder = os.path.join(task_base_folder, task_group)
-
-            if task_name == "class. del. sum":
-                task_data_dict = get_task_results(task_folder, x_param_name='dur', y_param_name='max',
-                                                  aggregation_type='sum_over_delays', metric='accuracy').to_dict()
-            elif task_name in ["class. max. del.", "classification", "classi-\nfication", "class."]:
-                task_data_dict = get_task_results(task_folder, x_param_name='dur', y_param_name='max',
-                                                  aggregation_type='max_delay', metric='accuracy').to_dict()
-            elif "NARMA" in task_name:
-                task_data_dict = get_task_results(task_folder, x_param_name='dur', y_param_name='max',
-                                                  metric='squared_corr_coeff').to_dict()
+            if cap_info_type in ['nonlin. cap. delay 5', 'nonlinear capacity\ndelay 5']:
+                cap_data_dict = get_heatmap_data(x_name='dur', y_name='max', capacity_folder=cap_folder,
+                                                 params_to_filter={}, mindelay=5, maxdelay=5, mindegree=2)
+                # params_to_filter={}, mindelay=6, maxdelay=6, mindegree=2)
+            elif cap_info_type in ['nonlin. cap. delay 10', 'nonlinear capacity\ndelay 10']:
+                cap_data_dict = get_heatmap_data(x_name='dur', y_name='max', capacity_folder=cap_folder,
+                                                 params_to_filter={}, mindelay=10, maxdelay=10, mindegree=1)
+                # params_to_filter={}, mindelay=11, maxdelay=11, mindegree=1)
             else:
-                task_data_dict = get_task_results(task_folder, x_param_name='dur', y_param_name='max').to_dict()
+                cap_data_dict = get_heatmap_data(x_name='dur', y_name='max', capacity_folder=cap_folder,
+                                                 params_to_filter={}, get_max_delays=get_max_delays,
+                                                 get_max_degrees=get_max_degrees)
 
-            if cap_info_type in ['nonlin. cap. delay 5', 'nonlinear capacity\ndelay 5', 'nonlin. cap. delay 10',
-                                 'nonlinear capacity\ndelay 10'] and task_name not in ['NARMA5', 'NARMA10']:
-                corr = 0.
-            # elif task_name == 'NARMA10' and '5' in cap_info_type:
-            #     corr = 0.
-            elif task_name == 'NARMA5' and '10' in cap_info_type:
-                corr = 0.
-            else:
-                corr = get_correlation(cap_data_dict, task_data_dict, use_spearmanr=use_spearmanr)
-            print(f'\n\t\t{cap_title} correlation({cap_info_type},{task_name}): {corr}')
-            correlations.append(corr)
-            tasknames.append(task_name)
+            if np.max(list(cap_data_dict[1.0].keys())) == 3.0:
+                tmp_cap_data_dict = {}
+                for dur, amp_dict in cap_data_dict.items():
+                    tmp_cap_data_dict[dur] = {}
+                    for amp, cap in amp_dict.items():
+                        tmp_cap_data_dict[dur][round(amp * 0.2, 2)] = cap
+                cap_data_dict = tmp_cap_data_dict
+
+            tasknames = []
+            correlations = []
+
+            for task_name, task_group in cap_dict['tasks'].items():
+                print(f'\n______ {task_name} ___________')
+                task_folder = os.path.join(task_base_folder, task_group)
+
+                if task_name == "class. del. sum":
+                    task_data_dict = get_task_results(task_folder, x_param_name='dur', y_param_name='max',
+                                                      aggregation_type='sum_over_delays', metric='accuracy').to_dict()
+                elif task_name in ["class. max. del.", "classification", "classi-\nfication", "class."]:
+                    task_data_dict = get_task_results(task_folder, x_param_name='dur', y_param_name='max',
+                                                      aggregation_type='max_delay', metric='accuracy').to_dict()
+                elif "NARMA" in task_name:
+                    task_data_dict = get_task_results(task_folder, x_param_name='dur', y_param_name='max',
+                                                      metric='squared_corr_coeff').to_dict()
+                else:
+                    task_data_dict = get_task_results(task_folder, x_param_name='dur', y_param_name='max').to_dict()
+
+                if cap_info_type in ['nonlin. cap. delay 5', 'nonlinear capacity\ndelay 5', 'nonlin. cap. delay 10',
+                                     'nonlinear capacity\ndelay 10'] and task_name not in ['NARMA5', 'NARMA10']:
+                    corr = 0.
+                # elif task_name == 'NARMA10' and '5' in cap_info_type:
+                #     corr = 0.
+                elif task_name == 'NARMA5' and '10' in cap_info_type:
+                    corr = 0.
+                else:
+                    corr = get_correlation(cap_data_dict, task_data_dict, use_spearmanr=use_spearmanr)
+                print(f'\n\t\t{cap_title} correlation({cap_info_type},{task_name}): {corr}')
+                correlations.append(corr)
+                tasknames.append(task_name)
+
 
         x_positions = np.array(list(range(len(tasknames))))
         w = bar_width - (bar_width / 2) * min(abs(shift_factor), 1)
@@ -546,6 +613,7 @@ def plot_single_correlations_plot(ax, bar_width, cap_dict, cap_folder, cap_title
         ax.set_xticklabels(tasknames, rotation=90, fontsize=8)
         ax.tick_params(axis="x", direction="in", pad=-8, length=0.)
         # ax.set_ylabel('correlation coefficient')
+
     ax.set_title(cap_title)
     ax.spines['top'].set_color('none')
     ax.spines['bottom'].set_color('none')
@@ -557,15 +625,20 @@ def plot_single_correlations_plot(ax, bar_width, cap_dict, cap_folder, cap_title
     # plt.savefig(os.path.join(parameters['fig_folder'], cap_dict['figname']))
 
 
-def plot_removed_encoder_heatmaps(axes, use_cache):
+def plot_removed_encoder_heatmaps(axes, use_cache, use_precalculated=True):
 
     cap_folder = '/home/schultetobrinke/projects/recurrence/repos/capacity_visualisation/capacity_visualisation/data/spatial-encoding-rerun__inp=spatial_DC__net=brunel__std=1__noise_loop_duration=step_duration/network_capacity_remove_full-transform'
     params_to_filter = {}
+    if use_precalculated:
+        precalculated_data_path = os.path.join('data', 'BRN_capacities_std1_noencoder.pkl')
+    else:
+        precalculated_data_path = None
     _, axes['enc1'] = plot_heatmap('dur', 'max', capacity_folder=cap_folder, title=r'$\sigma 1$',
                                 params_to_filter=params_to_filter, ax=axes['enc1'],
                                 cutoff=0., figure_path=None, plot_max_degrees=False, plot_max_delays=False,
                                 plot_num_trials=False,
-                                annotate=False, other_filter_keys=['network'], use_cache=use_cache, colorbar_label='')
+                                annotate=False, other_filter_keys=['network'], use_cache=use_cache, colorbar_label='',
+                                precalculated_data_path=precalculated_data_path)
     axes['enc1'].set_xticklabels([])
     # axes['enc1'].set_xticks(np.arange(0.5, 7.6, 1))
     axes['enc1'].set_xticks([])
@@ -576,11 +649,16 @@ def plot_removed_encoder_heatmaps(axes, use_cache):
 
     cap_folder = '/home/schultetobrinke/projects/recurrence/repos/capacity_visualisation/capacity_visualisation/data/spatial-encoding-rerun__inp=spatial_DC__net=brunel__std=20__noise_loop_duration=step_duration/network_capacity_identity-subtractall-1-transform'
     params_to_filter = {}
+    if use_precalculated:
+        precalculated_data_path = os.path.join('data', 'BRN_capacities_std20_noencoder.pkl')
+    else:
+        precalculated_data_path = None
     _, axes['enc2'] = plot_heatmap('dur', 'max', capacity_folder=cap_folder, title=r'$\sigma 20$',
                                    params_to_filter=params_to_filter, ax=axes['enc2'],
                                    cutoff=0., figure_path=None, plot_max_degrees=False, plot_max_delays=False,
                                    plot_num_trials=False,
-                                   annotate=False, other_filter_keys=['network'], use_cache=use_cache, colorbar_label='')
+                                   annotate=False, other_filter_keys=['network'], use_cache=use_cache, colorbar_label='',
+                                   precalculated_data_path=precalculated_data_path)
     axes['enc2'].set_xticklabels([])
     # axes['enc2'].set_xticks(np.arange(0.5, 7.6, 1))
     axes['enc2'].set_xticks([])
@@ -716,12 +794,12 @@ def parse_cmd():
     return parser.parse_args()
 
 
-def main():
+def main(use_precalculated=True):
     use_cache = True
 
     fig, axes = setup_axes()
 
-    plot_heatmaps(axes, use_cache)
+    plot_heatmaps(axes, use_cache, use_precalculated=use_precalculated)
     plot_bars(axes)
     set_color_markers(axes)
     plot_encoding_line_graphs(axes, use_cache)
@@ -733,5 +811,13 @@ def main():
     # plt.show()
 
 
+def parse_cmd():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--use_precalculated', store='action_true', help='Use precalculated data instead of full simulation data')
+
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
-    main()
+    main(**vars(parse_cmd()))
