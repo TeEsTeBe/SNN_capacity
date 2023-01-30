@@ -148,6 +148,8 @@ plot_single_correlations_plot(
             "cap_groupname": "FPUT_capacities",
             "tasks": {
                 "XOR": 'xor',
+                "temporalXOR": 't_xor',
+                "NARMA5": 'narma5',
             },
             "figname": 'delete_me.pdf'
         },

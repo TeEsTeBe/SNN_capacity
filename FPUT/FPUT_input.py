@@ -199,11 +199,26 @@ def run_multi_input_experiment(file_prefix, **simparams):
     with writeable_file(file_prefix / "metadata.yaml", mode="w") as f:
         yaml.dump(metadata, f)
 
+def translation(wert):
+    translation_dict = dict(
+            alpha='a',
+            tau_relax='tau',
+            nbr_batches='nb',
+            warmup_batches='wb',
+            init_epsilon='ep',
+            force='f',
+            in_dim='d',
+            uniques='uni',
+    )
+    if wert in translation_dict:
+        return translation_dict[wert]
+    else:
+        return wert
 
 def filename(prefix, postfix, **kwargs):
     return Path(
         prefix
-        + "_".join(f"{key}={kwargs[key]}" for key in sorted(kwargs.keys()))
+        + "_".join(f"{translation(key)}={kwargs[key]}" for key in sorted(kwargs.keys()))
         + postfix
     )
 
