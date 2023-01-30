@@ -518,6 +518,7 @@ def parse_cmd():
     parser.add_argument('--classification_results_folder', type=str, help='Path to the folder with the delayed '
                                                                           'classification task results',
                         default=None)
+    parser.add_argument('--use_precalculated', action='store_true', help='Use precalculated data for the figure.')
 
     return parser.parse_args()
 

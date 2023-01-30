@@ -811,5 +811,13 @@ def main(use_precalculated=True):
     # plt.show()
 
 
+def parse_cmd():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--use_precalculated', store='action_true', help='Use precalculated data instead of full simulation data')
+
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
-    main()
+    main(**vars(parse_cmd()))
