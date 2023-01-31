@@ -45,14 +45,14 @@ if __name__ == "__main__":
         # 0.041, 0.042, 0.043, 0.044, 0.045, 0.046, 0.047, 0.048, 0.049, 0.050,
     # ]
 
-    for input_duration, input_amplitude  in product(input_durations, input_amplitudes):
+    for input_duration, input_amplitude, trial in product(input_durations, input_amplitudes, range(2)):
         FPUT_args = dict(
             alpha=0.25,
             tau_relax=10,
             nbr_batches=100000,
             warmup_batches=10,
             init_epsilon=0.05,
-            trial=0,
+            trial=trial,
             force=False,
             in_dim=1,
             uniques=4,
@@ -87,7 +87,7 @@ if __name__ == "__main__":
             test_ratio=0.3,
             seed=None,
             data_path='./Data/FPUT_tasks',
-            trial=0,
+            trial=trial,
         )
         run_task(XOR_args)
 
@@ -98,7 +98,7 @@ if __name__ == "__main__":
             nbr_batches=1000,
             warmup_batches=10,
             init_epsilon=0.05,
-            trial=0,
+            trial=trial,
             force=False,
             in_dim=1,
             uniques=2,
@@ -128,7 +128,7 @@ if __name__ == "__main__":
             test_ratio=0.3,
             seed=None,
             data_path='./Data/FPUT_tasks',
-            trial=0,
+            trial=trial,
         )
         run_task(TEMPORAL_XOR_args)
         # capacity stuff
@@ -138,7 +138,7 @@ if __name__ == "__main__":
             nbr_batches=100000,
             warmup_batches=10,
             init_epsilon=0.05,
-            trial=0,
+            trial=trial,
             force=False,
             in_dim=1,
             uniques=4,
@@ -200,7 +200,7 @@ if __name__ == "__main__":
             test_ratio=0.3,
             seed=None,
             data_path='./Data/FPUT_tasks',
-            trial=0,
+            trial=trial,
         )
         run_task(NARMA_args)
 
