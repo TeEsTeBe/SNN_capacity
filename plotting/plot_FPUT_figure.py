@@ -492,6 +492,10 @@ heatmaps.plot_heatmap(
     colorbar_label=None,
     cbar_ticks=None,
 )
+axs['heatmap'].set_xticks([10, 20, 30, 40])
+axs['heatmap'].set_xticklabels([10, 20, 30, 40])
+axs['heatmap'].set_yticks([10, 20, 30, 40, 50])
+axs['heatmap'].set_yticklabels([0.01, 0.02, 0.03, 0.04, 0.05])
 axs["heatmap"].set_xlabel(r"$\Delta s$")
 axs["heatmap"].set_ylabel(r"$a_{max}$")
 
