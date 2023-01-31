@@ -1,7 +1,8 @@
 from run_FPUT import main as run_FPUT
 from FPUT.FPUT_input import filename
-from run_capacity import main as run_capacity
-from evaluate_task_separately import main as run_task
+from run_capacity import main as actually_run_capacity
+from evaluate_task_separately import main as actually_run_task
+from evaluate_task_separately import setup_runfolder as get_taskfolder
 
 
 from itertools import product
@@ -10,6 +11,18 @@ import os
 import numpy as np
 from multiprocessing import Pool
 import multiprocessing as mp
+
+def run_task(args, overwrite_task_data=False):
+    runpath = get_taskfolder(args)
+    if (not overwrite_task_data) and os.path.isfile(Path(runpath) / 'test_results.yml'):
+        return
+    actually_run_task(args)
+
+def run_capacity(args, overwrite_capacity_data=False):
+    runpath = get_taskfolder(args)
+    if (not overwrite_capacity_data) and os.path.isfile(args.capacity_results):
+        return
+    actually_run_task(args)
 
 class Namespace:
     def __init__(self, **kwargs):
@@ -174,7 +187,6 @@ def generate_data(input_duration, input_amplitude, trial):
         trial=trial,
     )
     run_task(NARMA_args)
-
 
 if __name__ == "__main__":
 
