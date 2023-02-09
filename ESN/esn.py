@@ -5,12 +5,6 @@ import numpy.linalg as alg
 from sklearn.decomposition import PCA
 
 
-def test_loading():
-    print("ESN library loaded")
-
-
-# all kinds of connection matrices
-
 def CM_Initialise_Uniform(in_shape, out_shape, scale=1.0, bias=0.0):
     # uniform in [-1.0,1.0]
     CM = 2.0 * np.random.rand(in_shape, out_shape) - 1.0

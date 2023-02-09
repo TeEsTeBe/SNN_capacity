@@ -8,8 +8,6 @@ import yaml
 
 from ESN import esn
 
-esn.test_loading()
-
 
 def parse_cmd():
     parser = argparse.ArgumentParser()
