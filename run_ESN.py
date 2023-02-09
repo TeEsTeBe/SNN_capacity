@@ -17,28 +17,36 @@ def parse_cmd():
     parser.add_argument('--input', type=str, default=None,
                         help='Path to input. If not set, the input is generated and stored to the run path.')
     parser.add_argument('--runname', type=str, default='defaultname',
-                        help='Name of the current run. A folder with this name and the parameters will be created.')
-    parser.add_argument('--groupname', type=str, default='defaultgroup', )
-    parser.add_argument('--data_path', type=str, default='data')
+                        help='Name of the current run. A folder with this name and the parameters will be created '
+                             'inside the group path.')
+    parser.add_argument('--groupname', type=str, default='defaultgroup', help="Name of the group of experiments. A "
+                                                                              "folder with this name will be created "
+                                                                              "inside the data_path.")
+    parser.add_argument('--data_path', type=str, default='data', help="Path were the results for all experiment groups "
+                                                                      "should be stored.")
     parser.add_argument('--steps', type=int, default=100000,
                         help="Number of inputs. Only used if --input file does not exist.")
-    parser.add_argument('--nodes', type=int, default=50)
-    parser.add_argument('--input_scaling', type=float, default=0.5)
-    parser.add_argument('--spectral_radius', type=float, default=0.95)
-    parser.add_argument('--n_warmup', type=int, default=500)
-    parser.add_argument('--init_normal', action='store_true')
-    parser.add_argument('--orthogonalize', action='store_true')
-    parser.add_argument('--ortho_density_denominator', type=int, default=1)
-    parser.add_argument('--use_relu', action='store_true')
-    parser.add_argument('--relu_slope', type=float, default=1)
-    parser.add_argument('--relu_start', type=float, default=0)
-    parser.add_argument('--use_linear_activation', action='store_true')
-    parser.add_argument('--results_file', type=str, default=None)
-    parser.add_argument('--figures_path', type=str, default='figures')
+    parser.add_argument('--nodes', type=int, default=50, help="Number of nodes the ESN is made of.")
+    parser.add_argument('--input_scaling', type=float, default=0.5, help="Input scaling parameter iota")
+    parser.add_argument('--spectral_radius', type=float, default=0.95, help="Spectral radius of the recurrent weights")
+    parser.add_argument('--n_warmup', type=int, default=500, help="Number of warmup steps the ESN is simulated before "
+                                                                  "the main simulation is started.")
+    parser.add_argument('--init_normal', action='store_true', help="Use normal distribution to initialize recurrent "
+                                                                   "weigths.")
+    parser.add_argument('--orthogonalize', action='store_true', help="Orthogonalize the recurrent weigths")
+    parser.add_argument('--ortho_density_denominator', type=int, default=1,
+                        help="Create a sparse but orthogonalized weight matrix with density 1/ortho_density_denominator")
+    parser.add_argument('--use_relu', action='store_true', help="Use relu activation function.")
+    parser.add_argument('--relu_slope', type=float, default=1, help="Slope of the relu function.")
+    parser.add_argument('--relu_start', type=float, default=0, help="Offset for the relu function")
+    parser.add_argument('--use_linear_activation', action='store_true', help="use a linear activation function")
+    # parser.add_argument('--results_file', type=str, default=None, help="")
+    # parser.add_argument('--figures_path', type=str, default='figures')
     parser.add_argument('--recurrence_density', type=float, default=None,
-                        help="For orthogonalization use --ortho_density_denominator!")
-    parser.add_argument('--trial', type=int, default=1)
-    parser.add_argument('--seed', type=int, default=None)
+                        help="Density of the recurrent weight matrix. "
+                             "For orthogonalization use --ortho_density_denominator!")
+    parser.add_argument('--trial', type=int, default=1, help="Number of the current trial")
+    parser.add_argument('--seed', type=int, default=None, help="Random seed for the simulation")
 
     return parser.parse_args()
 
