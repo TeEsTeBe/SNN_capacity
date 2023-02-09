@@ -1,13 +1,9 @@
 import os
 import pickle
 import argparse
-import yaml
 
 import matplotlib.pyplot as plt
-import scipy.stats
-import seaborn as sns
 plt.rc('axes', labelsize=14)
-# plt.rc('font', family='serif')
 ticksize = 12
 plt.rc('xtick', labelsize=ticksize)
 plt.rc('ytick', labelsize=ticksize)
@@ -19,7 +15,6 @@ import numpy as np
 from heatmaps import plot_heatmap, get_heatmap_data, get_task_results, plot_task_results_heatmap
 from colors import get_color
 from evaluation.calculate_task_correlations import get_correlation
-import barplots
 import cap_bars_single_run
 
 
@@ -218,10 +213,6 @@ def set_color_markers(axes):
 
     for ax_label in ['J', 'K', 'L']:
         axes[ax_label].add_patch(Rectangle((1, 14), 1, 1, fill=False, edgecolor=barmarker_sigma1, lw=2, clip_on=False))
-    # for letter in ['E', 'F', 'G', 'A', 'B', 'C']:
-    # axes[letter].set_xticklabels([])
-    # axes[letter].set_xticklabels([int(float(n.get_text())) for n in axes[letter].get_xticklabels()])
-    # axes[letter].set_xlabel(None)
     for ax_label in ['E', 'F', 'G']:  # , 'X']:
         axes[ax_label].add_patch(Rectangle((7, 0), 1, 1, fill=False, edgecolor=barmarker_sigma20, lw=2, clip_on=False))
 
@@ -245,45 +236,40 @@ def set_color_markers(axes):
 
 
 def plot_bars(axes):
-    # cap_dict_path_1 = '/home/schultetobrinke/projects/recurrence/repos/capacity_visualisation/capacity_visualisation/data/spatial_frozennoise_dur1-50_max0.2-3.0__net=brunel__std=1.0__inp=spatial_DC__steps=200000/capacity/capacities_spatial_frozennoise_dur1-50_max0.2-3.0__net=brunel__std=1.0__inp=spatial_DC__steps=200000__max=0.2__dur=50.0__1_vm.pkl'
     cap_dict_path_1 = os.path.join('data', 'BRN_capbars_std1.pkl')
     with open(cap_dict_path_1, 'rb') as cap_file_enc:
         cap_dict_enc = pickle.load(cap_file_enc)
     cap_bars_single_run.plot_capacity_bars(cap_dict_enc, ax=axes['bar2'])
-    # axes['bar2'].set_title(r'$\sigma$ 1.0, $a_{max}$ 0.2, $\Delta s$ 50.0')
     axes['bar2'].set_xticks([0])
     axes['bar2'].set_xticklabels([0])
-    # ymin, ymax = axes['bar2'].get_ylim()
-    # ywidth = ymax - ymin
     xmin, xmax = axes['bar2'].get_xlim()
     axes['bar2'].set_xlim((xmin * 2, xmax * 2))
     axes['bar2'].set_ylabel(None)
     axes['bar2'].set_xlabel(None)
-    # xwidth = xmax - xmin
-    # axes['bar1'].add_patch(Rectangle((xmin+(xwidth/2), ymin+(ywidth/2)), xwidth/2, ywidth/2, fill=False, edgecolor=barmarker_sigma20, lw=2, clip_on=False))
-    # cap_dict_path_20 = '/home/schultetobrinke/projects/recurrence/repos/capacity_visualisation/capacity_visualisation/data/spatial_frozennoise_dur1-50_max0.2-3.0__net=brunel__std=20.0__inp=spatial_DC__steps=200000/capacity/capacities_spatial_frozennoise_dur1-50_max0.2-3.0__net=brunel__std=20.0__inp=spatial_DC__steps=200000__max=3.0__dur=2.0__1_vm.pkl'
     cap_dict_path_20 = os.path.join('data', 'BRN_capbars_std20.pkl')
     with open(cap_dict_path_20, 'rb') as cap_file_20:
         cap_dict_20 = pickle.load(cap_file_20)
     cap_bars_single_run.plot_capacity_bars(cap_dict_20, ax=axes['bar1'])
     axes['bar1'].set_xlabel('delay', labelpad=-10)
-    # axes['bar1'].set_title(r'$\sigma$ 20.0, $a_{max}$ 3.0, $\Delta s$ 2.0')
-    # cap_dict_path_enc = '/home/schultetobrinke/nextcloud/Juelich/projects/recurrence/repos/capacity_visualisation/capacity_visualisation/data/BestBRN-test_substitutes_and_artificial_states/gaussinputs-substitute_capacity/capacities_gaussinputs-substitute_BestBRN-test__net=brunel__std=1__max=0.04__dur=50.0__inp=spatial_DC__loop=step_duration__bgrate=None__1_vm.pkl'
+    axes['bar1'].set_xticks([0, 10])
+    axes['bar2'].set_ylim((0, 830.27))
+
+
+def plot_encoder_capacity_bars(ax):
     cap_dict_path_enc = os.path.join('data', 'BRN_capbars_enc.pkl')
     with open(cap_dict_path_enc, 'rb') as cap_file_enc:
         cap_dict_enc = pickle.load(cap_file_enc)
-    cap_bars_single_run.plot_capacity_bars(cap_dict_enc, ax=axes['bar3'])
-    axes['bar3'].set_xticks([0])
-    axes['bar3'].set_xticklabels([0])
-    xmin, xmax = axes['bar3'].get_xlim()
-    axes['bar3'].set_xlim((xmin * 2, xmax * 2))
-    axes['bar3'].set_title('encoder')
-    axes['bar3'].set_ylabel(None)
-    axes['bar3'].set_yticklabels([])
-    axes['bar3'].set_xlabel(None)
-    # _, cap1_ymax = axes['H'].get_ylim()
-    _, cap_enc_ymax = axes['bar3'].get_ylim()
-    axes['bar2'].set_ylim((0, cap_enc_ymax))
+    cap_bars_single_run.plot_capacity_bars(cap_dict_enc, ax=ax)
+    ax.set_xticks([0])
+    ax.set_xticklabels([0])
+    xmin, xmax = ax.get_xlim()
+    ax.set_xlim((xmin * 2, xmax * 2))
+    ax.set_title('encoder')
+    ax.set_ylabel(None)
+    ax.set_yticklabels(["", 500])
+    ax.set_xlabel(None)
+
+    return ax
 
 
 def plot_heatmaps(axes, use_cache, use_precalculated=True):
@@ -396,7 +382,6 @@ def plot_heatmaps(axes, use_cache, use_precalculated=True):
 def plot_encoding_line_graphs(axes, use_cache, use_precalculated=True):
     plot_stds = True
     axes['1'] = plot_max_cap_per_p_or_std('spatial', axes['1'], use_cache=use_cache, plot_stds=plot_stds, use_precalculated=use_precalculated)
-    # axes['1'].legend(prop={'size': 5})
     add_capacity_percent_twinx(ax=axes['1'], add_label=True)
     axes['1'].scatter([1], [686.4552198555509], marker='o', facecolor='none', s=75, linewidth=1, edgecolor='black', zorder=10)
     axes['1'].scatter([20], [100.54747580302804], marker='s', facecolor='none', s=75, linewidth=1, edgecolor='black', zorder=10)
@@ -405,7 +390,6 @@ def plot_encoding_line_graphs(axes, use_cache, use_precalculated=True):
     ymin, ymax = axes['1'].get_ylim()
     axes['1'].set_ylim(ymin, ymax+25)
     axes['1'].set_title('spatial')
-    # axes['1'].set_ylabel(None)
     axes['1'].set_xlabel(None)
     axes['1'].set_xticklabels([])
     axes['2'] = plot_max_cap_per_p_or_std('spatial', axes['2'], plot_memory=True, use_cache=use_cache,
@@ -416,7 +400,6 @@ def plot_encoding_line_graphs(axes, use_cache, use_precalculated=True):
     axes['2'].set_xlim(xmin-0.5, xmax+0.5)
     ymin, ymax = axes['2'].get_ylim()
     axes['2'].set_ylim(ymin, ymax+3)
-    # axes['2'].set_ylabel(None)
     axes['3'] = plot_max_cap_per_p_or_std('step', axes['3'], use_cache=use_cache, plot_stds=plot_stds, use_precalculated=use_precalculated)
     add_capacity_percent_twinx(ax=axes['3'])
     axes['3'].set_title('amplitude')
@@ -425,13 +408,13 @@ def plot_encoding_line_graphs(axes, use_cache, use_precalculated=True):
     axes['4'] = plot_max_cap_per_p_or_std('step', axes['4'], plot_memory=True, use_cache=use_cache, plot_stds=plot_stds, use_label=True, use_precalculated=use_precalculated)
     axes['4'].set_xticklabels([0.25, '', '', 1.0])
     axes['4'].set_xlabel(r'$p$', labelpad=-6)
-    legend = axes['4'].legend(ncol=1, loc='upper left', bbox_to_anchor=(0.15, -0.45), fontsize=10, handlelength=3)
+    legend = axes['4'].legend(ncol=1, loc='upper left', bbox_to_anchor=(0.15, -0.50), fontsize=10, handlelength=3)
     for legobj in legend.legendHandles:
         legobj.set_linewidth(2.5)
     axes['5'] = plot_max_cap_per_p_or_std('uniform', ax=axes['5'], plot_memory=False, use_cache=use_cache,
                                           plot_stds=plot_stds, use_precalculated=use_precalculated)
     add_capacity_percent_twinx(ax=axes['5'])
-    axes['5'].set_title('uniform')
+    axes['5'].set_title('distributed')
     axes['5'].set_ylabel(None)
     axes['5'].set_xlabel(None)
     axes['5'].set_xticklabels([])
@@ -449,7 +432,7 @@ def plot_task_correlations(axes, use_cache, use_precalculated=True):
     bar_width = 0.25
 
     cap_to_tasks_dict = {
-        "uniform": {
+        "distributed": {
             "axes_letter": 'tasks1',
             "cap_groupname": "uniform-encoding-fullscan__inp=uniform_DC__net=brunel__g=5.0__J=0.2__p=1.0__noise_loop_duration=step_duration",
             "tasks": {
@@ -473,18 +456,6 @@ def plot_task_correlations(axes, use_cache, use_precalculated=True):
             },
             "figname": 'cap-task-correlations_no-ctXOR_spatial_std=20_with-encoder-cap.pdf'
         },
-        "uniform\n(spatial tasks)": {
-            "axes_letter": 'tasks3',
-            "cap_groupname": "uniform-encoding-fullscan__inp=uniform_DC__net=brunel__g=5.0__J=0.2__p=1.0__noise_loop_duration=step_duration",
-            "tasks": {
-                "XOR": 'BRN-scan-normalXOR-test__net=brunel__inp=spatial_DC_XOR__std=20__loop=step_duration__g=5.0__J=0.2',
-                "tXOR": 'BRN-scan-discrete-temporal-XOR-test__net=brunel__inp=spatial_DC_temporal_XOR__std=20__noise_loop_duration=step_duration__g=5.0__J=0.2',
-                "XORXOR": 'BRN-scan-spatial-XORXOR-test__net=brunel__inp=spatial_DC_XORXOR__std=20__noise_loop_duration=step_duration__g=5.0__J=0.2',
-                "class.": 'BRN-scan-spatial-classification-test__net=brunel__inp=spatial_DC_classification__std=20__noise_loop_duration=step_duration__g=5.0__J=0.2',
-                "NARMA5": 'BRN-scan-NARMA5-test__net=brunel__inp=spatial_DC__std=20__loop=step_duration__g=5.0__J=0.2',
-            },
-            "figname": 'cap-task-correlations_no-ctXOR_uniform_p=1.0_spatial-std20-tasks.pdf'
-        },
     }
 
     for cap_title, cap_dict in cap_to_tasks_dict.items():
@@ -501,39 +472,28 @@ def plot_task_correlations(axes, use_cache, use_precalculated=True):
 
     axes['tasks1'].set_ylabel('correlation', labelpad=-5)
     axes['tasks2'].set_yticklabels([])
-    axes['tasks3'].set_yticklabels([])
 
-    axes['tasks2'].legend(ncol=4, loc='upper center', bbox_to_anchor=(0.5, -0.33), fontsize=10)
+    axes['tasks2'].legend(ncol=4, loc='upper center', bbox_to_anchor=(-0.25, -0.37), fontsize=10)
 
 
 def plot_single_correlations_plot(ax, bar_width, cap_dict, cap_folder, cap_title, task_base_folder, use_spearmanr,
                                   use_cache, use_precalculated=True):
-    # fig, ax = plt.subplots(figsize=(5, 8))
-    # fac = 1.25  # Poster
-    # fig, ax = plt.subplots(figsize=(fac*5, fac*4))  # Poster
-    # fac = 1.  # Poster
-    # fig, ax = plt.subplots(figsize=(fac * 4, fac * 4))  # Poster
     ax.set_ylim((-1, 1))
     print(cap_title)
     colors = {
         'capacity': get_color('capacity'),
-        # 'nonlin. cap. delay 5': '#77CBB9',
         'nonlin. cap. delay 5': get_color('accent', desaturated=True),
         'nonlinear capacity\ndelay 5': '#77CBB9',
-        # 'nonlin. cap. delay 10': '#2C0735',
         'nonlin. cap. delay 10': get_color('accent', desaturated=True),
         'nonlinear capacity\ndelay 10': '#2C0735',
         'degrees': get_color('degree'),  # 'wheat',
         'delays': get_color('delay'),  # 'plum',
     }
-    # capacity_info_types = ['degrees', 'capacity', 'delays', 'nonlin. cap. delay 10']
-    # capacity_info_types = ['degrees', 'capacity', 'delays', 'nonlinear capacity\ndelay 5']
+
     capacity_info_types = ['degrees', 'capacity', 'delays', 'nonlin. cap. delay 5']
-    # capacity_info_types = ['degrees', 'capacity', 'delays', 'nonlinear capacity\ndelay 10']
-    # capacity_info_types = ['degrees', 'capacity', 'delays', 'nonlinear capacity\ndelay 5', 'nonlinear capacity\ndelay 10']
     if use_precalculated:
         if '(' in cap_title:
-            network_type = 'uniform-spatial'
+            network_type = 'distributed-spatial'
         else:
             network_type = cap_title
         with open(f'data/BRN_task_correlations_{network_type}.pkl', 'rb') as task_correlations_file:
@@ -552,11 +512,9 @@ def plot_single_correlations_plot(ax, bar_width, cap_dict, cap_folder, cap_title
             if cap_info_type in ['nonlin. cap. delay 5', 'nonlinear capacity\ndelay 5']:
                 cap_data_dict = get_heatmap_data(x_name='dur', y_name='max', capacity_folder=cap_folder,
                                                  params_to_filter={}, mindelay=5, maxdelay=5, mindegree=2)
-                # params_to_filter={}, mindelay=6, maxdelay=6, mindegree=2)
             elif cap_info_type in ['nonlin. cap. delay 10', 'nonlinear capacity\ndelay 10']:
                 cap_data_dict = get_heatmap_data(x_name='dur', y_name='max', capacity_folder=cap_folder,
                                                  params_to_filter={}, mindelay=10, maxdelay=10, mindegree=1)
-                # params_to_filter={}, mindelay=11, maxdelay=11, mindegree=1)
             else:
                 cap_data_dict = get_heatmap_data(x_name='dur', y_name='max', capacity_folder=cap_folder,
                                                  params_to_filter={}, get_max_delays=get_max_delays,
@@ -592,8 +550,6 @@ def plot_single_correlations_plot(ax, bar_width, cap_dict, cap_folder, cap_title
                 if cap_info_type in ['nonlin. cap. delay 5', 'nonlinear capacity\ndelay 5', 'nonlin. cap. delay 10',
                                      'nonlinear capacity\ndelay 10'] and task_name not in ['NARMA5', 'NARMA10']:
                     corr = 0.
-                # elif task_name == 'NARMA10' and '5' in cap_info_type:
-                #     corr = 0.
                 elif task_name == 'NARMA5' and '10' in cap_info_type:
                     corr = 0.
                 else:
@@ -611,18 +567,12 @@ def plot_single_correlations_plot(ax, bar_width, cap_dict, cap_folder, cap_title
                color=colors[cap_info_type], label=cap_info_type)
         ax.set_xticks(x_positions)
         ax.set_xticklabels(tasknames, rotation=90, fontsize=8)
-        ax.tick_params(axis="x", direction="in", pad=-8, length=0.)
-        # ax.set_ylabel('correlation coefficient')
+        ax.tick_params(axis="x", direction="in", pad=-4, length=0.)
 
     ax.set_title(cap_title)
     ax.spines['top'].set_color('none')
     ax.spines['bottom'].set_color('none')
     ax.spines['right'].set_color('none')
-    # ax.legend()
-    # ax.legend(ncol=2)  # Poster
-    # ax.legend(ncol=2, prop={'size': 6})  # Poster
-    # fig.tight_layout()
-    # plt.savefig(os.path.join(parameters['fig_folder'], cap_dict['figname']))
 
 
 def plot_removed_encoder_heatmaps(axes, use_cache, use_precalculated=True):
@@ -633,19 +583,18 @@ def plot_removed_encoder_heatmaps(axes, use_cache, use_precalculated=True):
         precalculated_data_path = os.path.join('data', 'BRN_capacities_std1_noencoder.pkl')
     else:
         precalculated_data_path = None
-    _, axes['enc1'] = plot_heatmap('dur', 'max', capacity_folder=cap_folder, title=r'$\sigma 1$',
-                                params_to_filter=params_to_filter, ax=axes['enc1'],
+    _, axes[0] = plot_heatmap('dur', 'max', capacity_folder=cap_folder, title=r'$\sigma 1$',
+                                params_to_filter=params_to_filter, ax=axes[0],
                                 cutoff=0., figure_path=None, plot_max_degrees=False, plot_max_delays=False,
                                 plot_num_trials=False,
                                 annotate=False, other_filter_keys=['network'], use_cache=use_cache, colorbar_label='',
                                 precalculated_data_path=precalculated_data_path)
-    axes['enc1'].set_xticklabels([])
-    # axes['enc1'].set_xticks(np.arange(0.5, 7.6, 1))
-    axes['enc1'].set_xticks([])
-    axes['enc1'].set_yticklabels([])
-    axes['enc1'].set_yticks([])
-    axes['enc1'].set_xlabel(None)
-    axes['enc1'].set_ylabel(None)
+    axes[0].set_xticklabels([])
+    axes[0].set_xticks([])
+    axes[0].set_yticklabels([])
+    axes[0].set_yticks([])
+    axes[0].set_xlabel(None)
+    axes[0].set_ylabel(None)
 
     cap_folder = '/home/schultetobrinke/projects/recurrence/repos/capacity_visualisation/capacity_visualisation/data/spatial-encoding-rerun__inp=spatial_DC__net=brunel__std=20__noise_loop_duration=step_duration/network_capacity_identity-subtractall-1-transform'
     params_to_filter = {}
@@ -653,19 +602,18 @@ def plot_removed_encoder_heatmaps(axes, use_cache, use_precalculated=True):
         precalculated_data_path = os.path.join('data', 'BRN_capacities_std20_noencoder.pkl')
     else:
         precalculated_data_path = None
-    _, axes['enc2'] = plot_heatmap('dur', 'max', capacity_folder=cap_folder, title=r'$\sigma 20$',
-                                   params_to_filter=params_to_filter, ax=axes['enc2'],
+    _, axes[1] = plot_heatmap('dur', 'max', capacity_folder=cap_folder, title=r'$\sigma 20$',
+                                   params_to_filter=params_to_filter, ax=axes[1],
                                    cutoff=0., figure_path=None, plot_max_degrees=False, plot_max_delays=False,
                                    plot_num_trials=False,
                                    annotate=False, other_filter_keys=['network'], use_cache=use_cache, colorbar_label='',
                                    precalculated_data_path=precalculated_data_path)
-    axes['enc2'].set_xticklabels([])
-    # axes['enc2'].set_xticks(np.arange(0.5, 7.6, 1))
-    axes['enc2'].set_xticks([])
-    axes['enc2'].set_xlabel(None)
-    axes['enc2'].set_ylabel(None)
-    axes['enc2'].set_yticklabels([])
-    axes['enc2'].set_yticks([])
+    axes[1].set_xticklabels([])
+    axes[1].set_xticks([])
+    axes[1].set_xlabel(None)
+    axes[1].set_ylabel(None)
+    axes[1].set_yticklabels([])
+    axes[1].set_yticks([])
 
 
 def setup_axes():
@@ -677,7 +625,6 @@ def setup_axes():
 
     axes = {}
 
-    # heatmaps_start_x = 25
     heatmaps_start_x = 0
     heatmaps_start_y = 0
     heatmap_height = 17
@@ -717,13 +664,11 @@ def setup_axes():
     lines_start_x = 0
     lines_start_y = 12 + heatmaps_start_y + 2*heatmap_height + heatmap_space_vertical
     lines_height = 12
-    lines_width = 10
+    lines_width = 12
     lines_space_horizontal = 7
     lines_space_vertical = 5
     
     lines_positions = {
-        # '1': (0, 0),
-        # '2': (0, 1),
         '3': (0, 0),
         '4': (0, 1),
         '5': (1, 0),
@@ -738,17 +683,15 @@ def setup_axes():
         y_2 = y_1 + lines_height
 
         x_1 = left_space + lines_start_x + pos_x * lines_width + pos_x * lines_space_horizontal
-        # if pos_x == 1 and pos_y == 0:
-        #     x_1 += 2
         x_2 = x_1 + lines_width
 
         axes[subplot_label] = fig.add_subplot(gs[y_1:y_2, x_1:x_2])
 
-    bars_start_x = 10 + lines_start_x + lines_space_horizontal + 2 * lines_width
+    bars_start_x = 12 + lines_start_x + lines_space_horizontal + 2 * lines_width
     bars_start_y = lines_start_y
-    bars_widths = [15, 8, 8]
+    bars_widths = [33, 8]
     bars_height = 10
-    bars_space_horizontal = 2
+    bars_space_horizontal = 4
     bwidth_sum = 0
     for bar_nr, twidth in enumerate(bars_widths):
         y_1 = top_space + bars_start_y
@@ -760,13 +703,13 @@ def setup_axes():
         axes[f'bar{bar_nr+1}'] = fig.add_subplot(gs[y_1:y_2, x_1:x_2])
         bwidth_sum += twidth
     
-    tasks_start_x = 7 + lines_start_x + lines_space_horizontal + 2 * lines_width
-    tasks_start_y = 10 + lines_start_y + bars_height
-    tasks_width = 15
-    tasks_height = 18
-    tasks_space_horizontal = 2
+    tasks_start_x = 18 + lines_start_x + lines_space_horizontal + 2 * lines_width
+    tasks_start_y = 11 + lines_start_y + bars_height
+    tasks_width = 18
+    tasks_height = 17
+    tasks_space_horizontal = 6
     bwidth_sum = 0
-    for bar_nr in range(3):
+    for bar_nr in range(2):
         y_1 = top_space + tasks_start_y
         y_2 = y_1 + tasks_height
         x_1 = left_space + tasks_start_x + bwidth_sum + bar_nr * tasks_space_horizontal
@@ -774,50 +717,47 @@ def setup_axes():
         axes[f'tasks{bar_nr+1}'] = fig.add_subplot(gs[y_1:y_2, x_1:x_2])
         bwidth_sum += tasks_width
 
-    enc_width = 12
-    enc_height = 12
-    enc_space_vertical = 5
-    enc_x1 = 2 + left_space + tasks_start_x + 3 * tasks_width + 2 * tasks_space_horizontal
-    enc_y1 = top_space + lines_start_y + 10
-    enc_x2 = enc_x1
-    enc_y2 = enc_y1 + enc_height + enc_space_vertical
-
-    axes['enc1'] = fig.add_subplot(gs[enc_y1:enc_y1+enc_height, enc_x1:enc_x1+enc_width])
-    axes['enc2'] = fig.add_subplot(gs[enc_y2:enc_y2+enc_height, enc_x2:enc_x2+enc_width])
-
     return fig, axes
 
 
+def main(use_cache=True, use_precalculated=True):
+
+    fig1, axes1 = setup_axes()
+
+    plot_heatmaps(axes1, use_cache, use_precalculated=use_precalculated)
+    plot_bars(axes1)
+    set_color_markers(axes1)
+    plot_encoding_line_graphs(axes1, use_cache)
+    plot_task_correlations(axes1, use_cache, use_precalculated=use_precalculated)
+    fig1.savefig('figures/BRN_plots/BRN_results_figure.pdf')
+    fig1.savefig('figures/BRN_plots/BRN_results_figure.svg')
+
+    plt.close('all')
+    fig2, axes2 = plt.subplots(nrows=2, ncols=1, figsize=(1.1, 2))
+    plot_removed_encoder_heatmaps(axes2, use_cache, use_precalculated=use_precalculated)
+    plt.tight_layout()
+    fig2.savefig('figures/BRN_plots/BRN_removed_encoder_heatmaps.svg')
+    fig2.savefig('figures/BRN_plots/BRN_removed_encoder_heatmaps.pdf')
+
+    plt.close('all')
+    fig3, ax = plt.subplots(figsize=(1.2, 1.5))
+    plot_encoder_capacity_bars(ax)
+    plt.tight_layout()
+    fig3.savefig('figures/BRN_plots/BRN_encoder_capbars.svg')
+    fig3.savefig('figures/BRN_plots/BRN_encoder_capbars.pdf')
+
+
 def parse_cmd():
     parser = argparse.ArgumentParser()
 
-    return parser.parse_args()
-
-
-def main(use_precalculated=True):
-    use_cache = True
-
-    fig, axes = setup_axes()
-
-    plot_heatmaps(axes, use_cache, use_precalculated=use_precalculated)
-    plot_bars(axes)
-    set_color_markers(axes)
-    plot_encoding_line_graphs(axes, use_cache)
-    plot_task_correlations(axes, use_cache)
-    plot_removed_encoder_heatmaps(axes, use_cache)
-
-    plt.savefig('/home/schultetobrinke/projects/SNN_capacity/repos/SNN_capacity/plotting/figures/BRN_plots/BRN_results_figure.no-letters.svg')
-    plt.savefig('/home/schultetobrinke/projects/SNN_capacity/repos/SNN_capacity/plotting/figures/BRN_plots/BRN_results_figure.no-letters.pdf')
-    # plt.show()
-
-
-def parse_cmd():
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument('--use_precalculated', store='action_true', help='Use precalculated data instead of full simulation data')
+    parser.add_argument('--disable_precalculated', action='store_true', help='Do not use precalculated data')
+    parser.add_argument('--disable_cache', action='store_true', help='Do not use cached data')
 
     return parser.parse_args()
 
 
 if __name__ == "__main__":
-    main(**vars(parse_cmd()))
+    args = parse_cmd()
+    use_cache = not args.disable_cache
+    use_precalculated = not args.disable_precalculated
+    main(use_cache=use_cache, use_precalculated=use_precalculated)
