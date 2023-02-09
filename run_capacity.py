@@ -98,25 +98,33 @@ def plot_capacity_cumsum(capacity_dict, ax=None):
 def parse_cmd():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--name', type=str)
-    parser.add_argument('--input', type=str)
-    parser.add_argument('--states_path', type=str)
-    parser.add_argument('--results_file', type=str)
-    parser.add_argument('--capacity_results', type=str)
-    parser.add_argument('--max_degree', type=int, default=100)
-    parser.add_argument('--max_delay', type=int, default=1000)
-    parser.add_argument('--m_variables', action='store_true')
-    parser.add_argument('--m_powerlist', action='store_true')
-    parser.add_argument('--m_windowpos', action='store_true')
-    parser.add_argument('--orth_factor', type=float, default=2.)
+    parser.add_argument('--name', type=str, help='name of the current run')
+    parser.add_argument('--input', type=str, help='Path to input numpy array.')
+    parser.add_argument('--states_path', type=str, help='Path to statematrix numpy array.')
+    parser.add_argument('--results_file', type=str, help='Path to a CSV file where the results of multiple runs should be stored.')
+    parser.add_argument('--capacity_results', type=str, help='Path where the capacity values of this run should be stored')
+    parser.add_argument('--max_degree', type=int, default=100, help='Maximum degree that should be evaluated.')
+    parser.add_argument('--max_delay', type=int, default=1000, help='Maximum delay that should be evaluated.')
+    parser.add_argument('--m_variables', action='store_true', help="Whether to assume a monotonous decrease of capacity"
+                                                                   " with increasing number of variables")
+    parser.add_argument('--m_powerlist', action='store_true', help="Whether to assume a monotonous decrease of capacity"
+                                                                   " with increasing power list")
+    parser.add_argument('--m_windowpos', action='store_true', help="Whether to assume a monotonous decrease of capacity"
+                                                                   " with increasing positions in the window")
+    parser.add_argument('--orth_factor', type=float, default=2., help="Factor that increases the cutoff value")
     parser.add_argument('--figures_path', type=str, default='figures')
-    parser.add_argument('--n_warmup', type=int, default=0)
+    parser.add_argument('--n_warmup', type=int, default=0, help="Number of warm up simulation steps.")
     parser.add_argument('--use_scipy', action='store_true')
-    parser.add_argument('--sample_ids', type=str, default=None)
-    parser.add_argument('--sample_size', type=int, default=None)
-    parser.add_argument('--sample_step', type=int, default=None)
-    parser.add_argument('--delskip', type=int, default=0)
-    parser.add_argument('--windowskip', type=int, default=0)
+    parser.add_argument('--sample_ids', type=str, default=None, help="Path to a numpy array with ids of unist that"
+                                                                     " should be used for subsampling the state matrix")
+    parser.add_argument('--sample_size', type=int, default=None, help="Number of units to use as a random subsample "
+                                                                      "of the state matrix")
+    parser.add_argument('--sample_step', type=int, default=None, help="Subsample the state matrix by using only every "
+                                                                      "sample_step unit.")
+    parser.add_argument('--delskip', type=int, default=0, help="Number of delays before a monotonous decrease of "
+                                                               "capacity values is assumed.")
+    parser.add_argument('--windowskip', type=int, default=0, help="Number of windows before a monotonous decrease of "
+                                                                  "capacity values is assumed.")
     parser.add_argument('-v', '--verbosity', type=int, default=0)
 
     return parser.parse_args()
