@@ -1,6 +1,16 @@
 # SNN_capacity
 
-## Folder structure
+This repository contains the code that you need to run the experiments presented in the paper 
+_Quantifying the processing capacity of continuous dynamical systems: from vibrating strings to cortical circuits_ by 
+Tobias Schulte to Brinke, Michael Dick, Renato Duarte and Abigail Morrison.
+To run this code, you have to install  [NEST 3](https://nest-simulator.readthedocs.io/en/v3.0/installation/index.html) first.
+
+You also have to install the other requirements from the `requirements.txt` file.
+
+Then add this repository to your PYTHONPATH:
+```
+export PYTHONPATH=$PYTHONPATH:/path/to/this/repository
+```
 
 ## Simulation
 
@@ -175,6 +185,42 @@ network_params:
 ## Evaluation
 
 ### Tasks
+
+To evaluate the tasks you need to have done the simulations first to get the input values and the state matrices.
+These need to be handed over as the arguments `--input` and `--states` to the script `evaluate_tasks_separately.py`.
+You also have to define the task with the parameter `--task`.
+Possible task names are: `XOR`, `XORXOR`, `TEMPORAL_XOR`, `NARMA5`, `DELAYED-CLASSIFICATION`
+You can also change the `5` in `NARMA5` to a value of your choice. In addition, you can evaluate a delayed version of 
+every task by adding a `_DELAY=` + the delay to the task name. For example `--task XOR_DELAY=13` would evaluate the XOR task
+of the inputs delayed by 13 steps.
+
+For an explanation of further parameters you can call `python evaluate_tasks_separately.py --help`:
+```
+usage: evaluate_task_separately.py [-h] [--input INPUT] [--states STATES] [--steps STEPS] [--task TASK] [--groupname GROUPNAME] [--runname RUNNAME] [--test_ratio TEST_RATIO] [--seed SEED] [--data_path DATA_PATH] [--trial TRIAL]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --input INPUT         Path to input numpy array.
+  --states STATES       Path to statematrix numpy array.
+  --steps STEPS         Number of steps for the task.
+  --task TASK           Name of the task that should be performed.
+  --groupname GROUPNAME
+                        Name of the group the run belongs to.
+  --runname RUNNAME     Name of the current run. A folder with this name and the parameters will be created.
+  --test_ratio TEST_RATIO
+                        Ratio of the total number of steps to be used as test set
+  --seed SEED           Seed for numpy random number generators
+  --data_path DATA_PATH
+                        Path to the parent directory where the group folder and run folder are created (the results will be stored in data_path/groupname/runname
+  --trial TRIAL         Trial number. Can be used if you want to run multiple trials with the same parameters.
+
+```
+
 ### Information processing capacity computation
 
 ## Plotting
+You can find the plotting scripts in the folder `plotting`. You can run the script `plot_all_figures.py` to create the 
+figures for the results of the ESN, FPUT, BRN and MC experiments.
+
+## Tests
+To check whether your setup works, you can run the unit tests in the folder `tests`.
