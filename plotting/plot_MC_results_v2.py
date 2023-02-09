@@ -7,10 +7,10 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-from matplotlib.patches import Rectangle, FancyBboxPatch, Circle
+from matplotlib.patches import Rectangle, FancyBboxPatch
 
 from evaluation.calculate_task_correlations import get_correlation
-from heatmaps import plot_heatmap, get_heatmap_data, get_task_results, plot_task_results_heatmap
+from heatmaps import plot_heatmap, get_heatmap_data, get_task_results
 from colors import get_color
 import cap_bars_single_run
 
@@ -335,10 +335,7 @@ def parse_cmd():
     return parser.parse_args()
 
 
-def main():
-    args = parse_cmd()
-    use_cache = not args.disable_cache
-    use_precalculated = not args.recalculate
+def main(use_cache=True, use_precalculated=True):
 
     setup_pyplot()
 
@@ -579,7 +576,6 @@ def plot_correlations(axes, use_cache, use_precalculated=True):
                 "XORXOR": 'MCiaf-diffVth-scan-uniform-XOR-test__inp=uniform_DC_XORXOR__net=microcircuit__p=1.0__noise_loop_duration=step_duration',
                 "class.": 'MCiaf-diffVth-scan-uniform-classification-test__inp=uniform_DC_classification__net=microcircuit__p=1.0__noise_loop_duration=step_duration',
                 "NARMA5": 'NARMA5_MCiaf-diffVth-scan-uniform-continuous-temporal-XOR-test__inp=uniform_DC__net=microcircuit__p=1.0__noise_loop_duration=step_duration',
-                # "NARMA10": 'NARMA10_MCiaf-diffVth-scan-uniform-continuous-temporal-XOR-test__inp=uniform_DC__net=microcircuit__p=1.0__noise_loop_duration=step_duration',
             },
             "figname": 'MC_cap-task-correlations_uniform_p=1.0..pdf'
         },
@@ -596,19 +592,6 @@ def plot_correlations(axes, use_cache, use_precalculated=True):
             },
             "figname": 'MC_cap-task-correlations_spatial_std=20.pdf'
         },
-        # "distributed\n(spatial tasks)": {
-        #     "axes_letter": '8',
-        #     "cap_groupname": "iaf-diffVth-microcircuit_uniform-encoding_frozennoise__inp=uniform_DC__net=microcircuit__p=1.0__noise_loop_duration=step_duration",
-        #     "tasks": {
-        #         "XOR": 'MCiaf-diffVth-scan-spatial_XOR-test__inp=spatial_DC_XOR__net=microcircuit__std=20__noise_loop_duration=step_duration',
-        #         "tXOR": 'MCiaf-diffVth-scan-spatial_discrete-temporal-XOR-test__inp=spatial_DC_temporal_XOR__net=microcircuit__std=20__noise_loop_duration=step_duration',
-        #         "XORXOR": 'MCiaf-diffVth-scan-spatial_XORXOR-test__inp=spatial_DC_XORXOR__net=microcircuit__std=20__noise_loop_duration=step_duration',
-        #         "class.": 'MCiaf-diffVth-scan-spatial_classification-test__inp=spatial_DC_classification__net=microcircuit__std=20__noise_loop_duration=step_duration',
-        #         "NARMA5": 'NARMA5_MCiaf-diffVth-scan-spatial_continuous-temporal-XOR-test__inp=spatial_DC__net=microcircuit__std=20__noise_loop_duration=step_duration',
-        #         # "NARMA10": 'NARMA10_MCiaf-diffVth-scan-spatial_continuous-temporal-XOR-test__inp=spatial_DC__net=microcircuit__std=20__noise_loop_duration=step_duration',
-        #     },
-        #     "figname": 'MC_cap-task-correlations_uniform_p=1.0..pdf'
-        # },
     }
 
 
@@ -750,4 +733,7 @@ def plot_single_correlations_plot(ax, bar_width, cap_dict, cap_folder, cap_title
 
 
 if __name__ == "__main__":
-    main()
+    args = parse_cmd()
+    use_cache = not args.disable_cache
+    use_precalculated = not args.recalculate
+    main(use_cache=use_cache, use_precalculated=use_precalculated)
