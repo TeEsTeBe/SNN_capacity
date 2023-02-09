@@ -2,7 +2,6 @@ import os
 import pickle
 import argparse
 
-# import skunk
 import numpy as np
 import yaml
 import matplotlib
@@ -11,8 +10,7 @@ import seaborn as sns
 matplotlib.rcParams["text.usetex"] = True
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-from matplotlib.colors import ListedColormap, LinearSegmentedColormap
-from matplotlib.gridspec import GridSpec
+from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.patches import ConnectionPatch, FancyBboxPatch, FancyArrowPatch, ConnectionStyle
 
 import barplots
@@ -23,7 +21,6 @@ from colors import get_degree_color, get_color, adjust_color
 
 def draw_lines(axes, fig, fill_background=True):
     linewidth = 2.5
-    # rho09_color = 'wheat'
     rho09_color = 'darkseagreen'
     rho113_color = 'wheat'
     if fill_background:
@@ -38,38 +35,41 @@ def draw_lines(axes, fig, fill_background=True):
                                 axesA=axes['cap_heatmap'], axesB=axes['del_heatmap'], color=rho09_color, lw=linewidth,
                                 zorder=-1)
     axes['deg_heatmap'].add_artist(conn_path)
-    box_rho9_1 = FancyBboxPatch(xy=(0.33, 0.68), width=0.275+additional_box_width, height=0.3, boxstyle=mpatches.BoxStyle("Round", pad=0.01),
-                                transform=fig.transFigure, edgecolor=rho09_color, facecolor=rho09_face_color, zorder=-10, lw=linewidth)
+    box_rho9_1 = FancyBboxPatch(xy=(0.33, 0.68), width=0.275 + additional_box_width, height=0.3,
+                                boxstyle=mpatches.BoxStyle("Round", pad=0.01),
+                                transform=fig.transFigure, edgecolor=rho09_color, facecolor=rho09_face_color,
+                                zorder=-10, lw=linewidth)
     box_rho9_2 = FancyBboxPatch(xy=(0.65, 0.33), width=0.33, height=0.65, boxstyle=mpatches.BoxStyle("Round", pad=0.01),
-                                transform=fig.transFigure, edgecolor=rho09_color, facecolor=rho09_face_color, zorder=-10, lw=linewidth)
+                                transform=fig.transFigure, edgecolor=rho09_color, facecolor=rho09_face_color,
+                                zorder=-10, lw=linewidth)
     line_rho9 = FancyArrowPatch(posA=(0.67, 0.99), posB=(0.0518, 0.96), arrowstyle='-', transform=fig.transFigure,
                                 connectionstyle=ConnectionStyle('Angle', angleA=-180, angleB=-90, rad=0.2),
                                 lw=linewidth, color=rho09_color)
-    # arrow_rho9 = FancyArrowPatch(posA=(0.5, 0.99), posB=(0.6, 0.99), arrowstyle='->', transform=fig.transFigure, lw=linewidth, color=rho09_color)
-    # arrow_rho9 = FancyArrowPatch(posA=(0.25, 0.99), posB=(0.3, 0.99), arrowstyle='->', transform=fig.transFigure, lw=linewidth, color=rho09_color, mutation_scale=10)
-    arrow_rho9 = FancyArrowPatch(posA=(0.27, 0.98), posB=(0.3, 0.98), arrowstyle='->', transform=fig.transFigure, lw=1, color='k', mutation_scale=4)
+    arrow_rho9 = FancyArrowPatch(posA=(0.27, 0.98), posB=(0.3, 0.98), arrowstyle='->', transform=fig.transFigure, lw=1,
+                                 color='k', mutation_scale=4)
     fig.patches.extend([box_rho9_1, box_rho9_2, line_rho9, arrow_rho9])
-    # rho113_color = 'lightgrey'
     conn_path = ConnectionPatch(xyA=(0.382, 1.03), xyB=(0.382, -0.23), coordsA='axes fraction', coordsB='axes fraction',
-                                axesA=axes['cap_heatmap'], axesB=axes['del_heatmap'], color=rho113_face_color, lw=linewidth,
+                                axesA=axes['cap_heatmap'], axesB=axes['del_heatmap'], color=rho113_face_color,
+                                lw=linewidth,
                                 zorder=-1)
     axes['deg_heatmap'].add_artist(conn_path)
     box_rho113 = FancyBboxPatch(xy=(0.33, 0.33), width=0.275, height=0.3, boxstyle=mpatches.BoxStyle("Round", pad=0.01),
-                                transform=fig.transFigure, edgecolor=rho113_color, facecolor=rho113_color, zorder=-10, lw=linewidth)
+                                transform=fig.transFigure, edgecolor=rho113_color, facecolor=rho113_color, zorder=-10,
+                                lw=linewidth)
     line_rho113 = FancyArrowPatch(posA=(0.321, 0.33), posB=(0.119, 0.33), arrowstyle='-', transform=fig.transFigure,
                                   connectionstyle=ConnectionStyle('Angle', angleA=-180, angleB=-90, rad=0.2),
                                   lw=linewidth, color=rho113_color)
-    # arrow_rho113 = FancyArrowPatch(posA=(0.25, 0.33), posB=(0.3, 0.33), arrowstyle='->', transform=fig.transFigure, lw=linewidth, color=rho113_color, mutation_scale=10)
-    arrow_rho113 = FancyArrowPatch(posA=(0.27, 0.34), posB=(0.3, 0.34), arrowstyle='->', transform=fig.transFigure, lw=1., color='k', mutation_scale=4)
+    arrow_rho113 = FancyArrowPatch(posA=(0.27, 0.34), posB=(0.3, 0.34), arrowstyle='->', transform=fig.transFigure,
+                                   lw=1., color='k', mutation_scale=4)
     arrow_01_113 = FancyArrowPatch(posA=(0.39, 0.35), posB=(0.39, 0.28), arrowstyle='->', mutation_scale=10,
                                    transform=fig.transFigure, lw=1, color='black')  # , zorder=-2)
     arrow_2_09 = FancyArrowPatch(posA=(0.59, 0.7), posB=(0.70, 0.27), arrowstyle='->', mutation_scale=10,
                                  transform=fig.transFigure, lw=1, color='black')  # , zorder=-2)
-    # arrow_09_2 = FancyArrowPatch(posA=(0.32, 0.33), posB=(0.12, 0.33), arrowstyle='->', transform=fig.transFigure, connectionstyle=ConnectionStyle('Angle', angleA=-180, angleB=-90, rad=0.2), lw=linewidth, color=rho113_color)
     fig.patches.extend([box_rho113, line_rho113, arrow_01_113, arrow_2_09, arrow_rho113])
 
 
-def plot_delay_tasks(ax, capacity_folder, specrad=0.9, classification_results_folder=None, use_cache=False, use_precalculated=False):
+def plot_delay_tasks(ax, capacity_folder, specrad=0.9, classification_results_folder=None, use_cache=False,
+                     use_precalculated=False):
     params_to_filter = {
         'steps': 100000,
         'nodes': 50,
@@ -78,7 +78,6 @@ def plot_delay_tasks(ax, capacity_folder, specrad=0.9, classification_results_fo
 
     ax2 = ax.twinx()
     ax2.grid(False)
-
 
     cmap = matplotlib.cm.Greys
 
@@ -89,7 +88,6 @@ def plot_delay_tasks(ax, capacity_folder, specrad=0.9, classification_results_fo
         with open(os.path.join('data', 'ESN_delayed_classification_results.pkl'), 'rb') as class_results_file:
             delay_to_classification_accuracies = pickle.load(class_results_file)
     else:
-        # classification_results_folder = '/home/schultetobrinke/nextcloud/Juelich/projects/SNN_capacity/repos/ESN/data/DelayedClassificationdiff-iscaling'
         filter_strings = [
             '_testratio=0.3_',
             '_steps=100000_',
@@ -114,7 +112,8 @@ def plot_delay_tasks(ax, capacity_folder, specrad=0.9, classification_results_fo
                 classification_accuracies[iscaling] = []
                 for classificationfile in classification_is_files:
                     with open(classificationfile, 'r') as classification_results_file:
-                        classification_accuracies[iscaling].append(yaml.safe_load(classification_results_file)['accuracy'])
+                        classification_accuracies[iscaling].append(
+                            yaml.safe_load(classification_results_file)['accuracy'])
             delay_to_classification_accuracies[delay] = classification_accuracies.copy()
 
     for delay_idx, delay in enumerate(classification_delays):
@@ -149,7 +148,6 @@ def plot_delay_tasks(ax, capacity_folder, specrad=0.9, classification_results_fo
 
 def plot_degree_tasks(ax, capacity_folder, specrad=0.9, use_cache=False, use_precalculated=False,
                       xor_results_folder=None, xorxor_results_folder=None):
-
     params_to_filter = {
         'steps': 100000,
         'nodes': 50,
@@ -171,8 +169,6 @@ def plot_degree_tasks(ax, capacity_folder, specrad=0.9, use_cache=False, use_pre
         with open(os.path.join('data', 'ESN_xorxor_results.pkl'), 'rb') as xorxor_file:
             xorxor_kappas = pickle.load(xorxor_file)
     else:
-        # xor_results_folder = '/home/schultetobrinke/nextcloud/Juelich/projects/SNN_capacity/repos/ESN/data/XORdiff-iscaling'
-        # xorxor_results_folder = '/home/schultetobrinke/nextcloud/Juelich/projects/SNN_capacity/repos/ESN/data/XORXORdiff-iscaling'
 
         filter_strings = [
             '_testratio=0.3_',
@@ -235,22 +231,14 @@ def plot_heatmaps(capacity_folder, axes, use_cache=False, use_precalculated=Fals
                 adjust_color(get_color('capacity'), lightness_value=0.75, saturation_value=0.6),
                 adjust_color(get_color('capacity'), saturation_factor=1.),
                 adjust_color(get_color('capacity'), saturation_factor=1.5, lightness_factor=0.7), 'black']),
-            # 'cmap': LinearSegmentedColormap.from_list('', ['white', get_color('capacity'), get_color('accent')]),
-            # 'cmap': sns.color_palette('magma', as_cmap=True),
-            # 'cmap': sns.color_palette('rocket', as_cmap=True),
-            # 'figure_name': 'ESN_total_cap_heatmap.pdf'
         },
         'deg_heatmap': {
             'title': 'maximum degrees',
             'plot_max_degrees': True,
             'plot_max_delays': False,
-            # 'figure_name': 'ESN_max_degree_heatmap.pdf'
             'cmap': LinearSegmentedColormap.from_list('', [
                 adjust_color(get_color('degree'), lightness_value=0.95, saturation_value=0.1),
                 adjust_color(get_color('degree'), saturation_factor=0.75), 'black']),
-            # 'cmap': sns.color_palette('viridis', as_cmap=True),
-            # 'cmap': ListedColormap(utils.degree_colors),
-            # 'cmap': LinearSegmentedColormap.from_list('mycmap', utils.degree_colors),
         },
         'del_heatmap': {
             'title': 'maximum delays',
@@ -259,10 +247,6 @@ def plot_heatmaps(capacity_folder, axes, use_cache=False, use_precalculated=Fals
             'cmap': LinearSegmentedColormap.from_list('', [
                 adjust_color(get_color('delay'), lightness_value=0.95, saturation_factor=1.),
                 adjust_color(get_color('delay'), saturation_factor=1.5), 'black']),
-            # 'cmap': LinearSegmentedColormap.from_list('', ['white', get_color('delay'), get_color('accent')]),
-            # 'cmap': sns.color_palette('mako', as_cmap=True),
-            # 'cmap': 'icefire',
-            # 'figure_name': 'ESN_max_delay_heatmap.pdf'
         },
     }
     if use_precalculated:
@@ -428,28 +412,11 @@ def add_subplot_letters(fig):
     fig.text(x1, y2, "B", size=letter_size)
     fig.text(x1, y3, "C", size=letter_size)
     fig.text(x2, y1, "D", size=letter_size)
-    fig.text(x2, y2-0.025, "E", size=letter_size)
+    fig.text(x2, y2 - 0.025, "E", size=letter_size)
     fig.text(x2, y3_5, "F", size=letter_size)
     fig.text(x3, y1, "G", size=letter_size)
     fig.text(x3, y1_5, "H", size=letter_size)
     fig.text(x3, y3_5, "I", size=letter_size)
-
-
-def create_capbars_inputscaling_svgs(figures_folder, capacity_folder, height, width, use_cache=False,
-                                     use_old_svgs=False):
-    # plt.rcParams['figure.constrained_layout.use'] = True
-    fig_capbars1_path = os.path.join(figures_folder, 'capbars1.svg')
-    fig_capbars2_path = os.path.join(figures_folder, 'capbars2.svg')
-    if not use_old_svgs:
-        fig_capbars1, ax_capbars1, fig_capbars2, ax_capbars2 = plot_bars_for_different_inputscaling(capacity_folder,
-                                                                                                    axes=None,
-                                                                                                    width=width,
-                                                                                                    height=height,
-                                                                                                    use_cache=use_cache)
-        fig_capbars1.savefig(fig_capbars1_path)
-        fig_capbars2.savefig(fig_capbars2_path)
-
-    return fig_capbars1_path, fig_capbars2_path
 
 
 def create_heatmap_svgs(figures_folder, capacity_folder, height, width, use_cache=False):
@@ -460,10 +427,6 @@ def create_heatmap_svgs(figures_folder, capacity_folder, height, width, use_cach
         heatmap_fig_path = os.path.join(figures_folder, f'heatmap_{name}.asdf.svg')
         heatmap_paths[name] = heatmap_fig_path
         heatmap_fig.savefig(heatmap_fig_path)
-    # heatmap_paths = {}
-    # for name in ['capacity', 'degrees', 'delays']:
-    #     heatmap_fig_path = os.path.join(figures_folder, f'heatmap_{name}.asdf.svg')
-    #     heatmap_paths[name] = heatmap_fig_path
 
     return heatmap_paths
 
@@ -481,17 +444,9 @@ def create_single_bars_svgs(figures_folder, capacity_folder, height, width, use_
 
 
 def setup_pyplot():
-    # plt.rcParams['figure.constrained_layout.use'] = True
-    # plt.rcParams['figure.constrained_layout.w_pad'] = 0.05
-    # plt.rcParams['figure.constrained_layout.w_pad'] = 0.0
-    # plt.rcParams['figure.constrained_layout.h_pad'] = 0.05
-    # plt.rcParams['figure.constrained_layout.h_pad'] = 0.0
     SMALL_SIZE = 6
     MEDIUM_SIZE = 8
     BIGGER_SIZE = 10
-    # SMALL_SIZE = 12
-    # MEDIUM_SIZE = 18
-    # BIGGER_SIZE = 18
     plt.rc('font', size=SMALL_SIZE)  # controls default text sizes
     plt.rc('axes', titlesize=BIGGER_SIZE)  # fontsize of the axes title
     plt.rc('axes', labelsize=MEDIUM_SIZE)  # fontsize of the x and y labels
@@ -499,8 +454,6 @@ def setup_pyplot():
     plt.rc('ytick', labelsize=SMALL_SIZE)  # fontsize of the tick labels
     plt.rc('legend', fontsize=SMALL_SIZE)  # legend fontsize
     plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
-    # plt.rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
-    # plt.rc('font', family='serif')
     matplotlib.rcParams['figure.dpi'] = 600
 
 
@@ -510,7 +463,7 @@ def parse_cmd():
     parser.add_argument('--capacity_folder', type=str, help='Path to the folder with the capacity results',
                         default=None)
     parser.add_argument('--figures_folder', type=str, help='Path to the folder where the figures will be stored',
-                        default='figures')
+                        default='figures/ESN_plots')
     parser.add_argument('--xor_results_folder', type=str, help='Path to the folder with the XOR task results',
                         default=None)
     parser.add_argument('--xorxor_results_folder', type=str, help='Path to the folder with the XORXOR task results',
@@ -518,22 +471,14 @@ def parse_cmd():
     parser.add_argument('--classification_results_folder', type=str, help='Path to the folder with the delayed '
                                                                           'classification task results',
                         default=None)
-    parser.add_argument('--use_precalculated', action='store_true', help='Use precalculated data for the figure.')
+    parser.add_argument('--disable_precalculated', action='store_true',
+                        help='Do not use precalculated data for the figure.')
+    parser.add_argument('--disable_cache', action='store_true', help='Do not use cached data for the figure.')
 
     return parser.parse_args()
 
 
 def get_axes(fig):
-    # inner_vspace = 0.1
-    # outer_vspace = 0.05
-    # inner_hspace = 0.12
-    # outer_hspace = 0.1
-    # w = (1 / 3) - (2 / 3) * inner_vspace - (2 / 3) * outer_vspace
-    # h = (1 / 3) - (2 / 3) * inner_hspace - (2 / 3) * outer_hspace
-    # task_diff = 0.2 * h
-    # legend_diff = 0.35 * h / 2
-    # legend_offset = 0.05
-
     inner_vspace = 0.1
     left = 0.05
     right = 0.07
@@ -560,12 +505,11 @@ def get_axes(fig):
         'cap_heatmap': fig.add_axes([x1, y3, w, h]),
         'legend': fig.add_axes(
             [x2 - 0.03, y1 - legend_offset, w * 2 + inner_vspace, h / 2 - inner_hspace / 2 - legend_diff]),
-        # 'capbars113': fig.add_axes([x2, y2, w, h]),
         'capbars113': fig.add_axes([x2, y2 - (1 / 6) * inner_hspace, w, h]),
         'capbars09': fig.add_axes([x2, y3, w, h]),
         'single_cap113': fig.add_axes([x2, y1_5 - (1 / 6) * inner_hspace, w,
                                        h / 2 - inner_hspace / 2 + legend_diff + legend_offset - (
-                                                   1 / 6) * inner_hspace]),
+                                               1 / 6) * inner_hspace]),
         'single_cap09': fig.add_axes([x3, y1_5 - (1 / 6) * inner_hspace, w,
                                       h / 2 - inner_hspace / 2 + legend_diff + legend_offset - (
                                               1 / 6) * inner_hspace]),
@@ -578,7 +522,6 @@ def get_axes(fig):
 
 def main(capacity_folder=None, figures_folder='figures', xor_results_folder=None, xorxor_results_folder=None,
          classification_results_folder=None, use_cache=True, use_precalculated=True):
-
     os.makedirs(figures_folder, exist_ok=True)
 
     setup_pyplot()
@@ -613,11 +556,12 @@ def main(capacity_folder=None, figures_folder='figures', xor_results_folder=None
     add_subplot_letters(fig)
 
     fig.savefig(os.path.join(figures_folder, 'ESN_figure.pdf'))
-    # fig.savefig(os.path.join(args.figures_folder, 'ESN_figure.eps'))
-    # fig.savefig(os.path.join(args.figures_folder, 'ESN_figure.jpg'))
-    # fig.savefig(os.path.join(args.figures_folder, 'ESN_figure.png'))
-    # plt.show()
 
 
 if __name__ == "__main__":
-    main(**vars(parse_cmd()))
+    args = vars(parse_cmd())
+    args['use_precalculated'] = not args['disable_precalculated']
+    args['use_cache'] = not args['disable_cache']
+    del args['disable_precalculated']
+    del args['disable_cache']
+    main(**args)
