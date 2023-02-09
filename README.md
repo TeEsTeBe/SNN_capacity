@@ -218,6 +218,53 @@ optional arguments:
 
 ### Information processing capacity computation
 
+Just as with the evaluation of the tasks, you need to run the simulations first to get the inputs and state matrix before
+you can calculate the information processing capacity. Then you can run the script `run_capacity.py` with the correct
+parameter values for `--input` and `--states_path`.
+
+For other parameter descriptions you can call `python run_capacity.py --help`:
+
+
+```
+usage: run_capacity.py [-h] [--name NAME] [--input INPUT] [--states_path STATES_PATH] [--results_file RESULTS_FILE] [--capacity_results CAPACITY_RESULTS] [--max_degree MAX_DEGREE] [--max_delay MAX_DELAY] [--m_variables] [--m_powerlist] [--m_windowpos]
+                       [--orth_factor ORTH_FACTOR] [--figures_path FIGURES_PATH] [--n_warmup N_WARMUP] [--use_scipy] [--sample_ids SAMPLE_IDS] [--sample_size SAMPLE_SIZE] [--sample_step SAMPLE_STEP] [--delskip DELSKIP] [--windowskip WINDOWSKIP]
+                       [-v VERBOSITY]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --name NAME           name of the current run
+  --input INPUT         Path to input numpy array.
+  --states_path STATES_PATH
+                        Path to statematrix numpy array.
+  --results_file RESULTS_FILE
+                        Path to a CSV file where the results of multiple runs should be stored.
+  --capacity_results CAPACITY_RESULTS
+                        Path where the capacity values of this run should be stored
+  --max_degree MAX_DEGREE
+                        Maximum degree that should be evaluated.
+  --max_delay MAX_DELAY
+                        Maximum delay that should be evaluated.
+  --m_variables         Whether to assume a monotonous decrease of capacity with increasing number of variables
+  --m_powerlist         Whether to assume a monotonous decrease of capacity with increasing power list
+  --m_windowpos         Whether to assume a monotonous decrease of capacity with increasing positions in the window
+  --orth_factor ORTH_FACTOR
+                        Factor that increases the cutoff value
+  --figures_path FIGURES_PATH
+  --n_warmup N_WARMUP   Number of warm up simulation steps.
+  --use_scipy
+  --sample_ids SAMPLE_IDS
+                        Path to a numpy array with ids of unist that should be used for subsampling the state matrix
+  --sample_size SAMPLE_SIZE
+                        Number of units to use as a random subsample of the state matrix
+  --sample_step SAMPLE_STEP
+                        Subsample the state matrix by using only every sample_step unit.
+  --delskip DELSKIP     Number of delays before a monotonous decrease of capacity values is assumed.
+  --windowskip WINDOWSKIP
+                        Number of windows before a monotonous decrease of capacity values is assumed.
+  -v VERBOSITY, --verbosity VERBOSITY
+
+```
+
 ## Plotting
 You can find the plotting scripts in the folder `plotting`. You can run the script `plot_all_figures.py` to create the 
 figures for the results of the ESN, FPUT, BRN and MC experiments.
