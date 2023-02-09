@@ -2,7 +2,6 @@ import os
 import pickle
 import argparse
 
-# import skunk
 import numpy as np
 import yaml
 import matplotlib
@@ -36,25 +35,32 @@ def draw_lines(axes, fig, fill_background=True):
                                 axesA=axes['cap_heatmap'], axesB=axes['del_heatmap'], color=rho09_color, lw=linewidth,
                                 zorder=-1)
     axes['deg_heatmap'].add_artist(conn_path)
-    box_rho9_1 = FancyBboxPatch(xy=(0.33, 0.68), width=0.275+additional_box_width, height=0.3, boxstyle=mpatches.BoxStyle("Round", pad=0.01),
-                                transform=fig.transFigure, edgecolor=rho09_color, facecolor=rho09_face_color, zorder=-10, lw=linewidth)
+    box_rho9_1 = FancyBboxPatch(xy=(0.33, 0.68), width=0.275 + additional_box_width, height=0.3,
+                                boxstyle=mpatches.BoxStyle("Round", pad=0.01),
+                                transform=fig.transFigure, edgecolor=rho09_color, facecolor=rho09_face_color,
+                                zorder=-10, lw=linewidth)
     box_rho9_2 = FancyBboxPatch(xy=(0.65, 0.33), width=0.33, height=0.65, boxstyle=mpatches.BoxStyle("Round", pad=0.01),
-                                transform=fig.transFigure, edgecolor=rho09_color, facecolor=rho09_face_color, zorder=-10, lw=linewidth)
+                                transform=fig.transFigure, edgecolor=rho09_color, facecolor=rho09_face_color,
+                                zorder=-10, lw=linewidth)
     line_rho9 = FancyArrowPatch(posA=(0.67, 0.99), posB=(0.0518, 0.96), arrowstyle='-', transform=fig.transFigure,
                                 connectionstyle=ConnectionStyle('Angle', angleA=-180, angleB=-90, rad=0.2),
                                 lw=linewidth, color=rho09_color)
-    arrow_rho9 = FancyArrowPatch(posA=(0.27, 0.98), posB=(0.3, 0.98), arrowstyle='->', transform=fig.transFigure, lw=1, color='k', mutation_scale=4)
+    arrow_rho9 = FancyArrowPatch(posA=(0.27, 0.98), posB=(0.3, 0.98), arrowstyle='->', transform=fig.transFigure, lw=1,
+                                 color='k', mutation_scale=4)
     fig.patches.extend([box_rho9_1, box_rho9_2, line_rho9, arrow_rho9])
     conn_path = ConnectionPatch(xyA=(0.382, 1.03), xyB=(0.382, -0.23), coordsA='axes fraction', coordsB='axes fraction',
-                                axesA=axes['cap_heatmap'], axesB=axes['del_heatmap'], color=rho113_face_color, lw=linewidth,
+                                axesA=axes['cap_heatmap'], axesB=axes['del_heatmap'], color=rho113_face_color,
+                                lw=linewidth,
                                 zorder=-1)
     axes['deg_heatmap'].add_artist(conn_path)
     box_rho113 = FancyBboxPatch(xy=(0.33, 0.33), width=0.275, height=0.3, boxstyle=mpatches.BoxStyle("Round", pad=0.01),
-                                transform=fig.transFigure, edgecolor=rho113_color, facecolor=rho113_color, zorder=-10, lw=linewidth)
+                                transform=fig.transFigure, edgecolor=rho113_color, facecolor=rho113_color, zorder=-10,
+                                lw=linewidth)
     line_rho113 = FancyArrowPatch(posA=(0.321, 0.33), posB=(0.119, 0.33), arrowstyle='-', transform=fig.transFigure,
                                   connectionstyle=ConnectionStyle('Angle', angleA=-180, angleB=-90, rad=0.2),
                                   lw=linewidth, color=rho113_color)
-    arrow_rho113 = FancyArrowPatch(posA=(0.27, 0.34), posB=(0.3, 0.34), arrowstyle='->', transform=fig.transFigure, lw=1., color='k', mutation_scale=4)
+    arrow_rho113 = FancyArrowPatch(posA=(0.27, 0.34), posB=(0.3, 0.34), arrowstyle='->', transform=fig.transFigure,
+                                   lw=1., color='k', mutation_scale=4)
     arrow_01_113 = FancyArrowPatch(posA=(0.39, 0.35), posB=(0.39, 0.28), arrowstyle='->', mutation_scale=10,
                                    transform=fig.transFigure, lw=1, color='black')  # , zorder=-2)
     arrow_2_09 = FancyArrowPatch(posA=(0.59, 0.7), posB=(0.70, 0.27), arrowstyle='->', mutation_scale=10,
@@ -62,7 +68,8 @@ def draw_lines(axes, fig, fill_background=True):
     fig.patches.extend([box_rho113, line_rho113, arrow_01_113, arrow_2_09, arrow_rho113])
 
 
-def plot_delay_tasks(ax, capacity_folder, specrad=0.9, classification_results_folder=None, use_cache=False, use_precalculated=False):
+def plot_delay_tasks(ax, capacity_folder, specrad=0.9, classification_results_folder=None, use_cache=False,
+                     use_precalculated=False):
     params_to_filter = {
         'steps': 100000,
         'nodes': 50,
@@ -71,7 +78,6 @@ def plot_delay_tasks(ax, capacity_folder, specrad=0.9, classification_results_fo
 
     ax2 = ax.twinx()
     ax2.grid(False)
-
 
     cmap = matplotlib.cm.Greys
 
@@ -106,7 +112,8 @@ def plot_delay_tasks(ax, capacity_folder, specrad=0.9, classification_results_fo
                 classification_accuracies[iscaling] = []
                 for classificationfile in classification_is_files:
                     with open(classificationfile, 'r') as classification_results_file:
-                        classification_accuracies[iscaling].append(yaml.safe_load(classification_results_file)['accuracy'])
+                        classification_accuracies[iscaling].append(
+                            yaml.safe_load(classification_results_file)['accuracy'])
             delay_to_classification_accuracies[delay] = classification_accuracies.copy()
 
     for delay_idx, delay in enumerate(classification_delays):
@@ -141,7 +148,6 @@ def plot_delay_tasks(ax, capacity_folder, specrad=0.9, classification_results_fo
 
 def plot_degree_tasks(ax, capacity_folder, specrad=0.9, use_cache=False, use_precalculated=False,
                       xor_results_folder=None, xorxor_results_folder=None):
-
     params_to_filter = {
         'steps': 100000,
         'nodes': 50,
@@ -406,27 +412,11 @@ def add_subplot_letters(fig):
     fig.text(x1, y2, "B", size=letter_size)
     fig.text(x1, y3, "C", size=letter_size)
     fig.text(x2, y1, "D", size=letter_size)
-    fig.text(x2, y2-0.025, "E", size=letter_size)
+    fig.text(x2, y2 - 0.025, "E", size=letter_size)
     fig.text(x2, y3_5, "F", size=letter_size)
     fig.text(x3, y1, "G", size=letter_size)
     fig.text(x3, y1_5, "H", size=letter_size)
     fig.text(x3, y3_5, "I", size=letter_size)
-
-
-def create_capbars_inputscaling_svgs(figures_folder, capacity_folder, height, width, use_cache=False,
-                                     use_old_svgs=False):
-    fig_capbars1_path = os.path.join(figures_folder, 'capbars1.svg')
-    fig_capbars2_path = os.path.join(figures_folder, 'capbars2.svg')
-    if not use_old_svgs:
-        fig_capbars1, ax_capbars1, fig_capbars2, ax_capbars2 = plot_bars_for_different_inputscaling(capacity_folder,
-                                                                                                    axes=None,
-                                                                                                    width=width,
-                                                                                                    height=height,
-                                                                                                    use_cache=use_cache)
-        fig_capbars1.savefig(fig_capbars1_path)
-        fig_capbars2.savefig(fig_capbars2_path)
-
-    return fig_capbars1_path, fig_capbars2_path
 
 
 def create_heatmap_svgs(figures_folder, capacity_folder, height, width, use_cache=False):
@@ -481,14 +471,14 @@ def parse_cmd():
     parser.add_argument('--classification_results_folder', type=str, help='Path to the folder with the delayed '
                                                                           'classification task results',
                         default=None)
-    parser.add_argument('--disable_precalculated', action='store_true', help='Do not use precalculated data for the figure.')
+    parser.add_argument('--disable_precalculated', action='store_true',
+                        help='Do not use precalculated data for the figure.')
     parser.add_argument('--disable_cache', action='store_true', help='Do not use cached data for the figure.')
 
     return parser.parse_args()
 
 
 def get_axes(fig):
-
     inner_vspace = 0.1
     left = 0.05
     right = 0.07
@@ -519,7 +509,7 @@ def get_axes(fig):
         'capbars09': fig.add_axes([x2, y3, w, h]),
         'single_cap113': fig.add_axes([x2, y1_5 - (1 / 6) * inner_hspace, w,
                                        h / 2 - inner_hspace / 2 + legend_diff + legend_offset - (
-                                                   1 / 6) * inner_hspace]),
+                                               1 / 6) * inner_hspace]),
         'single_cap09': fig.add_axes([x3, y1_5 - (1 / 6) * inner_hspace, w,
                                       h / 2 - inner_hspace / 2 + legend_diff + legend_offset - (
                                               1 / 6) * inner_hspace]),
@@ -532,7 +522,6 @@ def get_axes(fig):
 
 def main(capacity_folder=None, figures_folder='figures', xor_results_folder=None, xorxor_results_folder=None,
          classification_results_folder=None, use_cache=True, use_precalculated=True):
-
     os.makedirs(figures_folder, exist_ok=True)
 
     setup_pyplot()
