@@ -3,11 +3,13 @@ import pickle
 import argparse
 
 import matplotlib.pyplot as plt
+
 plt.rc('axes', labelsize=14)
 ticksize = 12
 plt.rc('xtick', labelsize=ticksize)
 plt.rc('ytick', labelsize=ticksize)
 import matplotlib as mpl
+
 mpl.rcParams["text.usetex"] = True
 from matplotlib.patches import Rectangle
 import numpy as np
@@ -23,8 +25,10 @@ def data_path():
 
 
 def get_capacity_directory(step_spatial_or_uniform, random_or_frozen, rate_or_DC, p=None, std=None):
-    assert step_spatial_or_uniform in ['step', 'spatial', 'uniform'], 'step_spatial_or_uniform should be "step", "spatial" or "uniform"'
-    assert random_or_frozen in ['randomnoise', 'frozennoise'], 'random_or_frozen should be "randomnoise" or "frozennoise"'
+    assert step_spatial_or_uniform in ['step', 'spatial',
+                                       'uniform'], 'step_spatial_or_uniform should be "step", "spatial" or "uniform"'
+    assert random_or_frozen in ['randomnoise',
+                                'frozennoise'], 'random_or_frozen should be "randomnoise" or "frozennoise"'
     assert rate_or_DC in ['rate', 'DC'], 'rate_or_DC should be "rate" or "DC"'
     assert (p is not None or std is not None), 'p or std should be set'
 
@@ -75,6 +79,7 @@ def add_capacity_percent_twinx(ax, N=1000, add_label=False):
     ylim = ax.get_ylim()
     axtwin.set_ylim(ylim)
 
+
 def plot_max_cap_per_p_or_std(step_spatial_or_uniform, ax=None, plot_degrees=False, plot_memory=False, use_cache=False,
                               plot_stds=True, use_label=False, use_precalculated=True):
     colors = {
@@ -103,14 +108,16 @@ def plot_max_cap_per_p_or_std(step_spatial_or_uniform, ax=None, plot_degrees=Fal
         data_type = 'capacity'
 
     if use_precalculated:
-        with open(os.path.join('data', f'BRN_encoding_lines_{step_spatial_or_uniform}_{data_type}.pkl'), 'rb') as data_file:
+        with open(os.path.join('data', f'BRN_encoding_lines_{step_spatial_or_uniform}_{data_type}.pkl'),
+                  'rb') as data_file:
             precalculated_data = pickle.load(data_file)
     for random_or_frozen in ['frozennoise', 'randomnoise']:
         for rate_or_DC in ['DC', 'rate']:
             if use_precalculated:
                 max_capacities = precalculated_data[random_or_frozen][rate_or_DC]['max_values']
                 stds = precalculated_data[random_or_frozen][rate_or_DC]['stds']
-                p_or_std_values_with_data = precalculated_data[random_or_frozen][rate_or_DC]['p_or_std_values_with_data']
+                p_or_std_values_with_data = precalculated_data[random_or_frozen][rate_or_DC][
+                    'p_or_std_values_with_data']
             else:
                 max_capacities = []
                 p_or_std_values_with_data = []
@@ -122,7 +129,8 @@ def plot_max_cap_per_p_or_std(step_spatial_or_uniform, ax=None, plot_degrees=Fal
                     else:
                         p = p_or_std
                         std = None
-                    cap_dir = get_capacity_directory(step_spatial_or_uniform=step_spatial_or_uniform, rate_or_DC=rate_or_DC,
+                    cap_dir = get_capacity_directory(step_spatial_or_uniform=step_spatial_or_uniform,
+                                                     rate_or_DC=rate_or_DC,
                                                      random_or_frozen=random_or_frozen, p=p, std=std)
                     params_to_filter = {}
                     try:
@@ -381,14 +389,17 @@ def plot_heatmaps(axes, use_cache, use_precalculated=True):
 
 def plot_encoding_line_graphs(axes, use_cache, use_precalculated=True):
     plot_stds = True
-    axes['1'] = plot_max_cap_per_p_or_std('spatial', axes['1'], use_cache=use_cache, plot_stds=plot_stds, use_precalculated=use_precalculated)
+    axes['1'] = plot_max_cap_per_p_or_std('spatial', axes['1'], use_cache=use_cache, plot_stds=plot_stds,
+                                          use_precalculated=use_precalculated)
     add_capacity_percent_twinx(ax=axes['1'], add_label=True)
-    axes['1'].scatter([1], [686.4552198555509], marker='o', facecolor='none', s=75, linewidth=1, edgecolor='black', zorder=10)
-    axes['1'].scatter([20], [100.54747580302804], marker='s', facecolor='none', s=75, linewidth=1, edgecolor='black', zorder=10)
+    axes['1'].scatter([1], [686.4552198555509], marker='o', facecolor='none', s=75, linewidth=1, edgecolor='black',
+                      zorder=10)
+    axes['1'].scatter([20], [100.54747580302804], marker='s', facecolor='none', s=75, linewidth=1, edgecolor='black',
+                      zorder=10)
     xmin, xmax = axes['1'].get_xlim()
-    axes['1'].set_xlim(xmin-0.5, xmax+0.5)
+    axes['1'].set_xlim(xmin - 0.5, xmax + 0.5)
     ymin, ymax = axes['1'].get_ylim()
-    axes['1'].set_ylim(ymin, ymax+25)
+    axes['1'].set_ylim(ymin, ymax + 25)
     axes['1'].set_title('spatial')
     axes['1'].set_xlabel(None)
     axes['1'].set_xticklabels([])
@@ -397,15 +408,17 @@ def plot_encoding_line_graphs(axes, use_cache, use_precalculated=True):
     axes['2'].scatter([1], [30.], marker='o', facecolor='none', s=75, linewidth=1, edgecolor='black', zorder=10)
     axes['2'].scatter([20], [80.], marker='s', facecolor='none', s=75, linewidth=1, edgecolor='black', zorder=10)
     xmin, xmax = axes['2'].get_xlim()
-    axes['2'].set_xlim(xmin-0.5, xmax+0.5)
+    axes['2'].set_xlim(xmin - 0.5, xmax + 0.5)
     ymin, ymax = axes['2'].get_ylim()
-    axes['2'].set_ylim(ymin, ymax+3)
-    axes['3'] = plot_max_cap_per_p_or_std('step', axes['3'], use_cache=use_cache, plot_stds=plot_stds, use_precalculated=use_precalculated)
+    axes['2'].set_ylim(ymin, ymax + 3)
+    axes['3'] = plot_max_cap_per_p_or_std('step', axes['3'], use_cache=use_cache, plot_stds=plot_stds,
+                                          use_precalculated=use_precalculated)
     add_capacity_percent_twinx(ax=axes['3'])
     axes['3'].set_title('amplitude')
     axes['3'].set_xlabel(None)
     axes['3'].set_xticklabels([])
-    axes['4'] = plot_max_cap_per_p_or_std('step', axes['4'], plot_memory=True, use_cache=use_cache, plot_stds=plot_stds, use_label=True, use_precalculated=use_precalculated)
+    axes['4'] = plot_max_cap_per_p_or_std('step', axes['4'], plot_memory=True, use_cache=use_cache, plot_stds=plot_stds,
+                                          use_label=True, use_precalculated=use_precalculated)
     axes['4'].set_xticklabels([0.25, '', '', 1.0])
     axes['4'].set_xlabel(r'$p$', labelpad=-6)
     legend = axes['4'].legend(ncol=1, loc='upper left', bbox_to_anchor=(0.15, -0.50), fontsize=10, handlelength=3)
@@ -460,7 +473,8 @@ def plot_task_correlations(axes, use_cache, use_precalculated=True):
 
     for cap_title, cap_dict in cap_to_tasks_dict.items():
         # for cap_title, cap_dict in parameters['cap_to_tasks_dict'].items():
-        if os.path.exists(cap_dict['cap_groupname']) and len([x for x in os.listdir(cap_dict['cap_groupname']) if x.endswith(".pkl")]) > 0:
+        if os.path.exists(cap_dict['cap_groupname']) and len(
+                [x for x in os.listdir(cap_dict['cap_groupname']) if x.endswith(".pkl")]) > 0:
             print(f'The cap_groupname for {cap_title} is a full capacity folder. '
                   f'We use this instead of constructing a path.')
             cap_folder = cap_dict['cap_groupname']
@@ -558,7 +572,6 @@ def plot_single_correlations_plot(ax, bar_width, cap_dict, cap_folder, cap_title
                 correlations.append(corr)
                 tasknames.append(task_name)
 
-
         x_positions = np.array(list(range(len(tasknames))))
         w = bar_width - (bar_width / 2) * min(abs(shift_factor), 1)
         cap_info_type = cap_info_type if '5' not in cap_info_type else "nonlin. cap. delay 5"  # Poster
@@ -576,7 +589,6 @@ def plot_single_correlations_plot(ax, bar_width, cap_dict, cap_folder, cap_title
 
 
 def plot_removed_encoder_heatmaps(axes, use_cache, use_precalculated=True):
-
     cap_folder = '/home/schultetobrinke/projects/recurrence/repos/capacity_visualisation/capacity_visualisation/data/spatial-encoding-rerun__inp=spatial_DC__net=brunel__std=1__noise_loop_duration=step_duration/network_capacity_remove_full-transform'
     params_to_filter = {}
     if use_precalculated:
@@ -584,11 +596,11 @@ def plot_removed_encoder_heatmaps(axes, use_cache, use_precalculated=True):
     else:
         precalculated_data_path = None
     _, axes[0] = plot_heatmap('dur', 'max', capacity_folder=cap_folder, title=r'$\sigma 1$',
-                                params_to_filter=params_to_filter, ax=axes[0],
-                                cutoff=0., figure_path=None, plot_max_degrees=False, plot_max_delays=False,
-                                plot_num_trials=False,
-                                annotate=False, other_filter_keys=['network'], use_cache=use_cache, colorbar_label='',
-                                precalculated_data_path=precalculated_data_path)
+                              params_to_filter=params_to_filter, ax=axes[0],
+                              cutoff=0., figure_path=None, plot_max_degrees=False, plot_max_delays=False,
+                              plot_num_trials=False,
+                              annotate=False, other_filter_keys=['network'], use_cache=use_cache, colorbar_label='',
+                              precalculated_data_path=precalculated_data_path)
     axes[0].set_xticklabels([])
     axes[0].set_xticks([])
     axes[0].set_yticklabels([])
@@ -603,11 +615,11 @@ def plot_removed_encoder_heatmaps(axes, use_cache, use_precalculated=True):
     else:
         precalculated_data_path = None
     _, axes[1] = plot_heatmap('dur', 'max', capacity_folder=cap_folder, title=r'$\sigma 20$',
-                                   params_to_filter=params_to_filter, ax=axes[1],
-                                   cutoff=0., figure_path=None, plot_max_degrees=False, plot_max_delays=False,
-                                   plot_num_trials=False,
-                                   annotate=False, other_filter_keys=['network'], use_cache=use_cache, colorbar_label='',
-                                   precalculated_data_path=precalculated_data_path)
+                              params_to_filter=params_to_filter, ax=axes[1],
+                              cutoff=0., figure_path=None, plot_max_degrees=False, plot_max_delays=False,
+                              plot_num_trials=False,
+                              annotate=False, other_filter_keys=['network'], use_cache=use_cache, colorbar_label='',
+                              precalculated_data_path=precalculated_data_path)
     axes[1].set_xticklabels([])
     axes[1].set_xticks([])
     axes[1].set_xlabel(None)
@@ -620,7 +632,7 @@ def setup_axes():
     fig = plt.figure(figsize=(9, 7))
     left_space = 8
     top_space = 5
-    gs = fig.add_gridspec(100+top_space, 100+left_space)
+    gs = fig.add_gridspec(100 + top_space, 100 + left_space)
     gs.update(left=0., right=1., top=1., bottom=0., wspace=0., hspace=0.)
 
     axes = {}
@@ -657,17 +669,17 @@ def setup_axes():
 
         if pos_x == 0:
             x_2 -= 5
-            y_2 -=2
+            y_2 -= 2
 
         axes[subplot_label] = fig.add_subplot(gs[y_1:y_2, x_1:x_2])
-    
+
     lines_start_x = 0
-    lines_start_y = 12 + heatmaps_start_y + 2*heatmap_height + heatmap_space_vertical
+    lines_start_y = 12 + heatmaps_start_y + 2 * heatmap_height + heatmap_space_vertical
     lines_height = 12
     lines_width = 12
     lines_space_horizontal = 7
     lines_space_vertical = 5
-    
+
     lines_positions = {
         '3': (0, 0),
         '4': (0, 1),
@@ -700,9 +712,9 @@ def setup_axes():
         if bar_nr > 0:
             x_1 += 4
         x_2 = x_1 + twidth
-        axes[f'bar{bar_nr+1}'] = fig.add_subplot(gs[y_1:y_2, x_1:x_2])
+        axes[f'bar{bar_nr + 1}'] = fig.add_subplot(gs[y_1:y_2, x_1:x_2])
         bwidth_sum += twidth
-    
+
     tasks_start_x = 18 + lines_start_x + lines_space_horizontal + 2 * lines_width
     tasks_start_y = 11 + lines_start_y + bars_height
     tasks_width = 18
@@ -714,14 +726,13 @@ def setup_axes():
         y_2 = y_1 + tasks_height
         x_1 = left_space + tasks_start_x + bwidth_sum + bar_nr * tasks_space_horizontal
         x_2 = x_1 + tasks_width
-        axes[f'tasks{bar_nr+1}'] = fig.add_subplot(gs[y_1:y_2, x_1:x_2])
+        axes[f'tasks{bar_nr + 1}'] = fig.add_subplot(gs[y_1:y_2, x_1:x_2])
         bwidth_sum += tasks_width
 
     return fig, axes
 
 
 def main(use_cache=True, use_precalculated=True):
-
     fig1, axes1 = setup_axes()
 
     plot_heatmaps(axes1, use_cache, use_precalculated=use_precalculated)
