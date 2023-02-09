@@ -1,9 +1,13 @@
 # SNN_capacity
 
 This repository contains the code that you need to run the experiments presented in the paper 
-_Quantifying the processing capacity of continuous dynamical systems: from vibrating strings to cortical circuits_ by 
+"_Quantifying the processing capacity of continuous dynamical systems: from vibrating strings to cortical circuits_" by 
 Tobias Schulte to Brinke, Michael Dick, Renato Duarte and Abigail Morrison.
-To run this code, you have to install  [NEST 3](https://nest-simulator.readthedocs.io/en/v3.0/installation/index.html) first.
+We also warmly thank Joni Dambre for sharing her code that she used in her paper
+[Information Processing Capacity of Dynamical Systems](https://www.nature.com/articles/srep00514) and that was the basis
+for the ESN and capacity computation parts of our implementation.
+
+To run the code in this repository, you have to install  [NEST 3](https://nest-simulator.readthedocs.io/en/v3.0/installation/index.html) first.
 
 You also have to install the other requirements from the `requirements.txt` file.
 
