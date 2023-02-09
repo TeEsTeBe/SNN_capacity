@@ -28,11 +28,13 @@ def setup_pyplot():
     plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
     matplotlib.rcParams['figure.dpi'] = 600
 
+
 def data_path():
     return '/home/schultetobrinke/projects/recurrence/repos/capacity_visualisation/capacity_visualisation/data'
 
 
-def get_capacity_directory(spatial_or_uniform, random_or_frozen, rate_or_DC, p=None, std=None, capacity_name='capacity'):
+def get_capacity_directory(spatial_or_uniform, random_or_frozen, rate_or_DC, p=None, std=None,
+                           capacity_name='capacity'):
     assert spatial_or_uniform in ['step', 'spatial',
                                   'uniform'], 'step_spatial_or_uniform should be "step", "spatial" or "uniform"'
     assert random_or_frozen in ['randomnoise',
@@ -76,7 +78,8 @@ def add_capacity_percent_twinx(ax, N=447, add_label=False):
     ytwin_ticklabels = [int(100 * t / N) for t in ax.get_yticks()][1:]
     if ytwin_ticklabels[0] == 4 and ytwin_ticklabels[1] == 8:  # for spatial microcircuit plot (looks nicer that way)
         ytwin_ticklabels[2] = 12
-    if ytwin_ticklabels[3] == 6 and ytwin_ticklabels[4] == 8 and ytwin_ticklabels[5] == 11:  # looks nicer for MC uniform
+    if ytwin_ticklabels[3] == 6 and ytwin_ticklabels[4] == 8 and ytwin_ticklabels[
+        5] == 11:  # looks nicer for MC uniform
         ytwin_ticklabels[5] = 10
     ytwin_tickpositions = [N * t / 100. for t in ytwin_ticklabels]
     axtwin.set_yticks(ytwin_tickpositions, labels=ytwin_ticklabels)
@@ -122,7 +125,8 @@ def plot_max_cap_per_p_or_std(step_spatial_or_uniform, ax=None, plot_degrees=Fal
     else:
         data_type = 'capacity'
     if use_precalculated:
-        with open(os.path.join('data', f'MC_encoding_lines_{step_spatial_or_uniform}_{data_type}_{capacity_name}.pkl'), 'rb') as data_file:
+        with open(os.path.join('data', f'MC_encoding_lines_{step_spatial_or_uniform}_{data_type}_{capacity_name}.pkl'),
+                  'rb') as data_file:
             precalculated_data = pickle.load(data_file)
 
     for random_or_frozen in ['frozennoise', 'randomnoise']:
@@ -131,7 +135,8 @@ def plot_max_cap_per_p_or_std(step_spatial_or_uniform, ax=None, plot_degrees=Fal
             if use_precalculated:
                 max_capacities = precalculated_data[random_or_frozen][rate_or_DC]['max_values']
                 stds = precalculated_data[random_or_frozen][rate_or_DC]['stds']
-                p_or_std_values_with_data = precalculated_data[random_or_frozen][rate_or_DC]['p_or_std_values_with_data']
+                p_or_std_values_with_data = precalculated_data[random_or_frozen][rate_or_DC][
+                    'p_or_std_values_with_data']
             else:
                 max_capacities = []
                 p_or_std_values_with_data = []
@@ -144,7 +149,8 @@ def plot_max_cap_per_p_or_std(step_spatial_or_uniform, ax=None, plot_degrees=Fal
                         p = p_or_std
                         std = None
                     cap_dir = get_capacity_directory(spatial_or_uniform=step_spatial_or_uniform, rate_or_DC=rate_or_DC,
-                                                     random_or_frozen=random_or_frozen, p=p, std=std, capacity_name=capacity_name)
+                                                     random_or_frozen=random_or_frozen, p=p, std=std,
+                                                     capacity_name=capacity_name)
                     params_to_filter = {}
                     try:
                         print(f'\t{p_or_std}, degrees: {plot_degrees}, delays: {plot_memory}')
@@ -238,7 +244,7 @@ def setup_axes():
     fig = plt.figure(figsize=(8, 7))
     left_space = 10
     top_space = 5
-    gs = fig.add_gridspec(100+top_space, 100+left_space)
+    gs = fig.add_gridspec(100 + top_space, 100 + left_space)
     gs.update(left=0., right=1., top=1., bottom=0., wspace=0., hspace=0.)
     height_buffer_large = 7
     height_buffer_smaller = 5
@@ -252,9 +258,9 @@ def setup_axes():
     bottom_horizontal_buffer = 10
     bottom_row_x_positions = [
         left_space,
-        left_space + width_smaller + int(0.5*bottom_horizontal_buffer),
-        left_space + 2*width_smaller + 2*bottom_horizontal_buffer,
-        left_space + 3*width_smaller + int(2.5*bottom_horizontal_buffer)
+        left_space + width_smaller + int(0.5 * bottom_horizontal_buffer),
+        left_space + 2 * width_smaller + 2 * bottom_horizontal_buffer,
+        left_space + 3 * width_smaller + int(2.5 * bottom_horizontal_buffer)
     ]
 
     main_grid_positions = {
@@ -295,9 +301,10 @@ def setup_axes():
         if pos_y == 0:
             y_1 = top_space + pos_y
         elif pos_y % 2 == 0:
-            y_1 = top_space + (pos_y/2) * height_buffer_large + pos_y/2 * height_large
+            y_1 = top_space + (pos_y / 2) * height_buffer_large + pos_y / 2 * height_large
         else:
-            y_1 = top_space + (pos_y-1)/2 * height_buffer_large + (pos_y-1)/2 * height_large + height_buffer_smaller + height_smaller
+            y_1 = top_space + (pos_y - 1) / 2 * height_buffer_large + (
+                        pos_y - 1) / 2 * height_large + height_buffer_smaller + height_smaller
 
         y_1 = int(y_1)
         y_2 = y_1 + height_smaller
@@ -336,7 +343,6 @@ def parse_cmd():
 
 
 def main(use_cache=True, use_precalculated=True):
-
     setup_pyplot()
 
     fig, axes = setup_axes()
@@ -361,14 +367,19 @@ def main(use_cache=True, use_precalculated=True):
 
 
 def draw_lines(fig, axes):
-
-    linewidth=1.
-    box_uniform = FancyBboxPatch(xy=(0.34, 0.78), width=0.64, height=0.175, boxstyle=mpatches.BoxStyle("Round", pad=0.01),
-                                 transform=fig.transFigure, edgecolor='black', facecolor='white', zorder=-10, lw=linewidth)
-    box_spatial = FancyBboxPatch(xy=(0.34, 0.57), width=0.64, height=0.18, boxstyle=mpatches.BoxStyle("Round", pad=0.01),
-                                 transform=fig.transFigure, edgecolor='black', facecolor='white', zorder=-10, lw=linewidth)
-    box_noenc = FancyBboxPatch(xy=(0.34, 0.335), width=0.64, height=0.205, boxstyle=mpatches.BoxStyle("Round", pad=0.01),
-                               transform=fig.transFigure, edgecolor='black', facecolor='white', zorder=-10, lw=linewidth)
+    linewidth = 1.
+    box_uniform = FancyBboxPatch(xy=(0.34, 0.78), width=0.64, height=0.175,
+                                 boxstyle=mpatches.BoxStyle("Round", pad=0.01),
+                                 transform=fig.transFigure, edgecolor='black', facecolor='white', zorder=-10,
+                                 lw=linewidth)
+    box_spatial = FancyBboxPatch(xy=(0.34, 0.57), width=0.64, height=0.18,
+                                 boxstyle=mpatches.BoxStyle("Round", pad=0.01),
+                                 transform=fig.transFigure, edgecolor='black', facecolor='white', zorder=-10,
+                                 lw=linewidth)
+    box_noenc = FancyBboxPatch(xy=(0.34, 0.335), width=0.64, height=0.205,
+                               boxstyle=mpatches.BoxStyle("Round", pad=0.01),
+                               transform=fig.transFigure, edgecolor='black', facecolor='white', zorder=-10,
+                               lw=linewidth)
     fig.patches.extend([box_uniform, box_spatial, box_noenc])
 
 
@@ -376,20 +387,23 @@ def plot_encoding_line_graphs(axes, use_cache, use_precalculated=True):
     encoder_cap_name = "network_capacity_identity-subtractall-1-transform"
     axes['1'] = plot_max_cap_per_p_or_std('uniform', ax=axes['1'], plot_memory=False, use_cache=use_cache,
                                           plot_stds=True, use_precalculated=use_precalculated)
-    axes['1'].scatter([1], [49.493587700551565], marker='o', facecolor='none', s=75, linewidth=1, edgecolor='black', zorder=10)
+    axes['1'].scatter([1], [49.493587700551565], marker='o', facecolor='none', s=75, linewidth=1, edgecolor='black',
+                      zorder=10)
     add_capacity_percent_twinx(ax=axes['1'], add_label=True)
     axes['1'].set_title('Capacity per Scan', y=1.05)
     axes['1'].set_ylabel('capacity')
 
     axes['2'] = plot_max_cap_per_p_or_std('spatial', axes['2'], use_cache=use_cache, plot_stds=True,
                                           use_precalculated=use_precalculated)
-    axes['2'].scatter([20], [40.11322767995303], marker='o', facecolor='none', s=75, linewidth=1, edgecolor='black', zorder=10)
+    axes['2'].scatter([20], [40.11322767995303], marker='o', facecolor='none', s=75, linewidth=1, edgecolor='black',
+                      zorder=10)
     add_capacity_percent_twinx(ax=axes['2'], add_label=True)
     axes['2'].set_ylabel('capacity')
 
     axes['3'] = plot_max_cap_per_p_or_std('spatial', axes['3'], use_cache=use_cache, plot_stds=True,
                                           capacity_name=encoder_cap_name, use_precalculated=use_precalculated)
-    axes['3'].scatter([20], [17.866824369470578], marker='o', facecolor='none', s=75, linewidth=1, edgecolor='black', zorder=10)
+    axes['3'].scatter([20], [17.866824369470578], marker='o', facecolor='none', s=75, linewidth=1, edgecolor='black',
+                      zorder=10)
     add_capacity_percent_twinx(ax=axes['3'], add_label=True)
     axes['3'].set_ylabel('capacity')
 
@@ -557,7 +571,6 @@ def plot_heatmaps_and_bars(axes, cap_base_folder, use_cache, use_precalculated=T
 
 
 def plot_correlations(axes, use_cache, use_precalculated=True):
-
     with open('correlation_plot_parameters_MC.yaml', 'r') as parameters_file:
         parameters = yaml.safe_load(parameters_file)
 
@@ -594,9 +607,9 @@ def plot_correlations(axes, use_cache, use_precalculated=True):
         },
     }
 
-
     for cap_title, cap_dict in cap_to_tasks_dict.items():
-        if os.path.exists(cap_dict['cap_groupname']) and len([x for x in os.listdir(cap_dict['cap_groupname']) if x.endswith(".pkl")]) > 0:
+        if os.path.exists(cap_dict['cap_groupname']) and len(
+                [x for x in os.listdir(cap_dict['cap_groupname']) if x.endswith(".pkl")]) > 0:
             print(f'The cap_groupname for {cap_title} is a full capacity folder. '
                   f'We use this instead of constructing a path.')
             cap_folder = cap_dict['cap_groupname']
