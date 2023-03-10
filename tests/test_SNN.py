@@ -13,15 +13,18 @@ class TestSNN(unittest.TestCase):
     def run_input_and_noise_combinations(parameters):
         input_type_list = ['spatial_DC', 'spatial_rate', 'uniform_DC', 'uniform_rate', 'step_DC', 'step_rate']
         noise_loop_list = [None, parameters['step_duration']]
+        n_runs = len(input_type_list) * len(noise_loop_list)
+        counter = 1
         for noise_loop_duration in noise_loop_list:
             for input_type in input_type_list:
-                print(f'\n\n ------- input_type: {input_type}, noise loop duration: {noise_loop_duration}\n')
+                print(f'\n\n ------- {parameters["network_type"]} ({counter}/{n_runs}),  input_type: {input_type}, noise loop duration: {noise_loop_duration}\n')
                 nest.ResetKernel()
                 nest.set_verbosity('M_ERROR')
                 parameters['input_type'] = input_type
                 parameters['noise_loop_duration'] = noise_loop_duration
                 simulation_runner = SimulationRunner(**parameters)
                 simulation_runner.run()
+                counter += 1
 
     def test_microcircuit_run(self):
         print('\n----------------------------------\n\tMicrocircuit Tests\n----------------------------------\n')
@@ -37,6 +40,42 @@ class TestSNN(unittest.TestCase):
     def test_brunel_run(self):
         print('\n----------------------------------\n\tBRN Tests\n----------------------------------\n')
         parameter_file_path = os.path.join('SNN_parameter_files', 'brunel_test_params.yaml')
+        with open(parameter_file_path, 'r') as parameter_file:
+            parameters = yaml.safe_load(parameter_file)
+        parameters['paramfile'] = parameter_file_path
+        del parameters['trial']
+        self.run_input_and_noise_combinations(parameters)
+
+    def test_amorphous_run(self):
+        print('\n----------------------------------\n\tAmorphous Tests\n----------------------------------\n')
+        parameter_file_path = os.path.join('SNN_parameter_files', 'amorphous_test_params.yaml')
+        with open(parameter_file_path, 'r') as parameter_file:
+            parameters = yaml.safe_load(parameter_file)
+        parameters['paramfile'] = parameter_file_path
+        del parameters['trial']
+        self.run_input_and_noise_combinations(parameters)
+
+    def test_degreecontrolled_run(self):
+        print('\n----------------------------------\n\tDegree-controlled Tests\n----------------------------------\n')
+        parameter_file_path = os.path.join('SNN_parameter_files', 'degreecontrolled_test_params.yaml')
+        with open(parameter_file_path, 'r') as parameter_file:
+            parameters = yaml.safe_load(parameter_file)
+        parameters['paramfile'] = parameter_file_path
+        del parameters['trial']
+        self.run_input_and_noise_combinations(parameters)
+
+    def test_degreecontrolled_no_io_run(self):
+        print('\n----------------------------------\n\tDegree-controlled (no IO specificity) Tests\n----------------------------------\n')
+        parameter_file_path = os.path.join('SNN_parameter_files', 'degreecontrolled-no-io_test_params.yaml')
+        with open(parameter_file_path, 'r') as parameter_file:
+            parameters = yaml.safe_load(parameter_file)
+        parameters['paramfile'] = parameter_file_path
+        del parameters['trial']
+        self.run_input_and_noise_combinations(parameters)
+
+    def test_smallworld_run(self):
+        print('\n----------------------------------\n\tSmallworld Tests\n----------------------------------\n')
+        parameter_file_path = os.path.join('SNN_parameter_files', 'smallworld_test_params.yaml')
         with open(parameter_file_path, 'r') as parameter_file:
             parameters = yaml.safe_load(parameter_file)
         parameters['paramfile'] = parameter_file_path

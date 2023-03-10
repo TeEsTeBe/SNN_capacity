@@ -10,7 +10,7 @@ import nest.raster_plot
 import nest.random
 import matplotlib.pyplot as plt
 
-from SNN.networks import alzheimers, brunel, microcircuit
+from SNN.networks import alzheimers, brunel, microcircuit, amorphous, degreecontrolled, smallworld
 from SNN.utils import state_utils, input_utils, general_utils, connection_utils
 
 
@@ -20,7 +20,8 @@ class SimulationRunner:
                                'spatial_DC_classification', 'spatial_rate_classification', 'spatial_DC_XORXOR',
                                'spatial_DC_XOR', 'spatial_rate_XORXOR', 'spatial_rate_XOR', 'spatial_DC_temporal_XOR',
                                'uniform_DC_temporal_XOR']
-    implemented_network_types = ['alzheimers', 'brunel', 'microcircuit']
+    implemented_network_types = ['alzheimers', 'brunel', 'microcircuit', 'amorphous', 'degreecontrolled',
+                                 'degreecontrolled_no_io_specificity', 'smallworld']
 
     def __init__(self, group_name, run_title, network_type, input_type, step_duration, num_steps, input_min_value,
                  input_max_value, n_spatial_encoder, spatial_std_factor, input_connection_probability, network_params,
@@ -127,6 +128,15 @@ class SimulationRunner:
             network = alzheimers.AlzheimersNetwork(**self.network_params)
         elif self.network_type == 'microcircuit':
             network = microcircuit.Microcircuit(**self.network_params)
+        elif self.network_type == 'amorphous':
+            network = amorphous.AmorphousCircuit(**self.network_params)
+        elif self.network_type == 'degreecontrolled':
+            network = degreecontrolled.DegreeControlledCircuit(**self.network_params)
+        elif self.network_type == 'degreecontrolled_no_io_specificity':
+            self.network_params['remove_io_specificity'] = True
+            network = degreecontrolled.DegreeControlledCircuit(**self.network_params)
+        elif self.network_type == 'smallworld':
+            network = smallworld.SmallWorldCircuit(**self.network_params)
         else:
             raise ValueError(f'Network type unknown: "{self.network_type}"')
 
