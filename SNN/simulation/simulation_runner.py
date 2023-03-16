@@ -21,7 +21,8 @@ class SimulationRunner:
                                'spatial_DC_XOR', 'spatial_rate_XORXOR', 'spatial_rate_XOR', 'spatial_DC_temporal_XOR',
                                'uniform_DC_temporal_XOR']
     implemented_network_types = ['alzheimers', 'brunel', 'microcircuit', 'amorphous', 'degreecontrolled',
-                                 'degreecontrolled_no_io_specificity', 'smallworld']
+                                 'degreecontrolled_no_io_specificity', 'smallworld', 'microcircuit_static',
+                                 'microcircuit_random_dynamics']
 
     def __init__(self, group_name, run_title, network_type, input_type, step_duration, num_steps, input_min_value,
                  input_max_value, n_spatial_encoder, spatial_std_factor, input_connection_probability, network_params,
