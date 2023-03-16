@@ -269,9 +269,9 @@ optional arguments:
 
 ```
 
-## Plotting
+## Figures
 You can find the plotting scripts in the folder `plotting`. You can run the script `plot_all_figures.py` to create the 
-figures for the results of the ESN, FPUT, BRN and MC experiments.
+figures for the results of the ESN, FPUT, BRN and MC experiments. The raw data for the figures can be found in the folder `plotting/data`.
 
 ## Tests
 To check whether your setup works, you can run the unit tests in the folder `tests`.
