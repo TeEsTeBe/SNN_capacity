@@ -50,7 +50,7 @@ def generate_data(input_duration, input_amplitude, trial):
     # Task stuff
     FPUT_args['discrete'] = True
     run_FPUT(FPUT_args)
-    fput_file_prefix = filename(prefix="./Data/FPUT/", postfix="/", **FPUT_args)
+    fput_file_prefix = filename(prefix="./data/FPUT/", postfix="/", **FPUT_args)
     fput_file_prefix = Path(fput_file_prefix)
     metadata_file = fput_file_prefix / "metadata.yaml"
     trajectory_file = fput_file_prefix / "trajectories.npy"
@@ -70,7 +70,7 @@ def generate_data(input_duration, input_amplitude, trial):
         runname=task_results,
         test_ratio=0.3,
         seed=None,
-        data_path='./Data/FPUT_tasks',
+        data_path='./data/FPUT_tasks',
         trial=trial,
     )
     run_task(XOR_args)
@@ -95,7 +95,7 @@ def generate_data(input_duration, input_amplitude, trial):
     FPUT_args['discrete'] = True
 
     run_FPUT(FPUT_args)
-    fput_file_prefix = filename(prefix="./Data/FPUT/", postfix="/", **FPUT_args)
+    fput_file_prefix = filename(prefix="./data/FPUT/", postfix="/", **FPUT_args)
     fput_file_prefix = Path(fput_file_prefix)
     metadata_file = fput_file_prefix / "metadata.yaml"
     trajectory_file = fput_file_prefix / "trajectories.npy"
@@ -111,7 +111,7 @@ def generate_data(input_duration, input_amplitude, trial):
         runname=task_results,
         test_ratio=0.3,
         seed=None,
-        data_path='./Data/FPUT_tasks',
+        data_path='./data/FPUT_tasks',
         trial=trial,
     )
     run_task(TEMPORAL_XOR_args)
@@ -134,14 +134,14 @@ def generate_data(input_duration, input_amplitude, trial):
     )
     FPUT_args['discrete'] = False
     run_FPUT(FPUT_args)
-    fput_file_prefix = filename(prefix="./Data/FPUT/", postfix="/", **FPUT_args)
+    fput_file_prefix = filename(prefix="./data/FPUT/", postfix="/", **FPUT_args)
     fput_file_prefix = Path(fput_file_prefix)
     metadata_file = fput_file_prefix / "metadata.yaml"
     trajectory_file = fput_file_prefix / "trajectories.npy"
     input_file = fput_file_prefix / "scaled_input_seq.npy"
     assert(os.path.isfile(metadata_file))
 
-    capacity_results = filename(prefix="./Data/FPUT_capacities/", postfix=".pkl", **FPUT_args)
+    capacity_results = filename(prefix="./data/FPUT_capacities/", postfix=".pkl", **FPUT_args)
 
 
     capacity_args = Namespace(
@@ -183,7 +183,7 @@ def generate_data(input_duration, input_amplitude, trial):
         runname=task_results,
         test_ratio=0.3,
         seed=None,
-        data_path='./Data/FPUT_tasks',
+        data_path='./data/FPUT_tasks',
         trial=trial,
     )
     run_task(NARMA_args)

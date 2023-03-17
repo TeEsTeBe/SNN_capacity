@@ -66,6 +66,50 @@ optional arguments:
   --seed SEED           Random seed for the simulation
 ```
 ### FPUT simulation
+
+To simulate the Fermi-Pasta-Ulam-Tsingou oscillator chain first the cython code it is implemented in needs to be compiled.
+```
+cd ./FPUT
+./build_sim_util.sh
+cd -
+```
+a simulation can then be started by calling the script `run_FPUT.py`
+```
+usage: run_FPUT.py [-h] [--alpha ALPHA] [--tau_relax TAU_RELAX]
+                   [--nbr_batches NBR_BATCHES]
+                   [--warmup_batches WARMUP_BATCHES]
+                   [--init_epsilon INIT_EPSILON] [--trial TRIAL] [--discrete]
+                   [--force] [--in_dim IN_DIM] [--uniques UNIQUES]
+                   [--in_width IN_WIDTH] [--in_variance IN_VARIANCE]
+                   [--osc OSC]
+
+options:
+  -h, --help            show this help message and exit
+  --alpha ALPHA         strength of nonlinearity
+  --tau_relax TAU_RELAX
+                        dampening time constant
+  --nbr_batches NBR_BATCHES
+                        number of batches
+  --warmup_batches WARMUP_BATCHES
+                        number of warmup batches
+  --init_epsilon INIT_EPSILON
+                        initial energy of the chain
+  --trial TRIAL         trial parameter. doesnt change simulation, is just
+                        averaged over for plot
+  --discrete            if set, input will be discrete
+  --force               if set, save files will be overwritten
+  --in_dim IN_DIM       input dimension
+  --uniques UNIQUES     how many unique values are to be presented in case of
+                        discrete input. ignored if --discrete is not given
+  --in_width IN_WIDTH   number of oscillators each input attaches to
+  --in_variance IN_VARIANCE
+                        variance of input
+  --osc OSC             number of oscillators
+```
+The Data will be stored in `./data/FPUT/`.
+
+If you want to get all data for the plots from the paper, there is a convenience script`create_FPUT_plot_data.py`
+
 ### SNN simulation
 To simulate the spiking neural networks you have to call the `run_SNN.py` script with a path to a yaml file
 as argument. This yaml file defines the parameters for your simulation.
