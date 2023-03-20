@@ -193,29 +193,7 @@ def main(args):
     with open(args.capacity_results, 'wb') as pklfile:
         pickle.dump(full_results, pklfile)
         print(f'Results saved to {args.capacity_results}', flush=True)
-    try:
 
-        os.makedirs(args.figures_path, exist_ok=True)
-        for cutoff in [0.05, 0.1, 0.15, 0.2]:
-            plt.clf()
-            fig, ax = plot_capacity_bars(full_results, cutoff=cutoff)
-            ax.set_title(f'cutoff {cutoff}')
-            plt.savefig(os.path.join(args.figures_path, f'cap_delay_bars_{args.name}_cutoff{cutoff}.pdf'))
-
-        plt.clf()
-        plot_capacity_histogram(full_results, bins=100)
-        plt.savefig(os.path.join(args.figures_path, f'cap_hist_complete_{args.name}.pdf'))
-
-        plt.clf()
-        plot_capacity_histogram(full_results, max=0.2, bins=100)
-        plt.savefig(os.path.join(args.figures_path, f'cap_hist_max0.2_{args.name}.pdf'))
-
-        plt.clf()
-        plot_capacity_cumsum(full_results)
-        plt.savefig(os.path.join(args.figures_path, f'cap_cumsums_{args.name}.pdf'))
-
-    except:
-        print(f"Error while plotting: {sys.exc_info()[0]}", flush=True)
     if args.results_file is not None:
         result_dict = {
             'name': [args.name],
