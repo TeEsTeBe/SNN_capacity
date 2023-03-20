@@ -4,7 +4,7 @@ This repository contains the code that you need to run the experiments presented
 "_Quantifying the processing capacity of continuous dynamical systems: from vibrating strings to cortical circuits_" by 
 Tobias Schulte to Brinke, Michael Dick, Renato Duarte and Abigail Morrison.
 We also warmly thank Joni Dambre for sharing her code that she used in her paper
-[Information Processing Capacity of Dynamical Systems](https://www.nature.com/articles/srep00514) and that was the basis
+[Information Processing Capacity of Dynamical Systems](https://www.nature.com/articles/srep00514)[^1] and that was the basis
 for the ESN and capacity computation parts of our implementation.
 
 To run the code in this repository, you have to install  [NEST 3](https://nest-simulator.readthedocs.io/en/v3.0/installation/index.html) first.
@@ -337,3 +337,6 @@ python -m unittest test_SNN.py
 python -m unittest test_FPUT.py
 python -m unittest test_capacity.py
 ```
+
+## References
+[^1]: Dambre, J., Verstraeten, D., Schrauwen, B., & Massar, S. (2012). Information Processing Capacity of Dynamical Systems. Scientific Reports, 2(1), 514. https://doi.org/10.1038/srep00514
