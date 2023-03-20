@@ -129,10 +129,10 @@ class SimulationRunner:
             network = alzheimers.AlzheimersNetwork(**self.network_params)
         elif self.network_type == 'microcircuit':
             network = microcircuit.Microcircuit(**self.network_params)
-        elif self.network_name == 'microcircuit_static':
+        elif self.network_type == 'microcircuit_static':
             self.network_params['static_synapses'] = True
             network = microcircuit.Microcircuit(**self.network_params)
-        elif self.network_name == 'microcircuit_random_dynamics':
+        elif self.network_type == 'microcircuit_random_dynamics':
             self.network_params['random_synaptic_dynamics'] = True
             network = microcircuit.Microcircuit(**self.network_params)
         elif self.network_type == 'amorphous':
