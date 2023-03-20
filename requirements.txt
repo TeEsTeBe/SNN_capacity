@@ -9,3 +9,11 @@ seaborn>=0.11.1
 colour>=0.1.5
 pandas>=1.4.4
 Cython >= 0.29.33
+nltk
+librosa
+psutil
+tqdm
+more_itertools
+pytest
+tables
+tox
