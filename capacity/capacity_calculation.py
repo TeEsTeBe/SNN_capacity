@@ -69,7 +69,7 @@ def legendre_incremental(n, x):
 
 def generate_task(taskfun=legendre_incremental, input=[], variables=1, positions=[0], delay=1, powerlist=[1]):
     # calculate the desired output for the current iterator position and given input
-    inp = scipy.atleast_2d(input.flatten()).T
+    inp = np.atleast_2d(input.flatten()).T
     output = np.ones((inp.shape[0], 1))
     for i in np.arange(variables):
         pos = positions[i] + delay - 1
