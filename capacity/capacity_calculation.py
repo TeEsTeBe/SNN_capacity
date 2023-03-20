@@ -17,7 +17,7 @@ def test_loading():
 # helper functions
 
 def polyval(x, c):
-    out = scipy.zeros(x.shape)
+    out = np.zeros(x.shape)
     for i in range(c.__len__()):
         if not (c[i] == 0.0):
             out += c[i] * x ** (i)
@@ -26,7 +26,7 @@ def polyval(x, c):
 
 def extract_mean(states):
     N = states.shape[1]
-    zmstates = scipy.zeros_like(states)
+    zmstates = np.zeros_like(states)
     for i in range(N):
         zmstates[:, i:i + 1] = states[:, i:i + 1] - scipy.mean(states[:, i:i + 1])
     return zmstates
@@ -40,7 +40,7 @@ def legendre_step(n, x, nm1, nm2):
     '''
 
     if n == 0:
-        l = scipy.ones_like(x)
+        l = np.ones_like(x)
     elif n == 1:
         l = x.copy()
     else:
@@ -54,12 +54,12 @@ def legendre_incremental(n, x):
         These are orthogonal for uniform random inputs in [-1,1]
     '''
     if n == 0:
-        return scipy.ones_like(x)
+        return np.ones_like(x)
     elif n == 1:
         return x
     else:
         l = x.copy()
-        prev = scipy.ones_like(x)
+        prev = np.ones_like(x)
 
         for index in range(int(n) - 1):
             [l, prev] = legendre_step(index + 2, x, l, prev)
@@ -70,13 +70,13 @@ def legendre_incremental(n, x):
 def generate_task(taskfun=legendre_incremental, input=[], variables=1, positions=[0], delay=1, powerlist=[1]):
     # calculate the desired output for the current iterator position and given input
     inp = scipy.atleast_2d(input.flatten()).T
-    output = scipy.ones((inp.shape[0], 1))
+    output = np.ones((inp.shape[0], 1))
     for i in np.arange(variables):
         pos = positions[i] + delay - 1
         if pos == 0:
             task = taskfun(powerlist[i], inp)
         else:
-            task = taskfun(powerlist[i], scipy.concatenate((scipy.zeros((pos, inp.shape[1])), inp[:-pos, :])))
+            task = taskfun(powerlist[i], np.concatenate((np.zeros((pos, inp.shape[1])), inp[:-pos, :])))
         output = output * task
     return output
 
@@ -87,7 +87,7 @@ def cov_capacity(states, target, return_all_scores=False, R_inv=None):  # ,zm_ta
     ''' Compute the non-linear memory capacity based on correlations
     '''
 
-    score = scipy.zeros(target.shape[1])
+    score = np.zeros(target.shape[1])
 
     # if R_inv==None:  # gives an error in recent versions of Python
     if not (R_inv.any()):
@@ -200,16 +200,16 @@ class capacity_iterator():
             self.degree = self.variables
 
         if self.window == 1:
-            self.positions = scipy.array([0])
-            self.powerlist = scipy.array([self.mindeg])
+            self.positions = np.array([0])
+            self.powerlist = np.array([self.mindeg])
         else:
             self.positions = range(self.variables - 1)
             self.positions.append(self.window - 1)
             if self.degree == self.variables:
-                self.powerlist = scipy.ones(self.variables)
+                self.powerlist = np.ones(self.variables)
             else:
-                self.powerlist = scipy.array([self.degree - self.variables + 1])
-                self.powerlist.append(scipy.ones(self.variables - 1))
+                self.powerlist = np.array([self.degree - self.variables + 1])
+                self.powerlist.append(np.ones(self.variables - 1))
 
                 # initialize cumulative scores
         self.delay_score = 0.0
@@ -246,16 +246,16 @@ class capacity_iterator():
             self.degree = self.variables
 
         if self.window == 1:
-            self.positions = scipy.array([0])
-            self.powerlist = scipy.array([self.mindeg])
+            self.positions = np.array([0])
+            self.powerlist = np.array([self.mindeg])
         else:
             self.positions = range(self.variables - 1)
             self.positions.append(self.window - 1)
             if self.degree == self.variables:
-                self.powerlist = scipy.ones(self.variables)
+                self.powerlist = np.ones(self.variables)
             else:
-                self.powerlist = scipy.array([self.degree - self.variables + 1])
-                self.powerlist.append(scipy.ones(self.variables - 1))
+                self.powerlist = np.array([self.degree - self.variables + 1])
+                self.powerlist.append(np.ones(self.variables - 1))
 
                 # initialize cumulative scores
         self.delay_score = 0.0
@@ -432,7 +432,7 @@ class capacity_iterator():
                 return True
         self.current_score = 0.0
         self.delay = self.mindel
-        self.subs = scipy.zeros(self.dimensions, )
+        self.subs = np.zeros(self.dimensions, )
 
         self.windowpos_score += self.delay_score
         # self.leaky_score=1.0
@@ -501,7 +501,7 @@ class capacity_iterator():
             if self.variables < self.maxvars:
                 if self.variables < self.degree:
                     self.variables += 1
-                    self.powerlist = scipy.ones(self.variables)
+                    self.powerlist = np.ones(self.variables)
                     self.powerlist[0] = self.degree - (self.variables - 1)
                     self.window = self.variables
                     self.positions = np.arange(self.variables)
@@ -521,7 +521,7 @@ class capacity_iterator():
             if self.degree < self.maxdeg:
                 self.degree += 1
                 self.variables = self.minvars
-                self.powerlist = scipy.ones(self.variables)
+                self.powerlist = np.ones(self.variables)
                 self.powerlist[0] = self.degree - (self.variables - 1)
                 self.window = self.variables
                 self.positions = np.arange(self.variables)
@@ -555,7 +555,7 @@ class capacity_iterator():
         if self.degree == self.variables:
             return nextpowers
         freepowers = self.degree - self.variables
-        powers = scipy.zeros(freepowers)
+        powers = np.zeros(freepowers)
         index = 0
         for i in np.arange(self.variables).astype(int):
             if self.powerlist[i] > 1:
@@ -567,7 +567,7 @@ class capacity_iterator():
                 powers[i] += 1
                 for j in np.arange(i + 1, freepowers).astype(int):
                     powers[j] = powers[i]
-                nextpowers = scipy.ones(self.variables)
+                nextpowers = np.ones(self.variables)
                 for j in np.arange(freepowers).astype(int):
                     nextpowers[int(powers[j])] += 1
                 break
