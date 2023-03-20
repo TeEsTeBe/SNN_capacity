@@ -8,11 +8,23 @@ We also warmly thank Joni Dambre for sharing her code that she used in her paper
 for the ESN and capacity computation parts of our implementation.
 
 To run the code in this repository, you have to install  [NEST 3](https://nest-simulator.readthedocs.io/en/v3.0/installation/index.html) first.
+For example in an conda environment with the following command:
+```commandline
+conda install -c conda-forge nest-simulator
+```
 
 You also have to install the other requirements from the `requirements.txt` file.
 
-Then add this repository to your PYTHONPATH:
+In addition, you have to install the [Functional Neural Architectures](https://zenodo.org/record/5752597) tool:
+```commandline
+wget https://zenodo.org/record/5752597/files/func-neurarch-0.2.1.tar.gz
+tar -xvf func-neurarch-0.2.1.tar.gz
+cd func-neurarch-0.2.1
+pip install .
 ```
+
+Then add this repository to your PYTHONPATH:
+```commandline
 export PYTHONPATH=$PYTHONPATH:/path/to/this/repository
 ```
 
