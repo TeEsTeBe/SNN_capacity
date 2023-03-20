@@ -91,7 +91,7 @@ def cov_capacity(states, target, return_all_scores=False, R_inv=None):  # ,zm_ta
 
     # if R_inv==None:  # gives an error in recent versions of Python
     if not (R_inv.any()):
-        R_inv, crank = scipy.linalg.pinv2(np.dot(states.T, states) / states.shape[0], return_rank=True)
+        R_inv, crank = scipy.linalg.pinv(np.dot(states.T, states) / states.shape[0], return_rank=True)
         print("Estimated rank of state covariance matrix = ", crank)
 
     for k in range(target.shape[1]):
@@ -296,7 +296,7 @@ class capacity_iterator():
         if self.dimensions > 1:
             # self.corrmat=np.cov(estates)
             covmat = np.dot(estates.T, estates) / estates.shape[0]
-            self.corrmat, crank = scipy.linalg.pinv2(covmat, return_rank=True, cond=self.corr_cond)
+            self.corrmat, crank = scipy.linalg.pinv(covmat, return_rank=True, cond=self.corr_cond)
             print("Estimated rank of state covariance matrix = ", crank)
         else:
             self.corrmat = np.ones((1, 1))
