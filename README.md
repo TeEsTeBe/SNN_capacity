@@ -331,3 +331,9 @@ figures for the results of the ESN, FPUT, BRN and MC experiments. The raw data f
 
 ## Tests
 To check whether your setup works, you can run the unit tests in the folder `tests`.
+```commandline
+python -m unittest test_ESN.py
+python -m unittest test_SNN.py
+python -m unittest test_FPUT.py
+python -m unittest test_capacity.py
+```
