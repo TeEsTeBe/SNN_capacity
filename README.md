@@ -14,6 +14,9 @@ conda install -c conda-forge nest-simulator
 ```
 
 You also have to install the other requirements from the `requirements.txt` file.
+```commandline
+pip install -r requirements.txt
+```
 
 In addition, you have to install the [Functional Neural Architectures](https://zenodo.org/record/5752597) tool:
 ```commandline
