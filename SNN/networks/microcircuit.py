@@ -165,6 +165,7 @@ class Microcircuit(BaseNetwork):
         self.static_synapses = static_synapses
         if static_synapses:
             self.syn_params_from_to = connection_utils.create_synapse_parameters('static_synapse')
+            self.S_rw = self.S_rw / 73.
         else:
             self.syn_params_from_to = connection_utils.create_synapse_parameters()
         self.conn_ids_from_to = self.connect_net()
