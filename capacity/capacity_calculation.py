@@ -10,34 +10,9 @@ from scipy.stats import chi2
 import numpy as np
 
 
-def test_loading():
-    print("Capacity library loaded")
-
-
-# helper functions
-
-def polyval(x, c):
-    out = np.zeros(x.shape)
-    for i in range(c.__len__()):
-        if not (c[i] == 0.0):
-            out += c[i] * x ** (i)
-    return out
-
-
-def extract_mean(states):
-    N = states.shape[1]
-    zmstates = np.zeros_like(states)
-    for i in range(N):
-        zmstates[:, i:i + 1] = states[:, i:i + 1] - scipy.mean(states[:, i:i + 1])
-    return zmstates
-
-
-# Basis functions for continuous-valued reservoirs
-
 def legendre_step(n, x, nm1, nm2):
-    ''' Compute Legendre n+1 function from Legendre n and n-1 functions 
-        These are orthogonal for uniform random inputs in [-1,1]
-    '''
+    """ Compute Legendre n+1 function from Legendre n and n-1 functions These are orthogonal for uniform random inputs
+    in [-1,1] """
 
     if n == 0:
         l = np.ones_like(x)
@@ -50,9 +25,9 @@ def legendre_step(n, x, nm1, nm2):
 
 
 def legendre_incremental(n, x):
-    ''' Recursively compute Legendre polynomial of order n, and return as a function
-        These are orthogonal for uniform random inputs in [-1,1]
-    '''
+    """ Recursively compute Legendre polynomial of order n, and return as a function
+        These are orthogonal for uniform random inputs in [-1,1] """
+
     if n == 0:
         return np.ones_like(x)
     elif n == 1:
@@ -67,9 +42,18 @@ def legendre_incremental(n, x):
     return l
 
 
-def generate_task(taskfun=legendre_incremental, input=[], variables=1, positions=[0], delay=1, powerlist=[1]):
-    # calculate the desired output for the current iterator position and given input
-    inp = np.atleast_2d(input.flatten()).T
+def generate_task(taskfun=legendre_incremental, input_values=None, variables=1, positions=None, delay=1,
+                  powerlist=None):
+    """ Calculate the desired output for the current iterator position and given input """
+
+    if input_values is None:
+        input_values = np.array([])
+    if positions is None:
+        positions = np.array([0])
+    if powerlist is None:
+        powerlist = np.array([1])
+
+    inp = np.atleast_2d(input_values.flatten()).T
     output = np.ones((inp.shape[0], 1))
     for i in np.arange(variables):
         pos = positions[i] + delay - 1
@@ -84,12 +68,10 @@ def generate_task(taskfun=legendre_incremental, input=[], variables=1, positions
 # capacity metrics
 
 def cov_capacity(states, target, return_all_scores=False, R_inv=None):  # ,zm_target=True,zm_states=True):
-    ''' Compute the non-linear memory capacity based on correlations
-    '''
+    """ Compute the non-linear memory capacity based on correlations """
 
     score = np.zeros(target.shape[1])
 
-    # if R_inv==None:  # gives an error in recent versions of Python
     if not (R_inv.any()):
         R_inv, crank = scipy.linalg.pinv(np.dot(states.T, states) / states.shape[0], return_rank=True)
         print("Estimated rank of state covariance matrix = ", crank)
@@ -97,12 +79,6 @@ def cov_capacity(states, target, return_all_scores=False, R_inv=None):  # ,zm_ta
     for k in range(target.shape[1]):
         P = np.dot(states.T, target[:, k:k + 1]) / (states.shape[0])
         score[k] = (np.dot(np.dot(P.T, R_inv), P)) / np.mean(target[:, k:k + 1] * target[:, k:k + 1])
-
-        # P = states.T @ target / steps
-        # (P.T @ R_inv) @ P  / var(target)
-
-        # target is standardized (mean = 0, std = 1) -> mean(target^2) = var(target)
-        # see def task()
 
     totalscore = np.sum(score)
 
@@ -112,66 +88,82 @@ def cov_capacity(states, target, return_all_scores=False, R_inv=None):  # ,zm_ta
         return totalscore
 
 
-# capacity iterator
+class CapacityIterator():
 
-class capacity_iterator():
-    # Iterator class to measure capacity profiles -- with lots of parameters.
-    # Usage: 
-    #    nlmc=nlmc_iterator(options)
-    #    totalscore,tags,numbases,dimensions = nlmc.collect(inputs,outputs)
-    #
-    # tags is the data structure containing all detailed information about the measured profile
-    # NOTE: first sample of states is assumed to be response to first input sample, NOT initial state
-    #
-    # verbosity: -1 only gives total capacity, 0 (default) gives total capacity per degree, 1 gives thousands of lines output (one line per capacity, only for debugging)
-    #
-    # Typical parameters to set for measuring capacity profiles of dynamical systems:
-    #
-    #  * orth_factor: between 2.0 (long datasets) and 10.0 (shorter datasets)
-    #  * delskip: threshold is ignored for delays up to this value (for systems with an initial response delay)
-    #  * windowskip: threshold is ignored in window loop up to this value (for systems with feedback delay)
-    #  * score_leak: for values <1.0, the current score is lowpassed before applying the halting threshold
-    #                also useful for systems with feedback delay and/or with periodic response
-    #  * basis: basis functions to be used; default = legendre polynomials (for uniform [0,1] input data)
-    #           this can also be a GrammSchmittbasis class member
-    #  
-    # Additional bounded search parameters for measuring task profiles or when automatic search becomes too extensive: 
-    #
-    #  * for bounded delay search, set mindel and maxdel to desired values (additionally, set m_delay to False to switch off thresholding)
-    #  * for bounded degree search, set mindeg and maxdeg to desired values (additionally, set m_degrees to False to switch off thresholding)
-    #  * for bounded variables search, set minvars and maxvars  to desired values (additionally, set m_variables to False to switch off thresholding)
-    #  * for bounded window search, set minwindow and maxwindow (additionally, set m_window and m_windowpos to False to switch off thresholding)
-    #  * to completely switch off thresholding, set all 'm_'-parameters to False 
-
-    def __init__(self, basis=legendre_incremental, mindel=1, maxdel=100000, delskip=0, delhold=0,
+    def __init__(self, basis=legendre_incremental, mindel=1, maxdel=100000, delskip=0,
                  mindeg=1, maxdeg=100,
                  minwindow=1, maxwindow=10000, windowskip=0,
                  minvars=1, maxvars=100,
-                 corr_cond=None,
                  orth_factor=2.0, score_leak=1.0,
-                 p_threshold=0.999, d_threshold=0.001, a_threshold=1.0,  # PCA_threshold=1.0e-10,
                  m_delay=True, m_windowpos=False, m_window=True,
                  m_powerlist=False, m_variables=False, m_degrees=True,
-                 maxbases=1000000, verbose=0, debug=False, profile=True):
+                 maxbases=1000000, verbosity=0, debug=False):
+        """ Iterator to measure capacity profiles
+
+        Parameters
+        ----------
+        basis: function
+            basis functions to be used; default = legendre polynomials
+        mindel: int
+            lower bound for delays
+        maxdel: int
+            upper bound for delays
+        delskip: int
+            threshold is ignored for delays up to this value (for systems with an initial response delay)
+        mindeg: int
+            lower bound for degrees
+        maxdeg: int
+            upper bound for degrees
+        minwindow: int
+            lower bound for window length
+        maxwindow: int
+            upper bound for window length
+        windowskip: int
+            threshold is ignored in window loop up to this value (for systems with feedback delay)
+        minvars: int
+            minimal number of variables
+        maxvars: int
+            maximum number of variables
+        orth_factor: float
+            Factor that increases the cutoff value
+        score_leak: float
+            for values <1.0, the current score is lowpassed before applying the halting threshold. Also useful for
+            systems with feedback delay and/or with periodic response
+        m_delay: bool
+            Whether to assume a monotonous decrease of capacity with increasing delay
+        m_windowpos: bool
+            Whether to assume a monotonous decrease of capacity with increasing window positions
+        m_window: bool
+            Whether to assume a monotonous decrease of capacity with increasing window length
+        m_powerlist: bool
+            Whether to assume a monotonous decrease of capacity with longer power lists
+        m_variables: bool
+            Whether to assume a monotonous decrease of capacity with increasing number of variables
+        m_degrees: bool
+            Whether to assume a monotonous decrease of capacity with increasing degree
+        maxbases: int
+            maximum number of target functions that should be evaluated
+        verbosity: int
+            -1 only gives total capacity, 0 (default) gives total capacity per degree, 1 gives one line per capacity
+        debug: bool
+            whether to enable additional debug print outs
+        """
+
         # Set ranges for sweeps
         self.mindel = mindel
         self.maxdel = maxdel
         self.delskip = delskip
-        self.delhold = delhold
+        self.delhold = 0
         self.holding = 0
         self.score_leak = score_leak
         self.orth_factor = orth_factor
-        self.profile = profile
+        self.profile = True
         self.debug = debug
-        if p_threshold <= 1.0:
-            self.p_threshold = float(p_threshold)
-        else:  # assume threshold is specified as a percentage
-            self.p_threshold = float(p_threshold) / 100.0
+        self.p_threshold = 0.999
 
-        self.a_threshold = float(a_threshold)
-        self.d_threshold = d_threshold
-        self.corr_cond = corr_cond
-        # self.PCA_th=PCA_threshold
+        self.a_threshold = 1.0
+        self.d_threshold = 0.001
+        self.corr_cond = None
         self.mindeg = mindeg
         self.maxdeg = maxdeg
         self.minvars = minvars
@@ -180,6 +172,7 @@ class capacity_iterator():
         self.maxwindow = maxwindow
         self.windowskip = windowskip
         self.taskfun = basis
+
         # set monotonicity variables:
         # True means that if the total score for a given loop level is below threshold, 
         # further iterations accross this loop will be skipped
@@ -189,6 +182,7 @@ class capacity_iterator():
         self.monotonous_powerlist = m_powerlist
         self.monotonous_variables = m_variables
         self.monotonous_degree = m_degrees
+
         # Initialize iterations
         self.delay = self.mindel
         self.window = self.minwindow
@@ -211,7 +205,7 @@ class capacity_iterator():
                 self.powerlist = np.array([self.degree - self.variables + 1])
                 self.powerlist.append(np.ones(self.variables - 1))
 
-                # initialize cumulative scores
+        # initialize cumulative scores
         self.delay_score = 0.0
         self.windowpos_score = 0.0
         self.window_score = 0.0
@@ -231,10 +225,11 @@ class capacity_iterator():
 
         self.tags = []
 
-        self.verbose = verbose
+        self.verbose = verbosity
 
     def reset(self):
-        # Initialize iterations
+        """ Initialize iterations """
+
         self.delay = self.mindel
         self.holding = 0
         self.window = self.minwindow
@@ -257,7 +252,7 @@ class capacity_iterator():
                 self.powerlist = np.array([self.degree - self.variables + 1])
                 self.powerlist.append(np.ones(self.variables - 1))
 
-                # initialize cumulative scores
+        # initialize cumulative scores
         self.delay_score = 0.0
         self.windowpos_score = 0.0
         self.window_score = 0.0
@@ -277,7 +272,17 @@ class capacity_iterator():
         self.tags = []
 
     def collect(self, inputs, estates):
-        # inputs=inputs[:,0]
+        """ Calculates the results for all capacity functions
+
+        Parameters
+        ----------
+        inputs: ndarray
+            input values
+        estates: ndarray
+            state matrix
+
+        """
+
         self.reset()
         donext = True
 
@@ -285,23 +290,17 @@ class capacity_iterator():
         estates -= np.mean(estates, axis=0)
         estates /= np.std(estates, axis=0)
 
-        samples = estates.shape[0]
         self.dimensions = estates.shape[1]
-
-        # estates=states+self.statenoise*np.random.randn(samples,self.dimensions)
 
         if self.verbose > 1:
             print('State space dimensions = ' + str(self.dimensions))
 
         if self.dimensions > 1:
-            # self.corrmat=np.cov(estates)
             covmat = np.dot(estates.T, estates) / estates.shape[0]
             self.corrmat, crank = scipy.linalg.pinv(covmat, return_rank=True, cond=self.corr_cond)
             print("Estimated rank of state covariance matrix = ", crank)
         else:
             self.corrmat = np.ones((1, 1))
-
-        # states=states
 
         while donext:
             outputs = self.task(inputs)
@@ -328,9 +327,9 @@ class capacity_iterator():
             print(tag)
         return self.totalscore(), self.alltags(), self.bases, self.dimensions
 
-    def task(self, input):
+    def task(self, input_values):
         output = generate_task(taskfun=self.taskfun,
-                               input=input, variables=self.variables, positions=self.positions,
+                               input_values=input_values, variables=self.variables, positions=self.positions,
                                delay=self.delay, powerlist=self.powerlist)
         output -= output.mean()
         output /= output.std()
@@ -435,7 +434,6 @@ class capacity_iterator():
         self.subs = np.zeros(self.dimensions, )
 
         self.windowpos_score += self.delay_score
-        # self.leaky_score=1.0
         self.holding = 0
 
         if not (self.use_scores) or not (self.monotonous_windowpos) or (self.use_scores and self.monotonous_windowpos):

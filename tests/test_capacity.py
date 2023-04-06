@@ -26,6 +26,7 @@ class TestCapacity(unittest.TestCase):
 
         state_matrix[:, 1:] = state_matrix[:, 1:] * 0.75 + state_matrix[:, :-1] * 0.25
 
+        os.makedirs('data', exist_ok=True)
         input_path = os.path.join('data', 'test_inputs.npy')
         states_path = os.path.join('data', 'test_states.npy')
         np.save(input_path, input_signal)
