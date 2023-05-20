@@ -47,7 +47,7 @@ def parse_cmd():
                                                          'be stored.')
     parser.add_argument('--capacity_results', type=str, help='Path where the capacity values of this run should be '
                                                              'stored')
-    parser.add_argument('--max_degree', type=int, default=100, help='Maximum degree that should be evaluated.')
+    parser.add_argument('--max_degree', type=int, default=1000, help='Maximum degree that should be evaluated.')
     parser.add_argument('--max_delay', type=int, default=1000, help='Maximum delay that should be evaluated.')
     parser.add_argument('--m_variables', action='store_true', help="Whether to assume a monotonous decrease of capacity"
                                                                    " with increasing number of variables")
@@ -55,7 +55,7 @@ def parse_cmd():
                                                                    " with increasing power list")
     parser.add_argument('--m_windowpos', action='store_true', help="Whether to assume a monotonous decrease of capacity"
                                                                    " with increasing positions in the window")
-    parser.add_argument('--orth_factor', type=float, default=2., help="Factor that increases the cutoff value")
+    parser.add_argument('--orth_factor', type=float, default=6., help="Factor that increases the cutoff value")
     parser.add_argument('--figures_path', type=str, default='figures')
     parser.add_argument('--n_warmup', type=int, default=0, help="Number of warm up simulation steps.")
     parser.add_argument('--sample_ids', type=str, default=None, help="Path to a numpy array with ids of unist that"
