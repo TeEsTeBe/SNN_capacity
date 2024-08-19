@@ -1,14 +1,14 @@
 # SNN_capacity
 
 This repository contains the code that you need to run the experiments presented in the paper 
-"_Quantifying the processing capacity of continuous dynamical systems: from vibrating strings to cortical circuits_" by 
+[A refined information processing capacity metric allows an in-depth analysis of memory and nonlinearity trade-offs in neurocomputational systems](https://www.nature.com/articles/s41598-023-37604-0)[^1] by 
 Tobias Schulte to Brinke, Michael Dick, Renato Duarte and Abigail Morrison.
 We also warmly thank Joni Dambre for sharing her code that she used in her paper
-[Information Processing Capacity of Dynamical Systems](https://www.nature.com/articles/srep00514)[^1] and that was the basis
+[Information Processing Capacity of Dynamical Systems](https://www.nature.com/articles/srep00514)[^2] and that was the basis
 for the ESN and capacity computation parts of our implementation.
 
 To run the code in this repository, you have to install  [NEST 3](https://nest-simulator.readthedocs.io/en/v3.0/installation/index.html) first.
-For example in an conda environment with the following command:
+For example in a conda environment with the following command:
 ```commandline
 conda install -c conda-forge nest-simulator
 ```
@@ -342,4 +342,5 @@ python -m unittest test_capacity.py
 ```
 
 ## References
-[^1]: Dambre, J., Verstraeten, D., Schrauwen, B., & Massar, S. (2012). Information Processing Capacity of Dynamical Systems. Scientific Reports, 2(1), 514. https://doi.org/10.1038/srep00514
+[^1]: T. Schulte to Brinke, M. Dick, R. Duarte, and A. Morrison, “A refined information processing capacity metric allows an in-depth analysis of memory and nonlinearity trade-offs in neurocomputational systems,” Sci Rep, vol. 13, no. 1, p. 10517, Jun. 2023, [doi: 10.1038/s41598-023-37604-0](https://doi.org/10.1038/s41598-023-37604-0).
+[^2]: Dambre, J., Verstraeten, D., Schrauwen, B., & Massar, S. (2012). Information Processing Capacity of Dynamical Systems. Scientific Reports, 2(1), 514. https://doi.org/10.1038/srep00514
